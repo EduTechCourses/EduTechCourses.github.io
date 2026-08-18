@@ -1,0 +1,18 @@
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Editores
+.vscode/
+.idea/
+*.swp
+
+# Dependencias (si se incorpora tooling más adelante)
+node_modules/
+
+# Variables de entorno / configuración de Firebase local
+.env
+firebase-config.local.js
+
+# Logs
+*.log

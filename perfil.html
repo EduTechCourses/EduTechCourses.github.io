@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mi perfil — EduTechCourses</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+
+  <nav class="navbar navbar-expand-lg navbar-etc-light" aria-label="Navegación principal">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
+        <img src="assets/logo/logo.svg" alt="Logo de EduTechCourses" class="brand-logo">
+        <span class="brand-name">EduTechCourses</span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu"
+        aria-controls="navMenu" aria-expanded="false" aria-label="Abrir menú">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="index.html">Inicio</a></li>
+          <li class="nav-item"><a class="nav-link" href="catalogo.html">Catálogo</a></li>
+        </ul>
+        <div class="d-flex align-items-center gap-3">
+          <a href="admin.html" class="admin-link">Admin</a>
+          <a href="perfil.html" class="user-chip text-decoration-none">
+            <span class="avatar-sm">RL</span> Robinson Latour
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!--
+       CONTENIDO PENDIENTE — Perfil de usuario
+       Requerimientos: RF-07 (historial de cursos con fecha y estado),
+       RF-08 (editar datos básicos del perfil, persisten en Firestore)
+       Caso de uso: CU-07 (Editar perfil)
+       Esta página usa el navbar "logueado" (arriba a la derecha: Admin +
+       chip de usuario, ver .user-chip en css/styles.css) en vez de los
+       botones de Iniciar sesión/Comenzar gratis.
+       Sugerido: sidebar con avatar (.profile-sidebar-card, .avatar-lg) +
+       navegación vertical (.profile-nav) entre "Mi perfil" e "Historial",
+       y el contenido principal cambiando según la sección elegida.
+       Prototipo de referencia: https://height-shaky-07694666.figma.site/
+  -->
+  <section class="section">
+    <div class="container">
+      <h1 class="section-title">Mi perfil</h1>
+      <p class="text-body-secondary">Contenido pendiente de implementar.</p>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <img src="assets/logo/logo.svg" alt="Logo de EduTechCourses" class="brand-logo">
+            <span class="brand-name">EduTechCourses</span>
+          </div>
+          <p class="small mb-0">Plataforma de cursos digitales desarrollada como proyecto del Taller Integrador.</p>
+        </div>
+        <div class="col-md-4">
+          <p class="fw-semibold text-white mb-2">Plataforma</p>
+          <ul class="list-unstyled small">
+            <li class="mb-1"><a href="index.html">Inicio</a></li>
+            <li class="mb-1"><a href="catalogo.html">Catálogo</a></li>
+            <li class="mb-1"><a href="admin.html">Panel admin</a></li>
+          </ul>
+        </div>
+        <div class="col-md-4">
+          <p class="fw-semibold text-white mb-2">Cuenta</p>
+          <ul class="list-unstyled small">
+            <li class="mb-1"><a href="perfil.html">Mi perfil</a></li>
+            <li class="mb-1"><a href="index.html">Cerrar sesión</a></li>
+          </ul>
+        </div>
+      </div>
+      <hr class="border-secondary my-4">
+      <p class="small mb-0 text-center">© 2026 EduTechCourses. Proyecto educativo sin fines comerciales.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/base.js"></script>
+</body>
+
+</html>
