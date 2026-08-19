@@ -38,21 +38,18 @@
     </div>
   </nav>
 
-  <!-- 
-       CONTENIDO PENDIENTE — Catálogo de cursos
-       Requerimientos: RF-01 (listar cursos activos: nombre, categoría, imagen),
-       RF-02 (filtrar por categoría y rango de precio)
-       Debe incluir: buscador, filtro de categoría, filtro de precio, grilla de
-       tarjetas de curso (ver .course-card, .badge-category en css/styles.css)
-       y contador de resultados. El filtrado se resuelve con JS del lado cliente
-       por ahora (sin Firestore hasta Sprint 2).
-       Prototipo de referencia: https://height-shaky-07694666.figma.site/
-  -->
-  <section class="section">
+ <section class="section pb-3">
     <div class="container">
-      <h1 class="section-title">Catálogo de cursos</h1>
-      <p class="text-body-secondary">Contenido pendiente de implementar.</p>
-    </div>
+      <h1 class="section-title mb-1">Catálogo de cursos</h1>
+      <p class="section-subtitle mb-4">Encontrá el curso indicado para vos.</p>
+ 
+      <!-- Buscador -->
+      <div class="position-relative mb-3" style="max-width: 640px;">
+        <i class="bi bi-search position-absolute" style="left: 1.3rem; top: 50%; transform: translateY(-50%); color: var(--ink-faint);"></i>
+        <input type="search" id="buscador" class="form-control search-pill ps-5" placeholder="Buscar cursos por nombre o categoría..." onkeyup="filtrarCatalogo()">
+      </div>
+
+
   </section>
 
   <footer class="site-footer">
