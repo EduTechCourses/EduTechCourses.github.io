@@ -40,19 +40,158 @@
     </div>
   </nav>
 
-  <!--
-       CONTENIDO PENDIENTE — Perfil de usuario
-       Requerimientos: RF-07 (historial de cursos con fecha y estado),
-       RF-08 (editar datos básicos del perfil, persisten en Firestore)
-       Caso de uso: CU-07 (Editar perfil)
-       Esta página usa el navbar "logueado" (arriba a la derecha: Admin +
-       chip de usuario, ver .user-chip en css/styles.css) en vez de los
-       botones de Iniciar sesión/Comenzar gratis.
-       Sugerido: sidebar con avatar (.profile-sidebar-card, .avatar-lg) +
-       navegación vertical (.profile-nav) entre "Mi perfil" e "Historial",
-       y el contenido principal cambiando según la sección elegida.
-       Prototipo de referencia: https://height-shaky-07694666.figma.site/
-  -->
+ <section class="section">
+   <div class="container">
+     <div class="row g-4">
+       <!-- Sidebar -->
+       <div class="col-lg-4">
+         <div class="profile-sidebar-card">
+           <div class="avatar-lg">
+             RL
+             <span class="camera-badge"><i class="bi bi-camera-fill"></i></span>
+           </div>
+           <h1 class="h5 mb-0" style="color:#fff;">Robinson Latour</h1>
+           <p class="small mb-0" style="color: rgba(255,255,255,0.8);">robinson@edutechcourses.com</p>
+           <span class="profile-role-badge"><i class="bi bi-circle-fill" style="font-size:6px; vertical-align:2px; margin-right:4px;"></i>Estudiante</span>
+         </div>
+         <div class="profile-nav">
+           <a href="#" class="nav-link active" onclick="mostrarSeccionPerfil('datos'); return false;" id="nav-datos">
+             <span><i class="bi bi-person me-2"></i>Mi perfil</span>
+           </a>
+           <a href="#" class="nav-link" onclick="mostrarSeccionPerfil('cursos'); return false;" id="nav-cursos">
+             <span><i class="bi bi-collection me-2"></i>Mis cursos</span>
+             <span class="badge rounded-pill" style="background:#eaf3f0; color:var(--teal-dark);">2</span>
+           </a>
+           <hr class="my-2">
+           <a href="index.html" class="nav-link text-danger">
+             <span><i class="bi bi-box-arrow-right me-2"></i>Cerrar sesión</span>
+           </a>
+         </div>
+       </div>
+ 
+       <!-- Contenido -->
+       <div class="col-lg-8">
+ 
+         <!-- Sección: Mi perfil -->
+         <div id="seccion-datos">
+           <div class="stat-card">
+             <h2 class="h5 mb-4">Información de perfil</h2>
+ 
+             <div class="d-flex align-items-center gap-3 mb-4 p-3 rounded-3" style="background: var(--bg);">
+               <span class="avatar-sm" style="width:52px;height:52px;font-size:1.1rem;">RL</span>
+               <div>
+                 <p class="fw-semibold mb-0">Robinson Latour</p>
+                 <p class="small text-body-secondary mb-0">robinson@edutechcourses.com</p>
+               </div>
+             </div>
+ 
+             <form class="needs-validation" novalidate onsubmit="return false;">
+               <div class="row g-3">
+                 <div class="col-md-6">
+                   <label for="perfilNombre" class="form-label">Nombre completo</label>
+                   <input type="text" class="form-control" id="perfilNombre" value="Robinson Latour" required>
+                 </div>
+                 <div class="col-md-6">
+                   <label for="perfilEmail" class="form-label">Correo electrónico</label>
+                   <input type="email" class="form-control" id="perfilEmail" value="robinson@edutechcourses.com" required>
+                 </div>
+                 <div class="col-md-6">
+                   <label for="perfilCursosActivos" class="form-label">Cursos activos</label>
+                   <input type="text" class="form-control" id="perfilCursosActivos" value="2 cursos" disabled>
+                 </div>
+                 <div class="col-md-6">
+                   <label for="perfilMiembroDesde" class="form-label">Miembro desde</label>
+                   <input type="text" class="form-control" id="perfilMiembroDesde" value="10 de agosto de 2026" disabled>
+                 </div>
+               </div>
+ 
+               <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-4">
+                 <p class="small text-body-secondary mb-0"><strong class="text-navy">1</strong> curso completado</p>
+                 <button type="submit" class="btn btn-brand">Guardar cambios</button>
+               </div>
+             </form>
+ 
+             <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mt-4 p-3 rounded-3" style="background:#eaf3f0;">
+               <div class="d-flex align-items-center gap-2">
+                 <i class="bi bi-collection text-teal" style="font-size:1.3rem;"></i>
+                 <div>
+                   <p class="fw-semibold mb-0 small">2 cursos activos</p>
+                   <p class="small text-body-secondary mb-0">Accedés a cada curso de forma individual</p>
+                 </div>
+               </div>
+               <button class="btn btn-sm btn-brand" onclick="mostrarSeccionPerfil('cursos')">Ver mis cursos</button>
+             </div>
+           </div>
+         </div>
+ 
+         <!-- Sección: Mis cursos -->
+         <div id="seccion-cursos" class="d-none">
+           <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+             <div>
+               <h2 class="h5 mb-1">Mis cursos</h2>
+               <p class="text-body-secondary small mb-0">Historial de cursos adquiridos.</p>
+             </div>
+             <a href="catalogo.html" class="btn btn-outline-brand btn-sm" style="color:var(--navy); border-color:var(--navy);">+ Explorar más</a>
+           </div>
+ 
+           <div class="stat-card p-0">
+             <div class="d-flex align-items-center gap-3 p-3 border-bottom">
+               <div class="course-thumb rounded-3" style="width:76px; height:60px; font-size:1.2rem; background: linear-gradient(135deg,#12305c,#1aa98b);"><i class="bi bi-cpu"></i></div>
+               <div class="flex-grow-1">
+                 <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                   <div>
+                     <p class="fw-semibold mb-0">Robótica desde cero</p>
+                     <p class="small text-body-secondary mb-0"><i class="bi bi-calendar3 me-1"></i>Adquirido el 12/08/2026 · <i class="bi bi-clock me-1"></i>4 módulos</p>
+                   </div>
+                   <span class="badge-category badge-cat-teal">Robótica</span>
+                 </div>
+                 <div class="d-flex align-items-center gap-2 mt-2">
+                   <div class="progress progress-course flex-grow-1">
+                     <div class="progress-bar" role="progressbar" style="width: 68%; background: var(--teal);" aria-valuenow="68" aria-valuemin="0" aria-valuemax="100"></div>
+                   </div>
+                   <span class="small fw-semibold text-navy">68%</span>
+                   <a href="detalle-curso.html" class="btn btn-brand btn-sm ms-2"><i class="bi bi-play-fill me-1"></i>Continuar</a>
+                 </div>
+               </div>
+             </div>
+ 
+             <div class="d-flex align-items-center gap-3 p-3">
+               <div class="course-thumb rounded-3" style="width:76px; height:60px; font-size:1.2rem; background: linear-gradient(135deg,#12305c,#2f6fed);"><i class="bi bi-translate"></i></div>
+               <div class="flex-grow-1">
+                 <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                   <div>
+                     <p class="fw-semibold mb-0">Inglés profesional</p>
+                     <p class="small text-body-secondary mb-0"><i class="bi bi-calendar3 me-1"></i>Adquirido el 03/08/2026 · <i class="bi bi-clock me-1"></i>6 módulos</p>
+                   </div>
+                   <span class="badge-category badge-cat-pink">Idiomas</span>
+                 </div>
+                 <div class="d-flex align-items-center gap-2 mt-2">
+                   <div class="progress progress-course flex-grow-1">
+                     <div class="progress-bar" role="progressbar" style="width: 100%; background: var(--ink-faint);" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                   </div>
+                   <span class="small fw-semibold text-navy">Vencido</span>
+                   <a href="detalle-curso.html" class="btn btn-outline-brand btn-sm ms-2" style="color:var(--navy); border-color:var(--navy);">Renovar</a>
+                 </div>
+               </div>
+             </div>
+           </div>
+           <p class="text-body-secondary small mt-3">El progreso y el historial se actualizarán de forma dinámica cuando se integre Cloud Firestore.</p>
+         </div>
+ 
+       </div>
+     </div>
+   </div>
+ </section>
+ 
+<!-- Script propio de esta página (agregar antes de </body>, después de js/base.js) -->
+<script>
+   function mostrarSeccionPerfil(seccion) {
+     document.getElementById('seccion-datos').classList.toggle('d-none', seccion !== 'datos');
+     document.getElementById('seccion-cursos').classList.toggle('d-none', seccion !== 'cursos');
+     document.getElementById('nav-datos').classList.toggle('active', seccion === 'datos');
+     document.getElementById('nav-cursos').classList.toggle('active', seccion === 'cursos');
+   }
+ </script>
   <section class="section">
     <div class="container">
       <h1 class="section-title">Mi perfil</h1>
