@@ -48,6 +48,29 @@
         <i class="bi bi-search position-absolute" style="left: 1.3rem; top: 50%; transform: translateY(-50%); color: var(--ink-faint);"></i>
         <input type="search" id="buscador" class="form-control search-pill ps-5" placeholder="Buscar cursos por nombre o categoría..." onkeyup="filtrarCatalogo()">
       </div>
+  <!-- Chips de categoría + selector de precio -->
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-2">
+        <div class="d-flex flex-wrap gap-2" id="chipsCategoria">
+          <button type="button" class="category-chip active" data-categoria="todas" onclick="seleccionarCategoria(this)">Todos</button>
+          <button type="button" class="category-chip" data-categoria="robotica" onclick="seleccionarCategoria(this)">Robótica</button>
+          <button type="button" class="category-chip" data-categoria="diseno" onclick="seleccionarCategoria(this)">Diseño</button>
+          <button type="button" class="category-chip" data-categoria="programacion" onclick="seleccionarCategoria(this)">Programación</button>
+          <button type="button" class="category-chip" data-categoria="idiomas" onclick="seleccionarCategoria(this)">Idiomas</button>
+          <button type="button" class="category-chip" data-categoria="mentorias" onclick="seleccionarCategoria(this)">Mentorías</button>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <label for="filtroPrecio" class="small text-body-secondary mb-0">Precio</label>
+          <select id="filtroPrecio" class="form-select form-select-sm" style="width: auto;" onchange="filtrarCatalogo()">
+            <option value="40" selected>Todos</option>
+            <option value="20">Hasta USD 20</option>
+            <option value="25">Hasta USD 25</option>
+            <option value="30">Hasta USD 30</option>
+          </select>
+        </div>
+      </div>
+ 
+      <p id="contadorResultados" class="text-body-secondary small mb-4">6 cursos encontrados</p>
+ 
 
 
   </section>
