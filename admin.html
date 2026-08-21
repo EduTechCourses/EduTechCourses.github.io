@@ -40,6 +40,35 @@
     </div>
   </nav>
 
+  <div class="d-flex" style="min-height: calc(100vh - 62px);">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar p-3 d-none d-lg-flex flex-column justify-content-between" style="width: 250px; flex-shrink: 0;">
+      <div>
+        <p class="small text-uppercase mb-1" style="color: rgba(255,255,255,0.5); letter-spacing: 0.08em;">Panel admin</p>
+        <h2 class="h6 mb-3" style="color:#fff;">EduTechCourses</h2>
+        <div class="d-flex align-items-center gap-2 mb-4 pb-3" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+          <span class="avatar-sm">RL</span>
+          <span class="small">Robinson Latour · Admin</span>
+        </div>
+ <p class="small text-uppercase mb-2" style="color: rgba(255,255,255,0.4); letter-spacing: 0.08em;">Gestión</p>
+        <ul class="nav nav-pills flex-column gap-1">
+          <li class="nav-item">
+            <a href="#" class="nav-link active" id="nav-cursos" onclick="mostrarSeccionAdmin('cursos'); return false;">
+              <span><i class="bi bi-collection me-2"></i>Cursos</span>
+              <span class="admin-count-badge">6</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link" id="nav-usuarios" onclick="mostrarSeccionAdmin('usuarios'); return false;">
+              <span><i class="bi bi-people me-2"></i>Usuarios</span>
+              <span class="admin-count-badge">5</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <a href="index.html" class="admin-back-link"><i class="bi bi-arrow-left me-1"></i>Volver al sitio</a>
+    </aside>
+
   <!--
        CONTENIDO PENDIENTE — Panel administrativo
        Requerimientos: RF-09 (crear curso), RF-10 (modificar/activar/desactivar
