@@ -216,3 +216,131 @@ footer.site-footer .brand-name {
     padding: 2.5rem 0;
   }
 }
+
+/* ---------- Tarjetas y badges de categoría (compartido) ---------- */
+.course-thumb {
+  height: 132px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1.9rem;
+}
+
+.badge-category {
+  background: #eaf3f0;
+  color: var(--teal-dark);
+  font-weight: 600;
+  font-size: 0.72rem;
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  letter-spacing: 0.01em;
+}
+
+.badge-cat-teal {
+  background: #e1f5ee;
+  color: #0f6e56;
+}
+
+.badge-cat-purple {
+  background: #eeedfe;
+  color: #3c3489;
+}
+
+.badge-cat-blue {
+  background: #e6f1fb;
+  color: #0c447c;
+}
+
+.badge-cat-pink {
+  background: #fbeaf0;
+  color: #72243e;
+}
+
+.badge-cat-amber {
+  background: #faeeda;
+  color: #854f0b;
+}
+
+/* ---------- Formularios base (compartido) ---------- */
+.form-label {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 0.2rem rgba(26, 169, 139, 0.18);
+}
+
+/* ---------- Catálogo ---------- */
+.rating-stars {
+  color: var(--warn);
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+}
+
+.rating-value {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--ink);
+}
+
+.course-meta {
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+}
+
+.course-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  height: 100%;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.course-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-card);
+}
+
+.course-card .card-body {
+  padding: 1.15rem 1.25rem 1.35rem;
+}
+
+.search-pill {
+  border-radius: 999px;
+  padding: 0.85rem 1.4rem;
+  border: 1px solid var(--border);
+  font-size: 0.95rem;
+}
+
+.search-pill:focus {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 0.2rem rgba(26, 169, 139, 0.15);
+}
+
+.category-chip {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink-soft);
+  font-weight: 500;
+  font-size: 0.88rem;
+  border-radius: 999px;
+  padding: 0.45rem 1.05rem;
+  white-space: nowrap;
+}
+
+.category-chip:hover {
+  border-color: var(--navy);
+  color: var(--navy);
+}
+
+.category-chip.active {
+  background: var(--gradient-brand);
+  border-color: transparent;
+  color: #fff;
+}
