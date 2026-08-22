@@ -68,9 +68,148 @@
       </div>
       <a href="index.html" class="admin-back-link"><i class="bi bi-arrow-left me-1"></i>Volver al sitio</a>
     </aside>
+    <!-- Contenido -->
+    <main class="flex-grow-1 p-4">
+ 
+      <!-- Sección: Cursos -->
+      <div id="seccion-cursos">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+          <div>
+            <h1 class="h4 mb-1">Gestión de cursos</h1>
+            <p class="text-body-secondary small mb-0">6 cursos en total (RF-08, RF-09, RD-02).</p>
+          </div>
+          <button class="btn btn-brand" data-bs-toggle="modal" data-bs-target="#modalNuevoCurso">
+            <i class="bi bi-plus-lg me-1"></i> Nuevo curso
+          </button>
+        </div>
+ 
+        <div class="row g-3 mb-4">
+          <div class="col-6 col-md-3">
+            <div class="stat-card"><p class="stat-value mb-0">6</p><p class="stat-label mb-0">Total cursos</p></div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="stat-card"><p class="stat-value mb-0" style="color:var(--teal-dark);">5</p><p class="stat-label mb-0">Activos</p></div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="stat-card"><p class="stat-value mb-0" style="color:var(--ink-faint);">1</p><p class="stat-label mb-0">Inactivos</p></div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="stat-card"><p class="stat-value mb-0">502</p><p class="stat-label mb-0">Estudiantes totales</p></div>
+          </div>
+        </div>
+ 
+        <div class="stat-card p-0">
+          <div class="table-responsive">
+            <table class="table table-admin align-middle mb-0">
+              <thead>
+                <tr>
+                  <th class="ps-3">Curso</th>
+                  <th>Categoría</th>
+                  <th>Precio</th>
+                  <th>Estado</th>
+                  <th class="text-end pe-3">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tablaCursos">
+                <tr>
+                  <td class="ps-3">
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="course-thumb rounded-2" style="width:44px;height:36px;font-size:0.95rem;background: linear-gradient(135deg,#12305c,#1aa98b);"><i class="bi bi-cpu"></i></div>
+                      <span class="fw-semibold">Robótica desde cero</span>
+                    </div>
+                  </td>
+                  <td><span class="badge-category badge-cat-teal">Robótica</span></td>
+                  <td>USD 29</td>
+                  <td><span class="status-dot active"></span>Activo</td>
+                  <td class="text-end pe-3">
+                    <a href="#" class="small text-navy me-3" onclick="return false;">Editar</a>
+                    <a href="#" class="small text-body-secondary" onclick="toggleEstadoCurso(this); return false;">Desactivar</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="ps-3">
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="course-thumb rounded-2" style="width:44px;height:36px;font-size:0.95rem;background: linear-gradient(135deg,#0f7a63,#12305c);"><i class="bi bi-lightning-charge"></i></div>
+                      <span class="fw-semibold">Electrónica aplicada</span>
+                    </div>
+                  </td>
+                  <td><span class="badge-category badge-cat-teal">Robótica</span></td>
+                  <td>USD 27</td>
+                  <td><span class="status-dot active"></span>Activo</td>
+                  <td class="text-end pe-3">
+                    <a href="#" class="small text-navy me-3" onclick="return false;">Editar</a>
+                    <a href="#" class="small text-body-secondary" onclick="toggleEstadoCurso(this); return false;">Desactivar</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="ps-3">
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="course-thumb rounded-2" style="width:44px;height:36px;font-size:0.95rem;background: linear-gradient(135deg,#2f6fed,#1aa98b);"><i class="bi bi-badge-3d"></i></div>
+                      <span class="fw-semibold">Diseño 3D con Blender</span>
+                    </div>
+                  </td>
+                  <td><span class="badge-category badge-cat-purple">Diseño</span></td>
+                  <td>USD 24</td>
+                  <td><span class="status-dot active"></span>Activo</td>
+                  <td class="text-end pe-3">
+                    <a href="#" class="small text-navy me-3" onclick="return false;">Editar</a>
+                    <a href="#" class="small text-body-secondary" onclick="toggleEstadoCurso(this); return false;">Desactivar</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="ps-3">
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="course-thumb rounded-2" style="width:44px;height:36px;font-size:0.95rem;background: linear-gradient(135deg,#12305c,#2f6fed);"><i class="bi bi-code-slash"></i></div>
+                      <span class="fw-semibold">Python para datos</span>
+                    </div>
+                  </td>
+                  <td><span class="badge-category badge-cat-blue">Programación</span></td>
+                  <td>USD 22</td>
+                  <td><span class="status-dot active"></span>Activo</td>
+                  <td class="text-end pe-3">
+                    <a href="#" class="small text-navy me-3" onclick="return false;">Editar</a>
+                    <a href="#" class="small text-body-secondary" onclick="toggleEstadoCurso(this); return false;">Desactivar</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="ps-3">
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="course-thumb rounded-2" style="width:44px;height:36px;font-size:0.95rem;background: linear-gradient(135deg,#12305c,#2f6fed);"><i class="bi bi-translate"></i></div>
+                      <span class="fw-semibold">Inglés profesional</span>
+                    </div>
+                  </td>
+                  <td><span class="badge-category badge-cat-pink">Idiomas</span></td>
+                  <td>USD 19</td>
+                  <td><span class="status-dot active"></span>Activo</td>
+                  <td class="text-end pe-3">
+                    <a href="#" class="small text-navy me-3" onclick="return false;">Editar</a>
+                    <a href="#" class="small text-body-secondary" onclick="toggleEstadoCurso(this); return false;">Desactivar</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="ps-3">
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="course-thumb rounded-2" style="width:44px;height:36px;font-size:0.95rem;background: linear-gradient(135deg,#1aa98b,#12305c);"><i class="bi bi-people"></i></div>
+                      <span class="fw-semibold">Mentoría en desarrollo web</span>
+                    </div>
+                  </td>
+                  <td><span class="badge-category badge-cat-amber">Mentorías</span></td>
+                  <td>USD 39</td>
+                  <td><span class="status-dot inactive"></span>Inactivo</td>
+                  <td class="text-end pe-3">
+                    <a href="#" class="small text-navy me-3" onclick="return false;">Editar</a>
+                    <a href="#" class="small text-body-secondary" onclick="toggleEstadoCurso(this); return false;">Activar</a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <p class="text-body-secondary small mt-3">Los cursos desactivados dejan de mostrarse en el catálogo público (RD-02). Demo estático; la persistencia real se implementa con Cloud Firestore en el Sprint 2.</p>
+      </div>
 
   <!--
-       CONTENIDO PENDIENTE — Panel administrativo
+       CONTENIDO — Panel administrativo
        Requerimientos: RF-09 (crear curso), RF-10 (modificar/activar/desactivar
        curso), RD-03 (curso desactivado no aparece en catálogo público),
        RD-04 (solo el admin gestiona el catálogo)
