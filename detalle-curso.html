@@ -98,6 +98,58 @@
           </div>
         </div>
 
+        <!-- Estado: visitante o usuario sin suscripción -->
+        <div id="estado-no-suscripto">
+          <div class="stat-card">
+            <h2 class="h6 mb-2"><i class="bi bi-play-circle text-teal me-1"></i> Vista previa · Módulo 1</h2>
+            <p class="small text-body-secondary mb-3">Este es el único módulo accesible sin sesión iniciada. El resto del contenido se desbloquea al suscribirte al curso.</p>
+            <div class="ratio ratio-16x9 rounded-3 overflow-hidden mb-2" style="background:#0b1f3d;">
+              <div class="d-flex align-items-center justify-content-center text-white">
+                <i class="bi bi-play-circle-fill" style="font-size:2.5rem;"></i>
+              </div>
+            </div>
+            <p class="small text-body-secondary mb-0">Video de introducción — 6 min</p>
+          </div>
+        </div>
+
+        <!-- Estado: usuario suscripto -->
+        <div id="estado-suscripto" class="d-none">
+          <div class="stat-card" style="border-color: var(--teal);">
+            <h2 class="h6 mb-2 text-teal"><i class="bi bi-unlock me-1"></i> Contenido completo desbloqueado</h2>
+            <p class="small text-body-secondary mb-3">Estás suscripto a este curso: tenés acceso a los 4 módulos, el PDF descargable y todos los videos.</p>
+            <div class="d-flex flex-column gap-2">
+              <a href="#" class="btn btn-outline-brand btn-sm" style="color: var(--navy); border-color: var(--navy);" onclick="return false;"><i class="bi bi-file-earmark-pdf me-1"></i> Descargar guía en PDF</a>
+              <a href="#" class="btn btn-outline-brand btn-sm" style="color: var(--navy); border-color: var(--navy);" onclick="return false;"><i class="bi bi-collection-play me-1"></i> Ver todos los videos del curso</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar de compra -->
+      <div class="col-lg-4">
+        <div class="stat-card" style="position: sticky; top: 1rem;">
+          <div class="course-thumb mb-3 rounded-3" style="background: linear-gradient(135deg,#12305c,#1aa98b);"><i class="bi bi-cpu"></i></div>
+          <p class="course-price mb-1">USD 29 <small>/ curso</small></p>
+          <p class="small text-body-secondary mb-3">Suscripción individual · acceso mientras esté activa</p>
+
+          <div id="accion-no-suscripto">
+            <button class="btn btn-brand w-100 mb-2" onclick="mostrarEstadoCurso('suscripto')">
+              <i class="bi bi-lock me-1"></i> Suscribirme a este curso
+            </button>
+            <p class="text-center small text-body-secondary mb-0">Se necesita una cuenta para suscribirte</p>
+          </div>
+          <div id="accion-suscripto" class="d-none">
+            <span class="badge bg-success-subtle text-success-emphasis w-100 py-2 mb-2 d-block"><i class="bi bi-check-circle me-1"></i> Suscripción activa</span>
+            <a href="perfil.html" class="btn btn-outline-brand w-100" style="color: var(--navy); border-color: var(--navy);">Ver en mi historial</a>
+          </div>
+
+          <hr>
+          <ul class="list-unstyled small text-body-secondary mb-0">
+            <li class="d-flex gap-2 mb-2"><i class="bi bi-file-earmark-pdf"></i> Guía descargable en PDF</li>
+            <li class="d-flex gap-2 mb-2"><i class="bi bi-collection-play"></i> 4 módulos en video</li>
+            <li class="d-flex gap-2"><i class="bi bi-infinity"></i> Acceso mientras la suscripción esté activa</li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
