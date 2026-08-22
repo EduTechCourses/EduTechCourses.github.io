@@ -60,13 +60,17 @@
               <label for="loginPassword" class="form-label mb-0">Contraseña</label>
               <a href="#" class="small text-navy" onclick="return false;">¿Olvidaste tu contraseña?</a>
             </div>
-
-
-            
-  <section class="section">
-    <div class="container text-center" style="max-width: 460px;">
-      <h1 class="h3 mb-1">Iniciar sesión</h1>
-      <p class="text-body-secondary">Contenido pendiente de implementar.</p>
+            <input type="password" class="form-control" id="loginPassword" placeholder="Tu contraseña" minlength="6" required>
+            <div class="invalid-feedback">La contraseña debe tener al menos 6 caracteres.</div>
+          </div>
+          <button type="submit" class="btn btn-brand w-100 mt-3">Iniciar sesión</button>
+        </form>
+ 
+        <div class="auth-divider">o continuá con</div>
+        <button type="button" class="btn btn-google w-100 d-flex align-items-center justify-content-center gap-2" onclick="return false;">
+          <i class="bi bi-google"></i> Continuar con Google
+        </button>
+      </div>
     </div>
   </section>
 
