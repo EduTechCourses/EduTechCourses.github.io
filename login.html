@@ -38,17 +38,31 @@
     </div>
   </nav>
 
-  <!--
-       CONTENIDO PENDIENTE — Inicio de sesión
-       Requerimiento: RF-04 (registro e inicio de sesión mediante Firebase
-       Authentication — por ahora solo la interfaz, sin conexión real)
-       Debe incluir: card centrada (.auth-card) con tabs "Iniciar sesión /
-       Registrarse" (.auth-tabs, el tab activo es este), campos correo y
-       contraseña, enlace "¿Olvidaste tu contraseña?", botón de submit.
-       Mantener el mismo componente .auth-card en registro.html para que
-       ambas pantallas se vean como una sola experiencia con tabs.
-       Prototipo de referencia: https://height-shaky-07694666.figma.site/
-  -->
+  <section class="section">
+    <div class="container text-center" style="max-width: 460px;">
+      <h1 class="h3 mb-1">Bienvenido de vuelta</h1>
+      <p class="text-body-secondary mb-4">Ingresá para acceder a todos tus cursos.</p>
+ 
+      <div class="auth-card text-start">
+        <div class="auth-tabs">
+          <a href="login.html" class="active">Iniciar sesión</a>
+          <a href="registro.html">Registrarse</a>
+        </div>
+ 
+        <form class="needs-validation" novalidate onsubmit="return false;">
+          <div class="mb-3">
+            <label for="loginEmail" class="form-label">Correo electrónico</label>
+            <input type="email" class="form-control" id="loginEmail" placeholder="tu@correo.com" required>
+            <div class="invalid-feedback">Ingresá un correo electrónico válido.</div>
+          </div>
+          <div class="mb-2">
+            <div class="d-flex justify-content-between align-items-center">
+              <label for="loginPassword" class="form-label mb-0">Contraseña</label>
+              <a href="#" class="small text-navy" onclick="return false;">¿Olvidaste tu contraseña?</a>
+            </div>
+
+
+            
   <section class="section">
     <div class="container text-center" style="max-width: 460px;">
       <h1 class="h3 mb-1">Iniciar sesión</h1>
