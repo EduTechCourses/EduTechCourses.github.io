@@ -50,12 +50,28 @@
        de demostración, hasta integrar Firebase en el Sprint 2.
        Prototipo de referencia: https://height-shaky-07694666.figma.site/
   -->
-  <section class="section">
-    <div class="container">
-      <h1 class="section-title">Detalle de curso</h1>
-      <p class="text-body-secondary">Contenido pendiente de implementar.</p>
+  <div class="container py-4">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb small">
+        <li class="breadcrumb-item"><a href="index.html">Inicio</a></li>
+        <li class="breadcrumb-item"><a href="catalogo.html">Catálogo</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Robótica desde cero</li>
+      </ol>
+    </nav>
+
+    <!-- Demo académica: alterna entre los dos estados pedidos por la consigna -->
+    <div class="alert alert-secondary d-flex flex-wrap align-items-center gap-2 justify-content-between" role="note">
+      <span class="small"><i class="bi bi-info-circle me-1"></i> Vista de demostración: alterná el estado de suscripción
+        para ver ambas versiones de esta pantalla.</span>
+      <div class="btn-group btn-group-sm" role="group" aria-label="Alternar estado de la suscripción">
+        <button type="button" id="btn-estado-previa" class="btn btn-outline-secondary active"
+          onclick="mostrarEstadoCurso('previa')">Visitante / sin suscripción</button>
+        <button type="button" id="btn-estado-suscripto" class="btn btn-outline-secondary"
+          onclick="mostrarEstadoCurso('suscripto')">Usuario suscripto</button>
+      </div>
     </div>
-  </section>
+
+  </div>
 
   <footer class="site-footer">
     <div class="container">
