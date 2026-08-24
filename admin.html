@@ -322,6 +322,76 @@
  
     </main>
   </div>
+ <!-- Modal nuevo curso -->
+  <div class="modal fade" id="modalNuevoCurso" tabindex="-1" aria-labelledby="modalNuevoCursoLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title h5" id="modalNuevoCursoLabel">Nuevo curso</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <form class="needs-validation" novalidate onsubmit="return false;">
+            <div class="mb-3">
+              <label for="cursoNombre" class="form-label">Título del curso</label>
+              <input type="text" class="form-control" id="cursoNombre" placeholder="Ej: Diseño UX/UI avanzado" required>
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label for="cursoCategoria" class="form-label">Categoría</label>
+                <select id="cursoCategoria" class="form-select" required>
+                  <option value="">Elegir...</option>
+                  <option>Robótica</option>
+                  <option>Diseño</option>
+                  <option>Programación</option>
+                  <option>Idiomas</option>
+                  <option>Mentorías</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="cursoPrecio" class="form-label">Precio (USD)</label>
+                <input type="number" min="1" class="form-control" id="cursoPrecio" placeholder="19" required>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="cursoDescripcion" class="form-label">Descripción</label>
+              <textarea class="form-control" id="cursoDescripcion" rows="2" placeholder="Descripción breve del curso..." required></textarea>
+            </div>
+            <div class="mb-1">
+              <label for="cursoTemario" class="form-label">Temario (un módulo por línea)</label>
+              <textarea class="form-control" id="cursoTemario" rows="3" placeholder="Módulo 1 — Introducción&#10;Módulo 2 — Fundamentos"></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-brand" data-bs-dismiss="modal">Crear curso</button>
+        </div>
+      </div>
+    </div>
+  </div>
+ 
+<!-- Script propio de esta página (agregar antes de </body>, después de js/base.js) -->
+<script>
+    function mostrarSeccionAdmin(seccion) {
+      document.getElementById('seccion-cursos').classList.toggle('d-none', seccion !== 'cursos');
+      document.getElementById('seccion-usuarios').classList.toggle('d-none', seccion !== 'usuarios');
+      document.getElementById('nav-cursos').classList.toggle('active', seccion === 'cursos');
+      document.getElementById('nav-usuarios').classList.toggle('active', seccion === 'usuarios');
+    }
+ 
+    function toggleEstadoCurso(link) {
+      var fila = link.closest('tr');
+      var celdaEstado = fila.children[3];
+      var dot = celdaEstado.querySelector('.status-dot');
+      var activo = dot.classList.contains('active');
+ 
+      dot.classList.toggle('active', !activo);
+      dot.classList.toggle('inactive', activo);
+      celdaEstado.lastChild.textContent = activo ? 'Inactivo' : 'Activo';
+      link.textContent = activo ? 'Activar' : 'Desactivar';
+    }
+  </script>
 
   <!--
        CONTENIDO — Panel administrativo
