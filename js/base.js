@@ -9,7 +9,15 @@
 // ramas distintas para no generar conflictos de merge.
 
 document.addEventListener("DOMContentLoaded", function () {
-  // Setup compartido futuro.
+  document.querySelectorAll("form.needs-validation").forEach(function (form) {
+    form.addEventListener("submit", function (event) {
+      if (!form.checkValidity()) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      form.classList.add("was-validated");
+    });
+  });
 });
 
 // Alterna entre vista de visitante/no suscripto y usuario suscripto (RF-03 y RF-06),
