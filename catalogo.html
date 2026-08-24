@@ -38,20 +38,144 @@
     </div>
   </nav>
 
-  <!-- 
-       CONTENIDO PENDIENTE — Catálogo de cursos
-       Requerimientos: RF-01 (listar cursos activos: nombre, categoría, imagen),
-       RF-02 (filtrar por categoría y rango de precio)
-       Debe incluir: buscador, filtro de categoría, filtro de precio, grilla de
-       tarjetas de curso (ver .course-card, .badge-category en css/styles.css)
-       y contador de resultados. El filtrado se resuelve con JS del lado cliente
-       por ahora (sin Firestore hasta Sprint 2).
-       Prototipo de referencia: https://height-shaky-07694666.figma.site/
-  -->
-  <section class="section">
+ <section class="section pb-3">
     <div class="container">
-      <h1 class="section-title">Catálogo de cursos</h1>
-      <p class="text-body-secondary">Contenido pendiente de implementar.</p>
+      <h1 class="section-title mb-1">Catálogo de cursos</h1>
+      <p class="section-subtitle mb-4">Encontrá el curso indicado para vos.</p>
+ 
+      <!-- Buscador -->
+      <div class="position-relative mb-3" style="max-width: 640px;">
+        <i class="bi bi-search position-absolute" style="left: 1.3rem; top: 50%; transform: translateY(-50%); color: var(--ink-faint);"></i>
+        <input type="search" id="buscador" class="form-control search-pill ps-5" placeholder="Buscar cursos por nombre o categoría..." onkeyup="filtrarCatalogo()">
+      </div>
+  <!-- Chips de categoría + selector de precio -->
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-2">
+        <div class="d-flex flex-wrap gap-2" id="chipsCategoria">
+          <button type="button" class="category-chip active" data-categoria="todas" onclick="seleccionarCategoria(this)">Todos</button>
+          <button type="button" class="category-chip" data-categoria="robotica" onclick="seleccionarCategoria(this)">Robótica</button>
+          <button type="button" class="category-chip" data-categoria="diseno" onclick="seleccionarCategoria(this)">Diseño</button>
+          <button type="button" class="category-chip" data-categoria="programacion" onclick="seleccionarCategoria(this)">Programación</button>
+          <button type="button" class="category-chip" data-categoria="idiomas" onclick="seleccionarCategoria(this)">Idiomas</button>
+          <button type="button" class="category-chip" data-categoria="mentorias" onclick="seleccionarCategoria(this)">Mentorías</button>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <label for="filtroPrecio" class="small text-body-secondary mb-0">Precio</label>
+          <select id="filtroPrecio" class="form-select form-select-sm" style="width: auto;" onchange="filtrarCatalogo()">
+            <option value="40" selected>Todos</option>
+            <option value="20">Hasta USD 20</option>
+            <option value="25">Hasta USD 25</option>
+            <option value="30">Hasta USD 30</option>
+          </select>
+        </div>
+      </div>
+ 
+      <p id="contadorResultados" class="text-body-secondary small mb-4">6 cursos encontrados</p>
+ 
+      <!-- Grilla de cursos -->
+      <div class="row g-4" id="grillaCursos">
+ 
+        <div class="col-sm-6 col-lg-4 col-xl-3 curso-item" data-categoria="robotica" data-precio="29" data-nombre="robótica desde cero">
+          <div class="course-card">
+            <div class="course-thumb" style="background: linear-gradient(135deg,#12305c,#1aa98b);"><i class="bi bi-cpu"></i></div>
+            <div class="card-body">
+              <span class="badge-category badge-cat-teal">Robótica</span>
+              <h3 class="h6 mt-3 mb-2">Robótica desde cero</h3>
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="rating-stars"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i></span>
+                <span class="rating-value">4.8</span>
+              </div>
+              <p class="course-meta mb-3">120 estudiantes · 4 módulos</p>
+              <a href="detalle-curso.html" class="fw-semibold text-navy small text-decoration-none">Ver curso <i class="bi bi-arrow-right"></i></a>
+            </div>
+          </div>
+        </div>
+ 
+        <div class="col-sm-6 col-lg-4 col-xl-3 curso-item" data-categoria="robotica" data-precio="27" data-nombre="electrónica aplicada">
+          <div class="course-card">
+            <div class="course-thumb" style="background: linear-gradient(135deg,#0f7a63,#12305c);"><i class="bi bi-lightning-charge"></i></div>
+            <div class="card-body">
+              <span class="badge-category badge-cat-teal">Robótica</span>
+              <h3 class="h6 mt-3 mb-2">Electrónica aplicada</h3>
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="rating-stars"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star"></i></span>
+                <span class="rating-value">4.3</span>
+              </div>
+              <p class="course-meta mb-3">74 estudiantes · 5 módulos</p>
+              <a href="detalle-curso.html" class="fw-semibold text-navy small text-decoration-none">Ver curso <i class="bi bi-arrow-right"></i></a>
+            </div>
+          </div>
+        </div>
+ 
+        <div class="col-sm-6 col-lg-4 col-xl-3 curso-item" data-categoria="diseno" data-precio="24" data-nombre="diseño 3d con blender">
+          <div class="course-card">
+            <div class="course-thumb" style="background: linear-gradient(135deg,#2f6fed,#1aa98b);"><i class="bi bi-badge-3d"></i></div>
+            <div class="card-body">
+              <span class="badge-category badge-cat-purple">Diseño</span>
+              <h3 class="h6 mt-3 mb-2">Diseño 3D con Blender</h3>
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="rating-stars"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star"></i></span>
+                <span class="rating-value">4.2</span>
+              </div>
+              <p class="course-meta mb-3">86 estudiantes · 5 módulos</p>
+              <a href="detalle-curso.html" class="fw-semibold text-navy small text-decoration-none">Ver curso <i class="bi bi-arrow-right"></i></a>
+            </div>
+          </div>
+        </div>
+ 
+        <div class="col-sm-6 col-lg-4 col-xl-3 curso-item" data-categoria="programacion" data-precio="22" data-nombre="python para datos">
+          <div class="course-card">
+            <div class="course-thumb" style="background: linear-gradient(135deg,#12305c,#2f6fed);"><i class="bi bi-code-slash"></i></div>
+            <div class="card-body">
+              <span class="badge-category badge-cat-blue">Programación</span>
+              <h3 class="h6 mt-3 mb-2">Python para datos</h3>
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="rating-stars"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></span>
+                <span class="rating-value">4.9</span>
+              </div>
+              <p class="course-meta mb-3">98 estudiantes · 6 módulos</p>
+              <a href="detalle-curso.html" class="fw-semibold text-navy small text-decoration-none">Ver curso <i class="bi bi-arrow-right"></i></a>
+            </div>
+          </div>
+        </div>
+ 
+        <div class="col-sm-6 col-lg-4 col-xl-3 curso-item" data-categoria="idiomas" data-precio="19" data-nombre="inglés profesional">
+          <div class="course-card">
+            <div class="course-thumb" style="background: linear-gradient(135deg,#12305c,#2f6fed);"><i class="bi bi-translate"></i></div>
+            <div class="card-body">
+              <span class="badge-category badge-cat-pink">Idiomas</span>
+              <h3 class="h6 mt-3 mb-2">Inglés profesional</h3>
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="rating-stars"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></span>
+                <span class="rating-value">5.0</span>
+              </div>
+              <p class="course-meta mb-3">143 estudiantes · 6 módulos</p>
+              <a href="detalle-curso.html" class="fw-semibold text-navy small text-decoration-none">Ver curso <i class="bi bi-arrow-right"></i></a>
+            </div>
+          </div>
+        </div>
+ 
+        <div class="col-sm-6 col-lg-4 col-xl-3 curso-item" data-categoria="mentorias" data-precio="39" data-nombre="mentoría en desarrollo web">
+          <div class="course-card">
+            <div class="course-thumb" style="background: linear-gradient(135deg,#1aa98b,#12305c);"><i class="bi bi-people"></i></div>
+            <div class="card-body">
+              <span class="badge-category badge-cat-amber">Mentorías</span>
+              <h3 class="h6 mt-3 mb-2">Mentoría en desarrollo web</h3>
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="rating-stars"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i></span>
+                <span class="rating-value">4.7</span>
+              </div>
+              <p class="course-meta mb-3">31 estudiantes · 3 módulos</p>
+              <a href="detalle-curso.html" class="fw-semibold text-navy small text-decoration-none">Ver curso <i class="bi bi-arrow-right"></i></a>
+            </div>
+          </div>
+        </div>
+ 
+      </div>
+ 
+      <p id="sinResultados" class="text-center text-body-secondary py-5 d-none">
+        <i class="bi bi-search display-6 d-block mb-2"></i>
+        No encontramos cursos con esos filtros.
+      </p>
     </div>
   </section>
 
@@ -89,6 +213,49 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="js/base.js"></script>
+  <!-- Script propio de esta página-->
+<script>
+    var categoriaActiva = 'todas';
+ 
+    function seleccionarCategoria(chip) {
+      document.querySelectorAll('#chipsCategoria .category-chip').forEach(function (c) {
+        c.classList.remove('active');
+      });
+      chip.classList.add('active');
+      categoriaActiva = chip.dataset.categoria;
+      filtrarCatalogo();
+    }
+ 
+    function filtrarCatalogo() {
+      var texto = document.getElementById('buscador').value.toLowerCase().trim();
+      var precioMax = Number(document.getElementById('filtroPrecio').value);
+      var items = document.querySelectorAll('.curso-item');
+      var visibles = 0;
+ 
+      items.forEach(function (item) {
+        var coincideNombre = item.dataset.nombre.includes(texto);
+        var coincideCategoria = categoriaActiva === 'todas' || item.dataset.categoria === categoriaActiva;
+        var coincidePrecio = Number(item.dataset.precio) <= precioMax;
+        var visible = coincideNombre && coincideCategoria && coincidePrecio;
+        item.classList.toggle('d-none', !visible);
+        if (visible) visibles++;
+      });
+ 
+      document.getElementById('contadorResultados').textContent = visibles + ' curso' + (visibles === 1 ? '' : 's') + ' encontrado' + (visibles === 1 ? '' : 's');
+      document.getElementById('sinResultados').classList.toggle('d-none', visibles !== 0);
+    }
+ 
+    // Preseleccionar categoría si viene desde el inicio (?categoria=robotica)
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var cat = params.get('categoria');
+      if (cat) {
+        var chip = document.querySelector('.category-chip[data-categoria="' + cat + '"]');
+        if (chip) seleccionarCategoria(chip);
+      }
+    })();
+  </script>
+
 </body>
 
 </html>
