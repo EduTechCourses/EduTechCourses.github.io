@@ -62,11 +62,13 @@
           </div>
           <div class="mb-3">
             <label for="regPassword" class="form-label">Contraseña</label>
-            <input type="password" class="form-control" id="regPassword" placeholder="Mínimo 6 caracteres" minlength="6" required>
+            <input type="password" class="form-control" id="regPassword" placeholder="Mínimo 6 caracteres" minlength="6"
+              required>
             <div class="invalid-feedback">La contraseña debe tener al menos 6 caracteres.</div>
           </div>
           <p class="small text-body-secondary mb-3">
-            Al registrarte aceptás nuestros <a href="#" class="text-navy" onclick="return false;">Términos de servicio</a> y <a href="#" class="text-navy" onclick="return false;">Política de privacidad</a>.
+            Al registrarte aceptás nuestros <a href="#" class="text-navy" onclick="return false;">Términos de
+              servicio</a> y <a href="#" class="text-navy" onclick="return false;">Política de privacidad</a>.
           </p>
           <button type="submit" class="btn btn-brand w-100">Crear cuenta gratis</button>
         </form>
@@ -108,12 +110,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="js/base.js"></script>
-  <script>
-    document.querySelector('form').addEventListener('submit', function (e) {
-      var pass = document.getElementById('regPassword');
-      pass.setCustomValidity('');
-    });
-  </script>
 </body>
 
 </html>
