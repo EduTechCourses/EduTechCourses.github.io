@@ -38,21 +38,41 @@
     </div>
   </nav>
 
-  <!--
-       CONTENIDO PENDIENTE — Registro de usuario
-       Requerimiento: RF-04 (registro mediante Firebase Authentication —
-       correo único; por ahora solo la interfaz, sin conexión real)
-       Caso de uso: CU-05 (Registrarse en la plataforma)
-       Debe incluir: card centrada (.auth-card) con tabs "Iniciar sesión /
-       Registrarse" (.auth-tabs, el tab activo es este), campos nombre,
-       correo y contraseña, texto de términos, botón de submit.
-       Mantener el mismo componente .auth-card que login.html.
-       Prototipo de referencia: https://height-shaky-07694666.figma.site/
-  -->
   <section class="section">
     <div class="container text-center" style="max-width: 460px;">
-      <h1 class="h3 mb-1">Crear cuenta</h1>
-      <p class="text-body-secondary">Contenido pendiente de implementar.</p>
+      <h1 class="h3 mb-1">Creá tu cuenta gratis</h1>
+      <p class="text-body-secondary mb-4">Empezá tu camino de aprendizaje hoy.</p>
+
+      <div class="auth-card text-start">
+        <div class="auth-tabs">
+          <a href="login.html">Iniciar sesión</a>
+          <a href="registro.html" class="active">Registrarse</a>
+        </div>
+
+        <form class="needs-validation" novalidate onsubmit="return false;">
+          <div class="mb-3">
+            <label for="regNombre" class="form-label">Nombre completo</label>
+            <input type="text" class="form-control" id="regNombre" placeholder="Tu nombre y apellido" required>
+            <div class="invalid-feedback">Ingresá tu nombre completo.</div>
+          </div>
+          <div class="mb-3">
+            <label for="regEmail" class="form-label">Correo electrónico</label>
+            <input type="email" class="form-control" id="regEmail" placeholder="tu@correo.com" required>
+            <div class="invalid-feedback">Ingresá un correo electrónico válido.</div>
+          </div>
+          <div class="mb-3">
+            <label for="regPassword" class="form-label">Contraseña</label>
+            <input type="password" class="form-control" id="regPassword" placeholder="Mínimo 6 caracteres" minlength="6"
+              required>
+            <div class="invalid-feedback">La contraseña debe tener al menos 6 caracteres.</div>
+          </div>
+          <p class="small text-body-secondary mb-3">
+            Al registrarte aceptás nuestros <a href="#" class="text-navy" onclick="return false;">Términos de
+              servicio</a> y <a href="#" class="text-navy" onclick="return false;">Política de privacidad</a>.
+          </p>
+          <button type="submit" class="btn btn-brand w-100">Crear cuenta gratis</button>
+        </form>
+      </div>
     </div>
   </section>
 

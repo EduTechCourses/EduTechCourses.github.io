@@ -217,6 +217,437 @@ footer.site-footer .brand-name {
   }
 }
 
+/* ---------- Tarjetas y badges de categoría (compartido) ---------- */
+.course-thumb {
+  height: 132px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1.9rem;
+}
+
+.badge-category {
+  background: #eaf3f0;
+  color: var(--teal-dark);
+  font-weight: 600;
+  font-size: 0.72rem;
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  letter-spacing: 0.01em;
+}
+
+.badge-cat-teal {
+  background: #e1f5ee;
+  color: #0f6e56;
+}
+
+.badge-cat-purple {
+  background: #eeedfe;
+  color: #3c3489;
+}
+
+.badge-cat-blue {
+  background: #e6f1fb;
+  color: #0c447c;
+}
+
+.badge-cat-pink {
+  background: #fbeaf0;
+  color: #72243e;
+}
+
+.badge-cat-amber {
+  background: #faeeda;
+  color: #854f0b;
+}
+
+/* ---------- Formularios base (compartido) ---------- */
+.form-label {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 0.2rem rgba(26, 169, 139, 0.18);
+}
+
+/* ---------- Catálogo ---------- */
+.rating-stars {
+  color: var(--warn);
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+}
+
+.rating-value {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--ink);
+}
+
+.course-meta {
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+}
+
+.course-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  height: 100%;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.course-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-card);
+}
+
+.course-card .card-body {
+  padding: 1.15rem 1.25rem 1.35rem;
+}
+
+.search-pill {
+  border-radius: 999px;
+  padding: 0.85rem 1.4rem;
+  border: 1px solid var(--border);
+  font-size: 0.95rem;
+}
+
+.search-pill:focus {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 0.2rem rgba(26, 169, 139, 0.15);
+}
+
+.category-chip {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink-soft);
+  font-weight: 500;
+  font-size: 0.88rem;
+  border-radius: 999px;
+  padding: 0.45rem 1.05rem;
+  white-space: nowrap;
+}
+
+.category-chip:hover {
+  border-color: var(--navy);
+  color: var(--navy);
+}
+
+.category-chip.active {
+  background: var(--gradient-brand);
+  border-color: transparent;
+  color: #fff;
+}
+
+/* ---------- Tarjeta de métricas (compartido) ---------- */
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.4rem;
+}
+
+.stat-card .stat-value {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.stat-card .stat-label {
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+
+/* ---------- Perfil ---------- */
+.profile-sidebar-card {
+  background: var(--gradient-brand);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem 1.25rem;
+  color: #fff;
+  text-align: center;
+}
+
+.avatar-lg {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 700;
+  font-size: 1.5rem;
+  margin: 0 auto 0.75rem;
+  position: relative;
+}
+
+.avatar-lg .camera-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--teal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  border: 2px solid var(--navy);
+}
+
+.profile-role-badge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+  padding: 0.25rem 0.8rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  margin-top: 0.4rem;
+}
+
+.profile-nav {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  padding: 0.6rem;
+}
+
+.profile-nav .nav-link {
+  color: var(--ink-soft);
+  font-weight: 500;
+  font-size: 0.92rem;
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.profile-nav .nav-link.active {
+  background: #eaf3f0;
+  color: var(--navy);
+}
+
+.profile-nav .nav-link.text-danger:hover {
+  background: #fcebeb;
+}
+
+.progress-course {
+  height: 7px;
+  border-radius: 999px;
+}
+
+/* Hero (Inicio) */
+.hero {
+  background: var(--gradient-brand);
+  color: #fff;
+  padding: 4.5rem 0 3.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero h1 {
+  color: #fff;
+  font-size: 3rem;
+  line-height: 1.15;
+}
+
+.hero p.lead {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.hero-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  padding: 0.45rem 1.1rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #fff;
+}
+
+.hero-pill .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4ade80;
+  display: inline-block;
+}
+
+.btn-hero-solid {
+  background: #fff;
+  color: var(--navy);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 1.5rem;
+  border: none;
+}
+
+.btn-hero-solid:hover {
+  background: #f2f4f8;
+  color: var(--navy);
+}
+
+.btn-hero-outline {
+  background: transparent;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  color: #fff;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 1.5rem;
+}
+
+.btn-hero-outline:hover {
+  border-color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.hero-stats {
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  margin-top: 3rem;
+  padding-top: 2.25rem;
+}
+
+.hero-stats .stat-number {
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 700;
+  font-size: 2rem;
+  color: #fff;
+}
+
+.hero-stats .stat-caption {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+}
+
+.course-price {
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 700;
+  color: var(--navy);
+  font-size: 1.1rem;
+}
+
+.course-price small {
+  font-weight: 500;
+  color: var(--ink-faint);
+  font-size: 0.72rem;
+}
+
+/* Feature cards ("¿Por qué EduTechCourses?") */
+.feature-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  height: 100%;
+}
+
+.feature-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background: #eaf3f0;
+  color: var(--teal-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+/* CTA final */
+.cta-section {
+  background: var(--bg);
+  text-align: center;
+  padding: 4rem 0;
+}
+
+@media (max-width: 767.98px) {
+  .hero h1 {
+    font-size: 2rem;
+  }
+}
+
+/* Tabs de autenticación (login / registro) */
+.auth-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2.25rem;
+  box-shadow: var(--shadow-card);
+}
+
+.auth-tabs {
+  display: flex;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  margin-bottom: 1.5rem;
+}
+
+.auth-tabs a {
+  flex: 1;
+  text-align: center;
+  padding: 0.55rem 0.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+}
+
+.auth-tabs a.active {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-card);
+}
+
+.btn-google {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--ink);
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 1rem;
+}
+
+.btn-google:hover {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--ink-faint);
+  font-size: 0.8rem;
+  margin: 1.25rem 0;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
 /* Admin */
 .admin-sidebar {
   background: var(--navy-dark);
