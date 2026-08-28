@@ -246,7 +246,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="js/base.js"></script>
   <script>
-    var categoriaActiva = 'todas';
+    let categoriaActiva = 'todas';
 
     function seleccionarCategoria(chip) {
       document.querySelectorAll('#chipsCategoria .category-chip').forEach(function (c) {
@@ -258,16 +258,16 @@
     }
 
     function filtrarCatalogo() {
-      var texto = document.getElementById('buscador').value.toLowerCase().trim();
-      var precioMax = Number(document.getElementById('filtroPrecio').value);
-      var items = document.querySelectorAll('.curso-item');
-      var visibles = 0;
+      const texto = document.getElementById('buscador').value.toLowerCase().trim();
+      const precioMax = Number(document.getElementById('filtroPrecio').value);
+      const items = document.querySelectorAll('.curso-item');
+      let visibles = 0;
 
       items.forEach(function (item) {
-        var coincideNombre = item.dataset.nombre.includes(texto);
-        var coincideCategoria = categoriaActiva === 'todas' || item.dataset.categoria === categoriaActiva;
-        var coincidePrecio = Number(item.dataset.precio) <= precioMax;
-        var visible = coincideNombre && coincideCategoria && coincidePrecio;
+        const coincideNombre = item.dataset.nombre.includes(texto);
+        const coincideCategoria = categoriaActiva === 'todas' || item.dataset.categoria === categoriaActiva;
+        const coincidePrecio = Number(item.dataset.precio) <= precioMax;
+        const visible = coincideNombre && coincideCategoria && coincidePrecio;
         item.classList.toggle('d-none', !visible);
         if (visible) visibles++;
       });
@@ -278,10 +278,10 @@
 
     // Preseleccionar categoría si viene desde el inicio (?categoria=robotica)
     (function () {
-      var params = new URLSearchParams(window.location.search);
-      var cat = params.get('categoria');
+      const params = new URLSearchParams(window.location.search);
+      const cat = params.get('categoria');
       if (cat) {
-        var chip = document.querySelector('.category-chip[data-categoria="' + cat + '"]');
+        const chip = document.querySelector('.category-chip[data-categoria="' + cat + '"]');
         if (chip) seleccionarCategoria(chip);
       }
     })();
