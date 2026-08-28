@@ -1,16 +1,21 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>EduTechCourses — Cursos digitales para aprender haciendo</title>
-  <meta name="description" content="Cursos digitales en PDF y video: robótica, diseño 3D, programación e idiomas. Suscribite por curso y aprendé a tu ritmo." />
+  <meta name="description"
+    content="Cursos digitales en PDF y video: robótica, diseño 3D, programación e idiomas. Suscribite por curso y aprendé a tu ritmo." />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body>
 
   <!-- Navbar -->
@@ -20,7 +25,8 @@
         <img src="assets/logo/logo.svg" alt="Logo de EduTechCourses" class="brand-logo">
         <span class="brand-name">EduTechCourses</span>
       </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-controls="navMenu" aria-expanded="false" aria-label="Abrir menú">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu"
+        aria-controls="navMenu" aria-expanded="false" aria-label="Abrir menú">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navMenu">
@@ -41,7 +47,8 @@
     <div class="container" style="max-width: 760px;">
       <span class="hero-pill"><span class="dot"></span> Más de 200 estudiantes en la comunidad</span>
       <h1 class="mt-4 mb-3">Aprendé a tu ritmo,<br>crecé sin límites</h1>
-      <p class="lead mx-auto" style="max-width: 560px;">Cursos en PDF, videos y recursos interactivos creados por el equipo docente. Suscribite al curso que te interese y accedé cuando quieras.</p>
+      <p class="lead mx-auto" style="max-width: 560px;">Cursos en PDF, videos y recursos interactivos creados por el
+        equipo docente. Suscribite al curso que te interese y accedé cuando quieras.</p>
       <div class="d-flex flex-wrap justify-content-center gap-3 mt-4">
         <a href="catalogo.html" class="btn btn-hero-solid btn-lg">Explorar cursos</a>
         <a href="registro.html" class="btn btn-hero-outline btn-lg">Comenzar gratis</a>
@@ -68,122 +75,130 @@
     </div>
   </header>
 
-  <!-- Cursos destacados -->
-  <section class="section">
-    <div class="container">
-      <div class="d-flex justify-content-between align-items-end mb-2 flex-wrap gap-2">
-        <div>
-          <h2 class="section-title mb-1">Cursos destacados</h2>
-          <p class="section-subtitle mb-0">Los más elegidos por nuestros estudiantes.</p>
+  <main>
+    <!-- Cursos destacados -->
+    <section class="section">
+      <div class="container">
+        <div class="d-flex justify-content-between align-items-end mb-2 flex-wrap gap-2">
+          <div>
+            <h2 class="section-title mb-1">Cursos destacados</h2>
+            <p class="section-subtitle mb-0">Los más elegidos por nuestros estudiantes.</p>
+          </div>
+          <a href="catalogo.html" class="fw-semibold text-navy">Ver todos <i class="bi bi-arrow-right"></i></a>
         </div>
-        <a href="catalogo.html" class="fw-semibold text-navy">Ver todos <i class="bi bi-arrow-right"></i></a>
+        <div class="row g-4 mt-1">
+          <div class="col-md-4">
+            <div class="course-card">
+              <img src="assets/img/curso-robotica.jpg" alt="Curso de Robótica desde cero" class="course-thumb">
+              <div class="card-body">
+                <span class="badge-category">Robótica</span>
+                <h3 class="h6 mt-3 mb-2">Robótica desde cero</h3>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  <span class="rating-stars"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i
+                      class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i></span>
+                  <span class="rating-value">4.8</span>
+                </div>
+                <p class="course-meta mb-3">120 estudiantes · 4 módulos</p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="course-price">USD 29 <small>/ curso</small></span>
+                  <a href="detalle-curso.html" class="btn btn-sm btn-outline-brand"
+                    style="color: var(--navy); border-color: var(--navy);">Ver curso</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="course-card">
+              <img src="assets/img/curso-diseno3d.jpg" alt="Curso de Diseño 3D con Blender" class="course-thumb">
+              <div class="card-body">
+                <span class="badge-category">Diseño</span>
+                <h3 class="h6 mt-3 mb-2">Diseño 3D con Blender</h3>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  <span class="rating-stars"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i
+                      class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star"></i></span>
+                  <span class="rating-value">4.2</span>
+                </div>
+                <p class="course-meta mb-3">86 estudiantes · 5 módulos</p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="course-price">USD 24 <small>/ curso</small></span>
+                  <a href="detalle-curso.html" class="btn btn-sm btn-outline-brand"
+                    style="color: var(--navy); border-color: var(--navy);">Ver curso</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="course-card">
+              <img src="assets/img/curso-ingles.jpg" alt="Curso de Inglés profesional" class="course-thumb">
+              <div class="card-body">
+                <span class="badge-category">Idiomas</span>
+                <h3 class="h6 mt-3 mb-2">Inglés profesional</h3>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  <span class="rating-stars"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i
+                      class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></span>
+                  <span class="rating-value">5.0</span>
+                </div>
+                <p class="course-meta mb-3">143 estudiantes · 6 módulos</p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="course-price">USD 19 <small>/ curso</small></span>
+                  <a href="detalle-curso.html" class="btn btn-sm btn-outline-brand"
+                    style="color: var(--navy); border-color: var(--navy);">Ver curso</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="row g-4 mt-1">
-        <div class="col-md-4">
-          <div class="course-card">
-            <div class="course-thumb" style="background: linear-gradient(135deg,#12305c,#1aa98b);"><i class="bi bi-cpu"></i></div>
-            <div class="card-body">
-              <span class="badge-category">Robótica</span>
-              <h3 class="h6 mt-3 mb-2">Robótica desde cero</h3>
-              <div class="d-flex align-items-center gap-2 mb-1">
-                <span class="rating-stars"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i></span>
-                <span class="rating-value">4.8</span>
-              </div>
-              <p class="course-meta mb-3">120 estudiantes · 4 módulos</p>
-              <div class="d-flex justify-content-between align-items-center">
-                <span class="course-price">USD 29 <small>/ curso</small></span>
-                <a href="detalle-curso.html" class="btn btn-sm btn-outline-brand" style="color: var(--navy); border-color: var(--navy);">Ver curso</a>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="course-card">
-            <div class="course-thumb" style="background: linear-gradient(135deg,#2f6fed,#1aa98b);"><i class="bi bi-badge-3d"></i></div>
-            <div class="card-body">
-              <span class="badge-category">Diseño</span>
-              <h3 class="h6 mt-3 mb-2">Diseño 3D con Blender</h3>
-              <div class="d-flex align-items-center gap-2 mb-1">
-                <span class="rating-stars"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star"></i></span>
-                <span class="rating-value">4.2</span>
-              </div>
-              <p class="course-meta mb-3">86 estudiantes · 5 módulos</p>
-              <div class="d-flex justify-content-between align-items-center">
-                <span class="course-price">USD 24 <small>/ curso</small></span>
-                <a href="detalle-curso.html" class="btn btn-sm btn-outline-brand" style="color: var(--navy); border-color: var(--navy);">Ver curso</a>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="course-card">
-            <div class="course-thumb" style="background: linear-gradient(135deg,#12305c,#2f6fed);"><i class="bi bi-translate"></i></div>
-            <div class="card-body">
-              <span class="badge-category">Idiomas</span>
-              <h3 class="h6 mt-3 mb-2">Inglés profesional</h3>
-              <div class="d-flex align-items-center gap-2 mb-1">
-                <span class="rating-stars"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></span>
-                <span class="rating-value">5.0</span>
-              </div>
-              <p class="course-meta mb-3">143 estudiantes · 6 módulos</p>
-              <div class="d-flex justify-content-between align-items-center">
-                <span class="course-price">USD 19 <small>/ curso</small></span>
-                <a href="detalle-curso.html" class="btn btn-sm btn-outline-brand" style="color: var(--navy); border-color: var(--navy);">Ver curso</a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ¿Por qué EduTechCourses? -->
-  <section class="section bg-soft">
-    <div class="container text-center">
-      <h2 class="section-title">¿Por qué EduTechCourses?</h2>
-      <p class="section-subtitle">Todo lo que necesitás para aprender a tu manera.</p>
-      <div class="row g-3 text-start mt-2">
-        <div class="col-6 col-lg-3">
-          <div class="feature-card">
-            <div class="feature-icon"><i class="bi bi-file-earmark-pdf"></i></div>
-            <h3 class="h6 mb-1">PDFs descargables</h3>
-            <p class="small text-body-secondary mb-0">Guías que podés estudiar sin conexión, cuando quieras.</p>
+    <!-- ¿Por qué EduTechCourses? -->
+    <section class="section bg-soft">
+      <div class="container text-center">
+        <h2 class="section-title">¿Por qué EduTechCourses?</h2>
+        <p class="section-subtitle">Todo lo que necesitás para aprender a tu manera.</p>
+        <div class="row g-3 text-start mt-2">
+          <div class="col-6 col-lg-3">
+            <div class="feature-card">
+              <div class="feature-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+              <h3 class="h6 mb-1">PDFs descargables</h3>
+              <p class="small text-body-secondary mb-0">Guías que podés estudiar sin conexión, cuando quieras.</p>
+            </div>
           </div>
-        </div>
-        <div class="col-6 col-lg-3">
-          <div class="feature-card">
-            <div class="feature-icon"><i class="bi bi-play-btn"></i></div>
-            <h3 class="h6 mb-1">Videos por módulo</h3>
-            <p class="small text-body-secondary mb-0">Clases explicativas organizadas paso a paso.</p>
+          <div class="col-6 col-lg-3">
+            <div class="feature-card">
+              <div class="feature-icon"><i class="bi bi-play-btn"></i></div>
+              <h3 class="h6 mb-1">Videos por módulo</h3>
+              <p class="small text-body-secondary mb-0">Clases explicativas organizadas paso a paso.</p>
+            </div>
           </div>
-        </div>
-        <div class="col-6 col-lg-3">
-          <div class="feature-card">
-            <div class="feature-icon"><i class="bi bi-eye"></i></div>
-            <h3 class="h6 mb-1">Vista previa gratis</h3>
-            <p class="small text-body-secondary mb-0">Mirá el primer módulo antes de suscribirte.</p>
+          <div class="col-6 col-lg-3">
+            <div class="feature-card">
+              <div class="feature-icon"><i class="bi bi-eye"></i></div>
+              <h3 class="h6 mb-1">Vista previa gratis</h3>
+              <p class="small text-body-secondary mb-0">Mirá el primer módulo antes de suscribirte.</p>
+            </div>
           </div>
-        </div>
-        <div class="col-6 col-lg-3">
-          <div class="feature-card">
-            <div class="feature-icon"><i class="bi bi-clock-history"></i></div>
-            <h3 class="h6 mb-1">Acceso a tu ritmo</h3>
-            <p class="small text-body-secondary mb-0">Estudiá cuando quieras mientras tu suscripción esté activa.</p>
+          <div class="col-6 col-lg-3">
+            <div class="feature-card">
+              <div class="feature-icon"><i class="bi bi-clock-history"></i></div>
+              <h3 class="h6 mb-1">Acceso a tu ritmo</h3>
+              <p class="small text-body-secondary mb-0">Estudiá cuando quieras mientras tu suscripción esté activa.</p>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- CTA final -->
-  <section class="cta-section">
-    <div class="container" style="max-width: 520px;">
-      <h2 class="section-title mb-2">¿Listo para empezar?</h2>
-      <p class="section-subtitle">Creá tu cuenta gratis y suscribite al primer curso que te interese.</p>
-      <a href="registro.html" class="btn btn-brand btn-lg px-4">Comenzar ahora</a>
-      <p class="small text-body-secondary mt-3 mb-0">Sin compromiso. Suscribite solo a los cursos que quieras.</p>
-    </div>
-  </section>
+    <!-- CTA final -->
+    <section class="cta-section">
+      <div class="container" style="max-width: 520px;">
+        <h2 class="section-title mb-2">¿Listo para empezar?</h2>
+        <p class="section-subtitle">Creá tu cuenta gratis y suscribite al primer curso que te interese.</p>
+        <a href="registro.html" class="btn btn-brand btn-lg px-4">Comenzar ahora</a>
+        <p class="small text-body-secondary mt-3 mb-0">Sin compromiso. Suscribite solo a los cursos que quieras.</p>
+      </div>
+    </section>
+  </main>
 
   <!-- Footer -->
   <footer class="site-footer">
@@ -221,4 +236,5 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="js/base.js"></script>
 </body>
+
 </html>

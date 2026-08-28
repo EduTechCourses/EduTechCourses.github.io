@@ -220,11 +220,9 @@ footer.site-footer .brand-name {
 /* ---------- Tarjetas y badges de categoría (compartido) ---------- */
 .course-thumb {
   height: 132px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-size: 1.9rem;
+  display: block;
+  width: 100%;
+  object-fit: cover;
 }
 
 .badge-category {

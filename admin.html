@@ -433,10 +433,10 @@
     }
 
     function toggleEstadoCurso(link) {
-      var fila = link.closest('tr');
-      var celdaEstado = fila.children[3];
-      var dot = celdaEstado.querySelector('.status-dot');
-      var activo = dot.classList.contains('active');
+      const fila = link.closest('tr');
+      const celdaEstado = fila.children[3];
+      const dot = celdaEstado.querySelector('.status-dot');
+      const activo = dot.classList.contains('active');
 
       dot.classList.toggle('active', !activo);
       dot.classList.toggle('inactive', activo);

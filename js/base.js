@@ -20,14 +20,14 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
-// Alterna entre vista de visitante/no suscripto y usuario suscripto (RF-03 y RF-06),
+// Alterna entre vista de visitante/no suscripto y usuario suscripto,
 // usado en detalle-curso.html. Cuando exista Firebase, este estado deberá
 // reemplazarse por la consulta real de la suscripción.
 function mostrarEstadoCurso(estado) {
-  var previa = document.getElementById('estado-no-suscripto');
-  var completo = document.getElementById('estado-suscripto');
-  var btnPrevia = document.getElementById('btn-estado-previa');
-  var btnCompleto = document.getElementById('btn-estado-suscripto');
+  const previa = document.getElementById('estado-no-suscripto');
+  const completo = document.getElementById('estado-suscripto');
+  const btnPrevia = document.getElementById('btn-estado-previa');
+  const btnCompleto = document.getElementById('btn-estado-suscripto');
   if (!previa || !completo) return;
 
   if (estado === 'suscripto') {
@@ -43,8 +43,8 @@ function mostrarEstadoCurso(estado) {
   }
 
   // Actualiza también la caja de compra lateral (si existe en la página)
-  var accionNoSuscripto = document.getElementById('accion-no-suscripto');
-  var accionSuscripto = document.getElementById('accion-suscripto');
+  const accionNoSuscripto = document.getElementById('accion-no-suscripto');
+  const accionSuscripto = document.getElementById('accion-suscripto');
   if (accionNoSuscripto && accionSuscripto) {
     accionNoSuscripto.classList.toggle('d-none', estado === 'suscripto');
     accionSuscripto.classList.toggle('d-none', estado !== 'suscripto');
