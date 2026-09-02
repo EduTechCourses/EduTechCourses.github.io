@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-
+ 
   <nav class="navbar navbar-expand-lg navbar-etc-light" aria-label="Navegación principal">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
@@ -33,7 +33,7 @@
       </div>
     </div>
   </nav>
-
+ 
   <main>
   <div class="container py-4">
     <nav aria-label="breadcrumb">
@@ -43,7 +43,7 @@
         <li class="breadcrumb-item active" aria-current="page" id="breadcrumbCurso">Cargando...</li>
       </ol>
     </nav>
-
+ 
     <!-- Demo académica: alterna entre los dos estados pedidos por la consigna -->
     <div class="alert alert-secondary d-flex flex-wrap align-items-center gap-2 justify-content-between" role="note">
       <span class="small"><i class="bi bi-info-circle me-1"></i> Vista de demostración: alterná el estado de suscripción para ver ambas versiones de esta pantalla.</span>
@@ -52,18 +52,18 @@
         <button type="button" id="btn-estado-suscripto" class="btn btn-outline-secondary" onclick="mostrarEstadoCurso('suscripto')">Usuario suscripto</button>
       </div>
     </div>
-
+ 
     <div class="row g-5 mt-1" id="contenidoCurso">
       <div class="col-lg-8">
         <span class="badge-category" id="cursoBadge">Categoría</span>
         <h1 class="h2 mt-3 mb-2" id="cursoTitulo">Cargando...</h1>
         <p class="text-body-secondary mb-4" id="cursoDescripcionCorta"></p>
-
+ 
         <ul class="nav nav-tabs-brand mb-4" role="tablist">
           <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-temario" type="button">Temario</button></li>
           <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-detalle" type="button">Descripción</button></li>
         </ul>
-
+ 
         <div class="tab-content">
           <div class="tab-pane fade show active" id="tab-temario">
             <ol class="list-group list-group-numbered mb-3" id="cursoTemario">
@@ -74,7 +74,7 @@
             <p class="mb-0"><strong>Responsable:</strong> Equipo EduTechCourses · <strong>Nivel:</strong> <span id="cursoNivel"></span></p>
           </div>
         </div>
-
+ 
         <!-- Estado: visitante o usuario sin suscripción -->
         <div id="estado-no-suscripto">
           <div class="stat-card">
@@ -88,7 +88,7 @@
             <p class="small text-body-secondary mb-0">Video de introducción — 6 min</p>
           </div>
         </div>
-
+ 
         <!-- Estado: usuario suscripto -->
         <div id="estado-suscripto" class="d-none">
           <div class="stat-card" style="border-color: var(--teal);">
@@ -101,14 +101,14 @@
           </div>
         </div>
       </div>
-
+ 
       <!-- Sidebar de compra -->
       <div class="col-lg-4">
         <div class="stat-card" style="position: sticky; top: 1rem;">
           <img src="" alt="" class="course-thumb mb-3 rounded-3" id="cursoImagen">
           <p class="course-price mb-1" id="cursoPrecio">Cargando...</p>
           <p class="small text-body-secondary mb-3">Suscripción individual · acceso mientras esté activa</p>
-
+ 
           <div id="accion-no-suscripto">
             <button class="btn btn-brand w-100 mb-2" onclick="mostrarEstadoCurso('suscripto')">
               <i class="bi bi-lock me-1"></i> Suscribirme a este curso
@@ -119,7 +119,7 @@
             <span class="badge bg-success-subtle text-success-emphasis w-100 py-2 mb-2 d-block"><i class="bi bi-check-circle me-1"></i> Suscripción activa</span>
             <a href="perfil.html" class="btn btn-outline-brand w-100" style="color: var(--navy); border-color: var(--navy);">Ver en mi historial</a>
           </div>
-
+ 
           <hr>
           <ul class="list-unstyled small text-body-secondary mb-0">
             <li class="d-flex gap-2 mb-2"><i class="bi bi-file-earmark-pdf"></i> Guía descargable en PDF</li>
@@ -131,7 +131,7 @@
     </div>
   </div>
   </main>
-
+ 
   <footer class="site-footer">
     <div class="container">
       <div class="row g-4">
@@ -163,8 +163,10 @@
       <p class="small mb-0 text-center">© 2026 EduTechCourses. Proyecto educativo sin fines comerciales.</p>
     </div>
   </footer>
-
+ 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="js/base.js"></script>
+  <script src="js/modules/datos-cursos.js"></script>
+  <script src="js/pages/detalle-curso.js"></script>
 </body>
 </html>
