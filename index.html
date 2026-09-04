@@ -72,118 +72,59 @@ git<body>
  
   <main>
 
-    <!-- Cursos destacados -->
-    <section class="section">
-      <div class="container">
-        <div class="d-flex justify-content-between align-items-end mb-2 flex-wrap gap-2">
-          <div>
-            <h2 class="section-title mb-1">Cursos destacados</h2>
-            <p class="section-subtitle mb-0">Los más elegidos por nuestros estudiantes.</p>
-          </div>
-          <a href="catalogo.html" class="fw-semibold text-navy">Ver todos <i class="bi bi-arrow-right"></i></a>
+ <!-- Cursos destacados -->
+  <section class="section">
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-end mb-2 flex-wrap gap-2">
+        <div>
+          <h2 class="section-title mb-1">Cursos destacados</h2>
+          <p class="section-subtitle mb-0">Los más elegidos por nuestros estudiantes.</p>
         </div>
-        <div class="row g-4 mt-1">
-          <div class="col-md-4">
-            <div class="course-card">
-              <img src="assets/img/curso-robotica.jpg" alt="Curso de Robótica desde cero" class="course-thumb">
-              <div class="card-body">
-                <span class="badge-category">Robótica</span>
-                <h3 class="h6 mt-3 mb-2">Robótica desde cero</h3>
-                <div class="d-flex align-items-center gap-2 mb-1">
-                  <span class="rating-stars"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i
-                      class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i></span>
-                  <span class="rating-value">4.8</span>
-                </div>
-                <p class="course-meta mb-3">120 estudiantes · 4 módulos</p>
-                <div class="d-flex justify-content-between align-items-center">
-                  <span class="course-price">USD 29 <small>/ curso</small></span>
-                  <a href="detalle-curso.html" class="btn btn-sm btn-outline-brand"
-                    style="color: var(--navy); border-color: var(--navy);">Ver curso</a>
-                </div>
-              </div>
-            </div>
+        <a href="catalogo.html" class="fw-semibold text-navy">Ver todos <i class="bi bi-arrow-right"></i></a>
+      </div>
+      <div class="row g-4 mt-1" id="cursosDestacados">
+      </div>
+    </div>
+  </section>
+ 
+  <!-- ¿Por qué EduTechCourses? -->
+  <section class="section bg-soft">
+    <div class="container text-center">
+      <h2 class="section-title">¿Por qué EduTechCourses?</h2>
+      <p class="section-subtitle">Todo lo que necesitás para aprender a tu manera.</p>
+      <div class="row g-3 text-start mt-2">
+        <div class="col-6 col-lg-3">
+          <div class="feature-card">
+            <div class="feature-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+            <h3 class="h6 mb-1">PDFs descargables</h3>
+            <p class="small text-body-secondary mb-0">Guías que podés estudiar sin conexión, cuando quieras.</p>
           </div>
-          <div class="col-md-4">
-            <div class="course-card">
-              <img src="assets/img/curso-diseno3d.jpg" alt="Curso de Diseño 3D con Blender" class="course-thumb">
-              <div class="card-body">
-                <span class="badge-category">Diseño</span>
-                <h3 class="h6 mt-3 mb-2">Diseño 3D con Blender</h3>
-                <div class="d-flex align-items-center gap-2 mb-1">
-                  <span class="rating-stars"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i
-                      class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star"></i></span>
-                  <span class="rating-value">4.2</span>
-                </div>
-                <p class="course-meta mb-3">86 estudiantes · 5 módulos</p>
-                <div class="d-flex justify-content-between align-items-center">
-                  <span class="course-price">USD 24 <small>/ curso</small></span>
-                  <a href="detalle-curso.html" class="btn btn-sm btn-outline-brand"
-                    style="color: var(--navy); border-color: var(--navy);">Ver curso</a>
-                </div>
-              </div>
-            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="feature-card">
+            <div class="feature-icon"><i class="bi bi-play-btn"></i></div>
+            <h3 class="h6 mb-1">Videos por módulo</h3>
+            <p class="small text-body-secondary mb-0">Clases explicativas organizadas paso a paso.</p>
           </div>
-          <div class="col-md-4">
-            <div class="course-card">
-              <img src="assets/img/curso-ingles.jpg" alt="Curso de Inglés profesional" class="course-thumb">
-              <div class="card-body">
-                <span class="badge-category">Idiomas</span>
-                <h3 class="h6 mt-3 mb-2">Inglés profesional</h3>
-                <div class="d-flex align-items-center gap-2 mb-1">
-                  <span class="rating-stars"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i
-                      class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></span>
-                  <span class="rating-value">5.0</span>
-                </div>
-                <p class="course-meta mb-3">143 estudiantes · 6 módulos</p>
-                <div class="d-flex justify-content-between align-items-center">
-                  <span class="course-price">USD 19 <small>/ curso</small></span>
-                  <a href="detalle-curso.html" class="btn btn-sm btn-outline-brand"
-                    style="color: var(--navy); border-color: var(--navy);">Ver curso</a>
-                </div>
-              </div>
-            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="feature-card">
+            <div class="feature-icon"><i class="bi bi-eye"></i></div>
+            <h3 class="h6 mb-1">Vista previa gratis</h3>
+            <p class="small text-body-secondary mb-0">Mirá el primer módulo antes de suscribirte.</p>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="feature-card">
+            <div class="feature-icon"><i class="bi bi-clock-history"></i></div>
+            <h3 class="h6 mb-1">Acceso a tu ritmo</h3>
+            <p class="small text-body-secondary mb-0">Estudiá cuando quieras mientras tu suscripción esté activa.</p>
           </div>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- ¿Por qué EduTechCourses? -->
-    <section class="section bg-soft">
-      <div class="container text-center">
-        <h2 class="section-title">¿Por qué EduTechCourses?</h2>
-        <p class="section-subtitle">Todo lo que necesitás para aprender a tu manera.</p>
-        <div class="row g-3 text-start mt-2">
-          <div class="col-6 col-lg-3">
-            <div class="feature-card">
-              <div class="feature-icon"><i class="bi bi-file-earmark-pdf"></i></div>
-              <h3 class="h6 mb-1">PDFs descargables</h3>
-              <p class="small text-body-secondary mb-0">Guías que podés estudiar sin conexión, cuando quieras.</p>
-            </div>
-          </div>
-          <div class="col-6 col-lg-3">
-            <div class="feature-card">
-              <div class="feature-icon"><i class="bi bi-play-btn"></i></div>
-              <h3 class="h6 mb-1">Videos por módulo</h3>
-              <p class="small text-body-secondary mb-0">Clases explicativas organizadas paso a paso.</p>
-            </div>
-          </div>
-          <div class="col-6 col-lg-3">
-            <div class="feature-card">
-              <div class="feature-icon"><i class="bi bi-eye"></i></div>
-              <h3 class="h6 mb-1">Vista previa gratis</h3>
-              <p class="small text-body-secondary mb-0">Mirá el primer módulo antes de suscribirte.</p>
-            </div>
-          </div>
-          <div class="col-6 col-lg-3">
-            <div class="feature-card">
-              <div class="feature-icon"><i class="bi bi-clock-history"></i></div>
-              <h3 class="h6 mb-1">Acceso a tu ritmo</h3>
-              <p class="small text-body-secondary mb-0">Estudiá cuando quieras mientras tu suscripción esté activa.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
 
     <!-- CTA final -->
     <section class="cta-section">
