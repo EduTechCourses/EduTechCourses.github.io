@@ -18,7 +18,7 @@
 
 <body>
 
-  <!-- Navbar -->
+  <!-- Navbar clara, según el prototipo -->
   <nav class="navbar navbar-expand-lg navbar-etc-light" aria-label="Navegación principal">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
@@ -41,6 +41,7 @@
       </div>
     </div>
   </nav>
+
 
   <!-- Hero -->
   <header class="hero text-center">
@@ -76,6 +77,7 @@
   </header>
 
   <main>
+
     <!-- Cursos destacados -->
     <section class="section">
       <div class="container">
@@ -86,67 +88,7 @@
           </div>
           <a href="catalogo.html" class="fw-semibold text-navy">Ver todos <i class="bi bi-arrow-right"></i></a>
         </div>
-        <div class="row g-4 mt-1">
-          <div class="col-md-4">
-            <div class="course-card">
-              <img src="assets/img/curso-robotica.jpg" alt="Curso de Robótica desde cero" class="course-thumb">
-              <div class="card-body">
-                <span class="badge-category">Robótica</span>
-                <h3 class="h6 mt-3 mb-2">Robótica desde cero</h3>
-                <div class="d-flex align-items-center gap-2 mb-1">
-                  <span class="rating-stars"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i
-                      class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i></span>
-                  <span class="rating-value">4.8</span>
-                </div>
-                <p class="course-meta mb-3">120 estudiantes · 4 módulos</p>
-                <div class="d-flex justify-content-between align-items-center">
-                  <span class="course-price">USD 29 <small>/ curso</small></span>
-                  <a href="detalle-curso.html" class="btn btn-sm btn-outline-brand"
-                    style="color: var(--navy); border-color: var(--navy);">Ver curso</a>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="course-card">
-              <img src="assets/img/curso-diseno3d.jpg" alt="Curso de Diseño 3D con Blender" class="course-thumb">
-              <div class="card-body">
-                <span class="badge-category">Diseño</span>
-                <h3 class="h6 mt-3 mb-2">Diseño 3D con Blender</h3>
-                <div class="d-flex align-items-center gap-2 mb-1">
-                  <span class="rating-stars"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i
-                      class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star"></i></span>
-                  <span class="rating-value">4.2</span>
-                </div>
-                <p class="course-meta mb-3">86 estudiantes · 5 módulos</p>
-                <div class="d-flex justify-content-between align-items-center">
-                  <span class="course-price">USD 24 <small>/ curso</small></span>
-                  <a href="detalle-curso.html" class="btn btn-sm btn-outline-brand"
-                    style="color: var(--navy); border-color: var(--navy);">Ver curso</a>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="course-card">
-              <img src="assets/img/curso-ingles.jpg" alt="Curso de Inglés profesional" class="course-thumb">
-              <div class="card-body">
-                <span class="badge-category">Idiomas</span>
-                <h3 class="h6 mt-3 mb-2">Inglés profesional</h3>
-                <div class="d-flex align-items-center gap-2 mb-1">
-                  <span class="rating-stars"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i
-                      class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></span>
-                  <span class="rating-value">5.0</span>
-                </div>
-                <p class="course-meta mb-3">143 estudiantes · 6 módulos</p>
-                <div class="d-flex justify-content-between align-items-center">
-                  <span class="course-price">USD 19 <small>/ curso</small></span>
-                  <a href="detalle-curso.html" class="btn btn-sm btn-outline-brand"
-                    style="color: var(--navy); border-color: var(--navy);">Ver curso</a>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div class="row g-4 mt-1" id="cursosDestacados">
         </div>
       </div>
     </section>
@@ -188,6 +130,7 @@
         </div>
       </div>
     </section>
+
 
     <!-- CTA final -->
     <section class="cta-section">
@@ -235,6 +178,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="js/base.js"></script>
+  <script src="js/modules/datos-cursos.js"></script>
+  <script src="js/pages/inicio.js"></script>
 </body>
 
 </html>
