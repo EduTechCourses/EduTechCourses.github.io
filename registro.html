@@ -49,7 +49,9 @@
           <a href="registro.html" class="active">Registrarse</a>
         </div>
 
-        <form class="needs-validation" novalidate onsubmit="return false;">
+        <div id="registroMensaje" class="alert d-none" role="alert"></div>
+
+        <form class="needs-validation" id="formRegistro" novalidate>
           <div class="mb-3">
             <label for="regNombre" class="form-label">Nombre completo</label>
             <input type="text" class="form-control" id="regNombre" placeholder="Tu nombre y apellido" required>
@@ -110,6 +112,45 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="js/base.js"></script>
+  <script type="module">
+    import { registrarUsuario } from "./js/auth.js";
+
+    const form = document.getElementById("formRegistro");
+    const mensaje = document.getElementById("registroMensaje");
+
+    form.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (!form.checkValidity()) {
+        form.classList.add("was-validated");
+        return;
+      }
+
+      const nombre = document.getElementById("regNombre").value;
+      const email = document.getElementById("regEmail").value;
+      const password = document.getElementById("regPassword").value;
+
+      const boton = form.querySelector("button[type=submit]");
+      boton.disabled = true;
+      boton.textContent = "Creando cuenta...";
+
+      const resultado = await registrarUsuario(nombre, email, password);
+
+      boton.disabled = false;
+      boton.textContent = "Crear cuenta gratis";
+
+      if (resultado.exito) {
+        mensaje.className = "alert alert-success";
+        mensaje.textContent = "¡Cuenta creada correctamente! Ya podés iniciar sesión.";
+        form.reset();
+        form.classList.remove("was-validated");
+      } else {
+        mensaje.className = "alert alert-danger";
+        mensaje.textContent = resultado.mensaje;
+      }
+    });
+  </script>
 </body>
 
 </html>
