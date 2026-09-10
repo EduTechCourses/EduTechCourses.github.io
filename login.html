@@ -42,14 +42,16 @@
     <div class="container text-center" style="max-width: 460px;">
       <h1 class="h3 mb-1">Bienvenido de vuelta</h1>
       <p class="text-body-secondary mb-4">Ingresá para acceder a todos tus cursos.</p>
- 
+
       <div class="auth-card text-start">
         <div class="auth-tabs">
           <a href="login.html" class="active">Iniciar sesión</a>
           <a href="registro.html">Registrarse</a>
         </div>
- 
-        <form class="needs-validation" novalidate onsubmit="return false;">
+
+        <div id="loginMensaje" class="alert d-none" role="alert"></div>
+
+        <form class="needs-validation" id="formLogin" novalidate>
           <div class="mb-3">
             <label for="loginEmail" class="form-label">Correo electrónico</label>
             <input type="email" class="form-control" id="loginEmail" placeholder="tu@correo.com" required>
@@ -60,14 +62,16 @@
               <label for="loginPassword" class="form-label mb-0">Contraseña</label>
               <a href="#" class="small text-navy" onclick="return false;">¿Olvidaste tu contraseña?</a>
             </div>
-            <input type="password" class="form-control" id="loginPassword" placeholder="Tu contraseña" minlength="6" required>
+            <input type="password" class="form-control" id="loginPassword" placeholder="Tu contraseña" minlength="6"
+              required>
             <div class="invalid-feedback">La contraseña debe tener al menos 6 caracteres.</div>
           </div>
           <button type="submit" class="btn btn-brand w-100 mt-3">Iniciar sesión</button>
         </form>
- 
+
         <div class="auth-divider">o continuá con</div>
-        <button type="button" class="btn btn-google w-100 d-flex align-items-center justify-content-center gap-2" onclick="return false;">
+        <button type="button" class="btn btn-google w-100 d-flex align-items-center justify-content-center gap-2"
+          onclick="return false;">
           <i class="bi bi-google"></i> Continuar con Google
         </button>
       </div>
@@ -108,6 +112,43 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="js/base.js"></script>
+  <script type="module">
+    import { iniciarSesion } from "./js/auth.js";
+
+    const form = document.getElementById("formLogin");
+    const mensaje = document.getElementById("loginMensaje");
+
+    form.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (!form.checkValidity()) {
+        form.classList.add("was-validated");
+        return;
+      }
+
+      const email = document.getElementById("loginEmail").value;
+      const password = document.getElementById("loginPassword").value;
+
+      const boton = form.querySelector("button[type=submit]");
+      boton.disabled = true;
+      boton.textContent = "Ingresando...";
+
+      const resultado = await iniciarSesion(email, password);
+
+      boton.disabled = false;
+      boton.textContent = "Iniciar sesión";
+
+      if (resultado.exito) {
+        mensaje.className = "alert alert-success";
+        mensaje.textContent = "¡Bienvenido! Iniciando sesión...";
+        setTimeout(() => { window.location.href = "perfil.html"; }, 800);
+      } else {
+        mensaje.className = "alert alert-danger";
+        mensaje.textContent = resultado.mensaje;
+      }
+    });
+  </script>
 </body>
 
 </html>
