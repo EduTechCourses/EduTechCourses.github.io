@@ -12,7 +12,8 @@ import { auth } from "./firebase-config.js";
 import {
   createUserWithEmailAndPassword,
   updateProfile,
-  signInWithEmailAndPassword
+  signInWithEmailAndPassword,
+  signOut
 } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
  
 // Traduce los códigos de error de Firebase a mensajes comprensibles.
@@ -53,4 +54,14 @@ async function iniciarSesion(email, password) {
   }
 }
  
-export { registrarUsuario, iniciarSesion };
+// Cierra la sesión activa.
+async function cerrarSesion() {
+  try {
+    await signOut(auth);
+    return { exito: true };
+  } catch (error) {
+    return { exito: false, mensaje: traducirErrorAuth(error) };
+  }
+}
+ 
+export { registrarUsuario, iniciarSesion, cerrarSesion };
