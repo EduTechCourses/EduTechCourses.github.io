@@ -7,6 +7,16 @@
 //
 // Evitemos que dos personas editen este archivo al mismo tiempo en
 // ramas distintas para no generar conflictos de merge.
+//
+// IMPORTANTE (issue #32): este archivo pasó a cargarse como
+// <script type="module"> en todas las páginas, porque necesita
+// importar auth de Firebase para detectar la sesión activa. Como los
+// módulos no crean funciones globales automáticamente, las funciones
+// llamadas desde atributos onclick="" del HTML (como
+// mostrarEstadoCurso) se asignan explícitamente a `window` al final.
+
+import { auth } from "./firebase-config.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
 
 document.addEventListener("DOMContentLoaded", function () {
   document.querySelectorAll("form.needs-validation").forEach(function (form) {
@@ -21,8 +31,8 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // Alterna entre vista de visitante/no suscripto y usuario suscripto,
-// usado en detalle-curso.html. Cuando exista Firebase, este estado deberá
-// reemplazarse por la consulta real de la suscripción.
+// usado en detalle-curso.html. Cuando exista Firestore, este estado
+// deberá reemplazarse por la consulta real de la suscripción.
 function mostrarEstadoCurso(estado) {
   const previa = document.getElementById('estado-no-suscripto');
   const completo = document.getElementById('estado-suscripto');
@@ -42,7 +52,6 @@ function mostrarEstadoCurso(estado) {
     btnCompleto.classList.remove('active');
   }
 
-  // Actualiza también la caja de compra lateral (si existe en la página)
   const accionNoSuscripto = document.getElementById('accion-no-suscripto');
   const accionSuscripto = document.getElementById('accion-suscripto');
   if (accionNoSuscripto && accionSuscripto) {
@@ -50,3 +59,43 @@ function mostrarEstadoCurso(estado) {
     accionSuscripto.classList.toggle('d-none', estado !== 'suscripto');
   }
 }
+
+// Adapta la navbar según haya o no una sesión de Firebase activa.
+// Busca los contenedores #navAuthGuest / #navAuthUser en la página
+// actual; si no existen (por ejemplo en perfil.html o admin.html,
+// que ya tienen su propia navbar de usuario), no hace nada.
+function actualizarNavbarSegunSesion(usuario) {
+  const navGuest = document.getElementById('navAuthGuest');
+  const navUser = document.getElementById('navAuthUser');
+  if (!navGuest || !navUser) return;
+
+  if (usuario) {
+    navGuest.classList.add('d-none');
+    navUser.classList.remove('d-none');
+
+    const nombre = usuario.displayName || usuario.email || 'Mi perfil';
+    const nombreSpan = document.getElementById('navNombreUsuario');
+    const avatarSpan = document.getElementById('navAvatarIniciales');
+    if (nombreSpan) nombreSpan.textContent = nombre;
+    if (avatarSpan) avatarSpan.textContent = obtenerIniciales(nombre);
+  } else {
+    navUser.classList.add('d-none');
+    navGuest.classList.remove('d-none');
+  }
+}
+
+// Genera hasta 2 iniciales a partir de un nombre o correo, para el avatar.
+function obtenerIniciales(texto) {
+  const partes = texto.trim().split(/\s+/);
+  if (partes.length === 1) return partes[0].substring(0, 2).toUpperCase();
+  return (partes[0][0] + partes[1][0]).toUpperCase();
+}
+
+onAuthStateChanged(auth, function (usuario) {
+  actualizarNavbarSegunSesion(usuario);
+});
+
+// Exponemos al alcance global las funciones llamadas desde onclick=""
+// en el HTML, ya que un <script type="module"> no las declara como
+// globales automáticamente.
+window.mostrarEstadoCurso = mostrarEstadoCurso;
