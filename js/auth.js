@@ -7,7 +7,7 @@
 // NOTA PARA EL EQUIPO: este archivo va a ir creciendo issue por issue
 // (registro, login, logout, recuperación, detección de sesión). Evitemos
 // que dos personas lo editen al mismo tiempo en ramas distintas.
- 
+
 import { auth } from "./firebase-config.js";
 import {
   createUserWithEmailAndPassword,
@@ -16,7 +16,7 @@ import {
   signOut,
   sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
- 
+
 // Traduce los códigos de error de Firebase a mensajes comprensibles.
 // (Se va a completar/mejorar en la issue #35; por ahora cubre los casos
 // más comunes de registro, login y recuperación para no mostrar errores
@@ -30,10 +30,11 @@ function traducirErrorAuth(error) {
     "auth/user-not-found": "No encontramos una cuenta con ese correo.",
     "auth/wrong-password": "Correo o contraseña incorrectos.",
     "auth/too-many-requests": "Demasiados intentos. Esperá unos minutos y volvé a intentar.",
+    "auth/missing-email": "Ingresá un correo electrónico.",
   };
   return mensajes[error.code] || "Ocurrió un error inesperado. Intentá nuevamente.";
 }
- 
+
 // Registra un nuevo usuario con correo y contraseña, y guarda su nombre
 // como displayName del perfil de Firebase.
 async function registrarUsuario(nombre, email, password) {
@@ -45,7 +46,7 @@ async function registrarUsuario(nombre, email, password) {
     return { exito: false, mensaje: traducirErrorAuth(error) };
   }
 }
- 
+
 // Inicia sesión con correo y contraseña.
 async function iniciarSesion(email, password) {
   try {
@@ -55,7 +56,7 @@ async function iniciarSesion(email, password) {
     return { exito: false, mensaje: traducirErrorAuth(error) };
   }
 }
- 
+
 // Cierra la sesión activa.
 async function cerrarSesion() {
   try {
@@ -65,7 +66,7 @@ async function cerrarSesion() {
     return { exito: false, mensaje: traducirErrorAuth(error) };
   }
 }
- 
+
 // Envía un correo de recuperación de contraseña.
 async function recuperarContrasena(email) {
   try {
@@ -75,5 +76,5 @@ async function recuperarContrasena(email) {
     return { exito: false, mensaje: traducirErrorAuth(error) };
   }
 }
- 
+
 export { registrarUsuario, iniciarSesion, cerrarSesion, recuperarContrasena };
