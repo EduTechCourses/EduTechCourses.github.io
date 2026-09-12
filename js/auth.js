@@ -13,12 +13,14 @@ import {
   createUserWithEmailAndPassword,
   updateProfile,
   signInWithEmailAndPassword,
-  signOut
+  signOut,
+  sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
  
 // Traduce los códigos de error de Firebase a mensajes comprensibles.
 // (Se va a completar/mejorar en la issue #35; por ahora cubre los casos
-// más comunes de registro y login para no mostrar errores técnicos crudos).
+// más comunes de registro, login y recuperación para no mostrar errores
+// técnicos crudos).
 function traducirErrorAuth(error) {
   const mensajes = {
     "auth/email-already-in-use": "Ese correo ya está registrado. Probá iniciar sesión.",
@@ -64,4 +66,14 @@ async function cerrarSesion() {
   }
 }
  
-export { registrarUsuario, iniciarSesion, cerrarSesion };
+// Envía un correo de recuperación de contraseña.
+async function recuperarContrasena(email) {
+  try {
+    await sendPasswordResetEmail(auth, email);
+    return { exito: true };
+  } catch (error) {
+    return { exito: false, mensaje: traducirErrorAuth(error) };
+  }
+}
+ 
+export { registrarUsuario, iniciarSesion, cerrarSesion, recuperarContrasena };
