@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
@@ -80,11 +80,23 @@
                 </div>
               </div>
  
-              <form class="needs-validation" novalidate onsubmit="return false;">
+              <div id="perfilMensaje" class="alert d-none" role="alert"></div>
+ 
+              <form class="needs-validation" id="formPerfil" novalidate>
                 <div class="row g-3">
                   <div class="col-md-6">
-                    <label for="perfilNombre" class="form-label">Nombre completo</label>
-                    <input type="text" class="form-control" id="perfilNombre" disabled>
+                    <label for="perfilNombre" class="form-label">Nombre</label>
+                    <input type="text" class="form-control" id="perfilNombre" required>
+                    <div class="invalid-feedback">Ingresá tu nombre.</div>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="perfilApellido" class="form-label">Apellido</label>
+                    <input type="text" class="form-control" id="perfilApellido" required>
+                    <div class="invalid-feedback">Ingresá tu apellido.</div>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="perfilTelefono" class="form-label">Teléfono</label>
+                    <input type="tel" class="form-control" id="perfilTelefono" placeholder="Ej: 099 123 456">
                   </div>
                   <div class="col-md-6">
                     <label for="perfilEmail" class="form-label">Correo electrónico</label>
@@ -102,7 +114,7 @@
  
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-4">
                   <p class="small text-body-secondary mb-0"><strong class="text-navy">1</strong> curso completado</p>
-                  <button type="submit" class="btn btn-brand" disabled title="La edición se habilita en una próxima entrega">Guardar cambios</button>
+                  <button type="submit" class="btn btn-brand">Guardar cambios</button>
                 </div>
               </form>
  
@@ -214,7 +226,9 @@
   <script type="module">
     import { auth, db } from "./js/firebase-config.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
-    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+    import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+ 
+    let uidActual = null;
  
     function obtenerIniciales(nombre, apellido) {
       const n = (nombre || "").trim();
@@ -229,49 +243,93 @@
       return fecha.toLocaleDateString("es-UY", { day: "numeric", month: "long", year: "numeric" });
     }
  
+    function actualizarEncabezados(datos) {
+      const nombreCompleto = datos.nombre + " " + datos.apellido;
+      const iniciales = obtenerIniciales(datos.nombre, datos.apellido);
+      const rolCapitalizado = datos.rol.charAt(0).toUpperCase() + datos.rol.slice(1);
+ 
+      document.getElementById("navAvatarSm").textContent = iniciales;
+      document.getElementById("navNombreSm").textContent = nombreCompleto;
+ 
+      document.getElementById("perfilAvatarGrande").childNodes[0].textContent = iniciales + " ";
+      document.getElementById("perfilNombreCompleto").textContent = nombreCompleto;
+      document.getElementById("perfilEmailSidebar").textContent = datos.email;
+      document.getElementById("perfilRolBadge").textContent = rolCapitalizado;
+ 
+      document.getElementById("perfilAvatarChico").textContent = iniciales;
+      document.getElementById("perfilNombreChico").textContent = nombreCompleto;
+      document.getElementById("perfilEmailChico").textContent = datos.email;
+    }
+ 
     onAuthStateChanged(auth, async function (usuario) {
       if (!usuario) {
-        // Sin sesión activa: un visitante no puede ver esta página.
         window.location.href = "login.html";
         return;
       }
  
-      const referenciaDoc = doc(db, "usuarios", usuario.uid);
+      uidActual = usuario.uid;
+      const referenciaDoc = doc(db, "usuarios", uidActual);
       const snapshot = await getDoc(referenciaDoc);
  
       if (!snapshot.exists()) {
-        // Cuenta autenticada pero sin documento en Firestore (por ejemplo,
-        // una cuenta creada antes de la issue #40). No debería pasar con
-        // cuentas nuevas, pero lo cubrimos para no romper la página.
         document.getElementById("perfilNombreCompleto").textContent = usuario.displayName || usuario.email;
         document.getElementById("perfilEmailSidebar").textContent = usuario.email;
         return;
       }
  
       const datos = snapshot.data();
-      const nombreCompleto = datos.nombre + " " + datos.apellido;
-      const iniciales = obtenerIniciales(datos.nombre, datos.apellido);
-      const rolCapitalizado = datos.rol.charAt(0).toUpperCase() + datos.rol.slice(1);
+      actualizarEncabezados(datos);
  
-      // Navbar
-      document.getElementById("navAvatarSm").textContent = iniciales;
-      document.getElementById("navNombreSm").textContent = nombreCompleto;
- 
-      // Sidebar
-      document.getElementById("perfilAvatarGrande").childNodes[0].textContent = iniciales + " ";
-      document.getElementById("perfilNombreCompleto").textContent = nombreCompleto;
-      document.getElementById("perfilEmailSidebar").textContent = datos.email;
-      document.getElementById("perfilRolBadge").textContent = rolCapitalizado;
- 
-      // Bloque resumen dentro de "Información de perfil"
-      document.getElementById("perfilAvatarChico").textContent = iniciales;
-      document.getElementById("perfilNombreChico").textContent = nombreCompleto;
-      document.getElementById("perfilEmailChico").textContent = datos.email;
- 
-      // Formulario (solo lectura por ahora; la edición se conecta en la issue #42)
-      document.getElementById("perfilNombre").value = nombreCompleto;
+      document.getElementById("perfilNombre").value = datos.nombre;
+      document.getElementById("perfilApellido").value = datos.apellido;
+      document.getElementById("perfilTelefono").value = datos.telefono || "";
       document.getElementById("perfilEmail").value = datos.email;
       document.getElementById("perfilMiembroDesde").value = formatearFecha(datos.fechaRegistro);
+    });
+ 
+    const formPerfil = document.getElementById("formPerfil");
+    const mensajePerfil = document.getElementById("perfilMensaje");
+ 
+    formPerfil.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+ 
+      if (!formPerfil.checkValidity()) {
+        formPerfil.classList.add("was-validated");
+        return;
+      }
+ 
+      const nombre = document.getElementById("perfilNombre").value.trim();
+      const apellido = document.getElementById("perfilApellido").value.trim();
+      const telefono = document.getElementById("perfilTelefono").value.trim();
+ 
+      const boton = formPerfil.querySelector("button[type=submit]");
+      boton.disabled = true;
+      boton.textContent = "Guardando...";
+ 
+      try {
+        await updateDoc(doc(db, "usuarios", uidActual), {
+          nombre: nombre,
+          apellido: apellido,
+          telefono: telefono,
+        });
+ 
+        actualizarEncabezados({
+          nombre: nombre,
+          apellido: apellido,
+          email: document.getElementById("perfilEmail").value,
+          rol: document.getElementById("perfilRolBadge").textContent,
+        });
+ 
+        mensajePerfil.className = "alert alert-success";
+        mensajePerfil.textContent = "Cambios guardados correctamente.";
+      } catch (error) {
+        mensajePerfil.className = "alert alert-danger";
+        mensajePerfil.textContent = "No pudimos guardar los cambios. Intentá nuevamente.";
+      }
+ 
+      boton.disabled = false;
+      boton.textContent = "Guardar cambios";
     });
  
     function mostrarSeccionPerfil(seccion) {
