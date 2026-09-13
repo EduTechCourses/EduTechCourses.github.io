@@ -1,28 +1,23 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Mi perfil — EduTechCourses</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
-
 <body>
-
+ 
   <nav class="navbar navbar-expand-lg navbar-etc-light" aria-label="Navegación principal">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
         <img src="assets/logo/logo.svg" alt="Logo de EduTechCourses" class="brand-logo">
         <span class="brand-name">EduTechCourses</span>
       </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu"
-        aria-controls="navMenu" aria-expanded="false" aria-label="Abrir menú">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-controls="navMenu" aria-expanded="false" aria-label="Abrir menú">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navMenu">
@@ -33,27 +28,26 @@
         <div class="d-flex align-items-center gap-3">
           <a href="admin.html" class="admin-link">Admin</a>
           <a href="perfil.html" class="user-chip text-decoration-none">
-            <span class="avatar-sm">UD</span> Usuario Demo
+            <span class="avatar-sm" id="navAvatarSm">--</span> <span id="navNombreSm">Cargando...</span>
           </a>
         </div>
       </div>
     </div>
   </nav>
-
+ 
   <section class="section">
     <div class="container">
       <div class="row g-4">
         <!-- Sidebar -->
         <div class="col-lg-4">
           <div class="profile-sidebar-card">
-            <div class="avatar-lg">
-              UD
+            <div class="avatar-lg" id="perfilAvatarGrande">
+              --
               <span class="camera-badge"><i class="bi bi-camera-fill"></i></span>
             </div>
-            <h1 class="h5 mb-0" style="color:#fff;">Usuario Demo</h1>
-            <p class="small mb-0" style="color: rgba(255,255,255,0.8);">usuario@edutechcourses.com</p>
-            <span class="profile-role-badge"><i class="bi bi-circle-fill"
-                style="font-size:6px; vertical-align:2px; margin-right:4px;"></i>Estudiante</span>
+            <h1 class="h5 mb-0" style="color:#fff;" id="perfilNombreCompleto">Cargando...</h1>
+            <p class="small mb-0" style="color: rgba(255,255,255,0.8);" id="perfilEmailSidebar"></p>
+            <span class="profile-role-badge"><i class="bi bi-circle-fill" style="font-size:6px; vertical-align:2px; margin-right:4px;"></i><span id="perfilRolBadge">Estudiante</span></span>
           </div>
           <div class="profile-nav">
             <a href="#" class="nav-link active" onclick="mostrarSeccionPerfil('datos'); return false;" id="nav-datos">
@@ -69,33 +63,32 @@
             </a>
           </div>
         </div>
-
+ 
         <!-- Contenido -->
         <div class="col-lg-8">
-
+ 
           <!-- Sección: Mi perfil -->
           <div id="seccion-datos">
             <div class="stat-card">
               <h2 class="h5 mb-4">Información de perfil</h2>
-
+ 
               <div class="d-flex align-items-center gap-3 mb-4 p-3 rounded-3" style="background: var(--bg);">
-                <span class="avatar-sm" style="width:52px;height:52px;font-size:1.1rem;">UD</span>
+                <span class="avatar-sm" id="perfilAvatarChico" style="width:52px;height:52px;font-size:1.1rem;">--</span>
                 <div>
-                  <p class="fw-semibold mb-0">Usuario Demo</p>
-                  <p class="small text-body-secondary mb-0">usuario@edutechcourses.com</p>
+                  <p class="fw-semibold mb-0" id="perfilNombreChico">Cargando...</p>
+                  <p class="small text-body-secondary mb-0" id="perfilEmailChico"></p>
                 </div>
               </div>
-
+ 
               <form class="needs-validation" novalidate onsubmit="return false;">
                 <div class="row g-3">
                   <div class="col-md-6">
                     <label for="perfilNombre" class="form-label">Nombre completo</label>
-                    <input type="text" class="form-control" id="perfilNombre" value="Usuario Demo" required>
+                    <input type="text" class="form-control" id="perfilNombre" disabled>
                   </div>
                   <div class="col-md-6">
                     <label for="perfilEmail" class="form-label">Correo electrónico</label>
-                    <input type="email" class="form-control" id="perfilEmail" value="usuario@edutechcourses.com"
-                      required>
+                    <input type="email" class="form-control" id="perfilEmail" disabled>
                   </div>
                   <div class="col-md-6">
                     <label for="perfilCursosActivos" class="form-label">Cursos activos</label>
@@ -103,19 +96,17 @@
                   </div>
                   <div class="col-md-6">
                     <label for="perfilMiembroDesde" class="form-label">Miembro desde</label>
-                    <input type="text" class="form-control" id="perfilMiembroDesde" value="10 de agosto de 2026"
-                      disabled>
+                    <input type="text" class="form-control" id="perfilMiembroDesde" disabled>
                   </div>
                 </div>
-
+ 
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-4">
                   <p class="small text-body-secondary mb-0"><strong class="text-navy">1</strong> curso completado</p>
-                  <button type="submit" class="btn btn-brand">Guardar cambios</button>
+                  <button type="submit" class="btn btn-brand" disabled title="La edición se habilita en una próxima entrega">Guardar cambios</button>
                 </div>
               </form>
-
-              <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mt-4 p-3 rounded-3"
-                style="background:#eaf3f0;">
+ 
+              <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mt-4 p-3 rounded-3" style="background:#eaf3f0;">
                 <div class="d-flex align-items-center gap-2">
                   <i class="bi bi-collection text-teal" style="font-size:1.3rem;"></i>
                   <div>
@@ -127,7 +118,7 @@
               </div>
             </div>
           </div>
-
+ 
           <!-- Sección: Mis cursos -->
           <div id="seccion-cursos" class="d-none">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
@@ -135,72 +126,58 @@
                 <h2 class="h5 mb-1">Mis cursos</h2>
                 <p class="text-body-secondary small mb-0">Historial de cursos adquiridos.</p>
               </div>
-              <a href="catalogo.html" class="btn btn-outline-brand btn-sm"
-                style="color:var(--navy); border-color:var(--navy);">+ Explorar más</a>
+              <a href="catalogo.html" class="btn btn-outline-brand btn-sm" style="color:var(--navy); border-color:var(--navy);">+ Explorar más</a>
             </div>
-
+ 
             <div class="stat-card p-0">
               <div class="d-flex align-items-center gap-3 p-3 border-bottom">
-                <div class="course-thumb rounded-3"
-                  style="width:76px; height:60px; font-size:1.2rem; background: linear-gradient(135deg,#12305c,#1aa98b);">
-                  <i class="bi bi-cpu"></i>
-                </div>
+                <div class="course-thumb rounded-3" style="width:76px; height:60px; font-size:1.2rem; background: linear-gradient(135deg,#12305c,#1aa98b);"><i class="bi bi-cpu"></i></div>
                 <div class="flex-grow-1">
                   <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
                     <div>
                       <p class="fw-semibold mb-0">Robótica desde cero</p>
-                      <p class="small text-body-secondary mb-0"><i class="bi bi-calendar3 me-1"></i>Adquirido el
-                        12/08/2026 · <i class="bi bi-clock me-1"></i>4 módulos</p>
+                      <p class="small text-body-secondary mb-0"><i class="bi bi-calendar3 me-1"></i>Adquirido el 12/08/2026 · <i class="bi bi-clock me-1"></i>4 módulos</p>
                     </div>
                     <span class="badge-category badge-cat-teal">Robótica</span>
                   </div>
                   <div class="d-flex align-items-center gap-2 mt-2">
                     <div class="progress progress-course flex-grow-1">
-                      <div class="progress-bar" role="progressbar" style="width: 68%; background: var(--teal);"
-                        aria-valuenow="68" aria-valuemin="0" aria-valuemax="100"></div>
+                      <div class="progress-bar" role="progressbar" style="width: 68%; background: var(--teal);" aria-valuenow="68" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
                     <span class="small fw-semibold text-navy">68%</span>
-                    <a href="detalle-curso.html" class="btn btn-brand btn-sm ms-2"><i
-                        class="bi bi-play-fill me-1"></i>Continuar</a>
+                    <a href="detalle-curso.html" class="btn btn-brand btn-sm ms-2"><i class="bi bi-play-fill me-1"></i>Continuar</a>
                   </div>
                 </div>
               </div>
-
+ 
               <div class="d-flex align-items-center gap-3 p-3">
-                <div class="course-thumb rounded-3"
-                  style="width:76px; height:60px; font-size:1.2rem; background: linear-gradient(135deg,#12305c,#2f6fed);">
-                  <i class="bi bi-translate"></i>
-                </div>
+                <div class="course-thumb rounded-3" style="width:76px; height:60px; font-size:1.2rem; background: linear-gradient(135deg,#12305c,#2f6fed);"><i class="bi bi-translate"></i></div>
                 <div class="flex-grow-1">
                   <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
                     <div>
                       <p class="fw-semibold mb-0">Inglés profesional</p>
-                      <p class="small text-body-secondary mb-0"><i class="bi bi-calendar3 me-1"></i>Adquirido el
-                        03/08/2026 · <i class="bi bi-clock me-1"></i>6 módulos</p>
+                      <p class="small text-body-secondary mb-0"><i class="bi bi-calendar3 me-1"></i>Adquirido el 03/08/2026 · <i class="bi bi-clock me-1"></i>6 módulos</p>
                     </div>
                     <span class="badge-category badge-cat-pink">Idiomas</span>
                   </div>
                   <div class="d-flex align-items-center gap-2 mt-2">
                     <div class="progress progress-course flex-grow-1">
-                      <div class="progress-bar" role="progressbar" style="width: 100%; background: var(--ink-faint);"
-                        aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                      <div class="progress-bar" role="progressbar" style="width: 100%; background: var(--ink-faint);" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
                     <span class="small fw-semibold text-navy">Vencido</span>
-                    <a href="detalle-curso.html" class="btn btn-outline-brand btn-sm ms-2"
-                      style="color:var(--navy); border-color:var(--navy);">Renovar</a>
+                    <a href="detalle-curso.html" class="btn btn-outline-brand btn-sm ms-2" style="color:var(--navy); border-color:var(--navy);">Renovar</a>
                   </div>
                 </div>
               </div>
             </div>
-            <p class="text-body-secondary small mt-3">El progreso y el historial se actualizarán de forma dinámica
-              cuando se integre Cloud Firestore.</p>
+            <p class="text-body-secondary small mt-3">El progreso y el historial se actualizarán de forma dinámica cuando se integre la gestión de suscripciones.</p>
           </div>
-
+ 
         </div>
       </div>
     </div>
   </section>
-
+ 
   <footer class="site-footer">
     <div class="container">
       <div class="row g-4">
@@ -231,17 +208,79 @@
       <p class="small mb-0 text-center">© 2026 EduTechCourses. Proyecto educativo sin fines comerciales.</p>
     </div>
   </footer>
-
+ 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module" src="js/base.js"></script>
-  <script>
+  <script type="module">
+    import { auth, db } from "./js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+ 
+    function obtenerIniciales(nombre, apellido) {
+      const n = (nombre || "").trim();
+      const a = (apellido || "").trim();
+      if (!n && !a) return "--";
+      return ((n[0] || "") + (a[0] || "")).toUpperCase();
+    }
+ 
+    function formatearFecha(isoString) {
+      if (!isoString) return "—";
+      const fecha = new Date(isoString);
+      return fecha.toLocaleDateString("es-UY", { day: "numeric", month: "long", year: "numeric" });
+    }
+ 
+    onAuthStateChanged(auth, async function (usuario) {
+      if (!usuario) {
+        // Sin sesión activa: un visitante no puede ver esta página.
+        window.location.href = "login.html";
+        return;
+      }
+ 
+      const referenciaDoc = doc(db, "usuarios", usuario.uid);
+      const snapshot = await getDoc(referenciaDoc);
+ 
+      if (!snapshot.exists()) {
+        // Cuenta autenticada pero sin documento en Firestore (por ejemplo,
+        // una cuenta creada antes de la issue #40). No debería pasar con
+        // cuentas nuevas, pero lo cubrimos para no romper la página.
+        document.getElementById("perfilNombreCompleto").textContent = usuario.displayName || usuario.email;
+        document.getElementById("perfilEmailSidebar").textContent = usuario.email;
+        return;
+      }
+ 
+      const datos = snapshot.data();
+      const nombreCompleto = datos.nombre + " " + datos.apellido;
+      const iniciales = obtenerIniciales(datos.nombre, datos.apellido);
+      const rolCapitalizado = datos.rol.charAt(0).toUpperCase() + datos.rol.slice(1);
+ 
+      // Navbar
+      document.getElementById("navAvatarSm").textContent = iniciales;
+      document.getElementById("navNombreSm").textContent = nombreCompleto;
+ 
+      // Sidebar
+      document.getElementById("perfilAvatarGrande").childNodes[0].textContent = iniciales + " ";
+      document.getElementById("perfilNombreCompleto").textContent = nombreCompleto;
+      document.getElementById("perfilEmailSidebar").textContent = datos.email;
+      document.getElementById("perfilRolBadge").textContent = rolCapitalizado;
+ 
+      // Bloque resumen dentro de "Información de perfil"
+      document.getElementById("perfilAvatarChico").textContent = iniciales;
+      document.getElementById("perfilNombreChico").textContent = nombreCompleto;
+      document.getElementById("perfilEmailChico").textContent = datos.email;
+ 
+      // Formulario (solo lectura por ahora; la edición se conecta en la issue #42)
+      document.getElementById("perfilNombre").value = nombreCompleto;
+      document.getElementById("perfilEmail").value = datos.email;
+      document.getElementById("perfilMiembroDesde").value = formatearFecha(datos.fechaRegistro);
+    });
+ 
     function mostrarSeccionPerfil(seccion) {
       document.getElementById('seccion-datos').classList.toggle('d-none', seccion !== 'datos');
       document.getElementById('seccion-cursos').classList.toggle('d-none', seccion !== 'cursos');
       document.getElementById('nav-datos').classList.toggle('active', seccion === 'datos');
       document.getElementById('nav-cursos').classList.toggle('active', seccion === 'cursos');
     }
+    window.mostrarSeccionPerfil = mostrarSeccionPerfil;
   </script>
 </body>
-
 </html>
