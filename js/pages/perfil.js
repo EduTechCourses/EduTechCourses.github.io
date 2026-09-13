@@ -25,6 +25,9 @@ function actualizarEncabezados(datos) {
     const iniciales = obtenerIniciales(datos.nombre, datos.apellido);
     const rolCapitalizado = datos.rol.charAt(0).toUpperCase() + datos.rol.slice(1);
 
+    // Issue #43: el link "Admin" solo se muestra si el rol es administrador.
+    document.getElementById("navAdminLink").classList.toggle("d-none", datos.rol !== "administrador");
+
     document.getElementById("navAvatarSm").textContent = iniciales;
     document.getElementById("navNombreSm").textContent = nombreCompleto;
 
