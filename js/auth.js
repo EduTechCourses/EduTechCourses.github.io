@@ -4,11 +4,10 @@
 // contraseña. Cada página que necesite autenticación importa desde acá
 // en vez de llamar directamente al SDK de Firebase.
 //
-// NOTA PARA EL EQUIPO: este archivo va a ir creciendo issue por issue
-// (registro, login, logout, recuperación, detección de sesión). Evitemos
-// que dos personas lo editen al mismo tiempo en ramas distintas.
+// NOTA PARA EL EQUIPO: este archivo va a ir creciendo issue por issue.
+// Evitemos que dos personas lo editen al mismo tiempo en ramas distintas.
  
-import { auth } from "./firebase-config.js";
+import { auth, db } from "./firebase-config.js";
 import {
   createUserWithEmailAndPassword,
   updateProfile,
@@ -16,6 +15,7 @@ import {
   signOut,
   sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+import { doc, setDoc } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
  
 // Traduce los códigos de error de Firebase a mensajes comprensibles.
 function traducirErrorAuth(error) {
@@ -32,18 +32,31 @@ function traducirErrorAuth(error) {
   return mensajes[error.code] || "Ocurrió un error inesperado. Intentá nuevamente.";
 }
  
-// Registra un nuevo usuario con correo y contraseña, y guarda su nombre
-// completo (nombre + apellido) como displayName del perfil de Firebase.
+// Registra un nuevo usuario con correo y contraseña, guarda su nombre
+// completo como displayName en Authentication, y crea su documento de
+// perfil en Firestore (colección "usuarios", identificado con su UID).
 //
-// CAMBIO (issue #38): esta función ahora recibe nombre y apellido por
-// separado (antes recibía un único "nombre" con el nombre completo).
-// El displayName se sigue guardando combinado, ya que Firebase
-// Authentication no tiene un campo nativo para apellido — el dato
-// separado se va a guardar en Firestore en la issue #40.
+// CAMBIO (issue #40): además de crear la cuenta en Authentication, ahora
+// se crea el documento en Firestore con los datos definidos en la
+// estructura de la issue #39 (nombre, apellido, email, telefono, rol,
+// fechaRegistro). El rol por defecto para un registro público es
+// "estudiante" — el rol "administrador" se asigna manualmente desde la
+// consola de Firebase para las cuentas de prueba, no hay flujo para
+// autoasignarse admin.
 async function registrarUsuario(nombre, apellido, email, password) {
   try {
     const credencial = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(credencial.user, { displayName: nombre + " " + apellido });
+ 
+    await setDoc(doc(db, "usuarios", credencial.user.uid), {
+      nombre: nombre,
+      apellido: apellido,
+      email: email,
+      telefono: "",
+      rol: "estudiante",
+      fechaRegistro: new Date().toISOString(),
+    });
+ 
     return { exito: true };
   } catch (error) {
     return { exito: false, mensaje: traducirErrorAuth(error) };
