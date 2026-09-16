@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
-
+ 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -12,9 +12,9 @@
     rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
-
+ 
 <body>
-
+ 
   <nav class="navbar navbar-expand-lg navbar-etc-light" aria-label="Navegación principal">
     <div class="container-fluid px-4">
       <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
@@ -33,13 +33,13 @@
         <div class="d-flex align-items-center gap-3">
           <a href="admin.html" class="admin-link fw-semibold text-navy">Admin</a>
           <a href="perfil.html" class="user-chip text-decoration-none">
-            <span class="avatar-sm">UD</span> Usuario Demo
+            <span class="avatar-sm" id="navAvatarSm">--</span> <span id="navNombreSm">Cargando...</span>
           </a>
         </div>
       </div>
     </div>
   </nav>
-
+ 
   <div class="d-flex" style="min-height: calc(100vh - 62px);">
     <!-- Sidebar -->
     <aside class="admin-sidebar p-3 d-none d-lg-flex flex-column justify-content-between"
@@ -49,8 +49,8 @@
         </p>
         <h2 class="h6 mb-3" style="color:#fff;">EduTechCourses</h2>
         <div class="d-flex align-items-center gap-2 mb-4 pb-3" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-          <span class="avatar-sm">UD</span>
-          <span class="small">Usuario Demo · Admin</span>
+          <span class="avatar-sm" id="sidebarAvatarSm">--</span>
+          <span class="small" id="sidebarNombreRol">Cargando...</span>
         </div>
         <p class="small text-uppercase mb-2" style="color: rgba(255,255,255,0.4); letter-spacing: 0.08em;">Gestión</p>
         <ul class="nav nav-pills flex-column gap-1">
@@ -70,10 +70,10 @@
       </div>
       <a href="index.html" class="admin-back-link"><i class="bi bi-arrow-left me-1"></i>Volver al sitio</a>
     </aside>
-
+ 
     <!-- Contenido -->
     <main class="flex-grow-1 p-4">
-
+ 
       <!-- Sección: Cursos -->
       <div id="seccion-cursos">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
@@ -85,7 +85,7 @@
             <i class="bi bi-plus-lg me-1"></i> Nuevo curso
           </button>
         </div>
-
+ 
         <div class="row g-3 mb-4">
           <div class="col-6 col-md-3">
             <div class="stat-card">
@@ -112,7 +112,7 @@
             </div>
           </div>
         </div>
-
+ 
         <div class="stat-card p-0">
           <div class="table-responsive">
             <table class="table table-admin align-middle mb-0">
@@ -245,14 +245,14 @@
           </div>
         </div>
       </div>
-
+ 
       <!-- Sección: Usuarios -->
       <div id="seccion-usuarios" class="d-none">
         <div class="mb-4">
           <h1 class="h4 mb-1">Gestión de usuarios</h1>
           <p class="text-body-secondary small mb-0">5 usuarios registrados.</p>
         </div>
-
+ 
         <div class="row g-3 mb-4">
           <div class="col-6 col-md-4">
             <div class="stat-card">
@@ -273,7 +273,7 @@
             </div>
           </div>
         </div>
-
+ 
         <div class="stat-card p-0">
           <div class="table-responsive">
             <table class="table table-admin align-middle mb-0">
@@ -367,10 +367,10 @@
           </div>
         </div>
       </div>
-
+ 
     </main>
   </div>
-
+ 
   <!-- Modal nuevo curso -->
   <div class="modal fade" id="modalNuevoCurso" tabindex="-1" aria-labelledby="modalNuevoCursoLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -421,29 +421,10 @@
       </div>
     </div>
   </div>
-
+ 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module" src="js/base.js"></script>
-  <script>
-    function mostrarSeccionAdmin(seccion) {
-      document.getElementById('seccion-cursos').classList.toggle('d-none', seccion !== 'cursos');
-      document.getElementById('seccion-usuarios').classList.toggle('d-none', seccion !== 'usuarios');
-      document.getElementById('nav-cursos').classList.toggle('active', seccion === 'cursos');
-      document.getElementById('nav-usuarios').classList.toggle('active', seccion === 'usuarios');
-    }
-
-    function toggleEstadoCurso(link) {
-      const fila = link.closest('tr');
-      const celdaEstado = fila.children[3];
-      const dot = celdaEstado.querySelector('.status-dot');
-      const activo = dot.classList.contains('active');
-
-      dot.classList.toggle('active', !activo);
-      dot.classList.toggle('inactive', activo);
-      celdaEstado.lastChild.textContent = activo ? 'Inactivo' : 'Activo';
-      link.textContent = activo ? 'Activar' : 'Desactivar';
-    }
-  </script>
+  <script type="module" src="js/pages/admin.js"></script>
 </body>
-
+ 
 </html>
