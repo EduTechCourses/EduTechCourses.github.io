@@ -6,7 +6,7 @@
 //
 // NOTA PARA EL EQUIPO: este archivo va a ir creciendo issue por issue.
 // Evitemos que dos personas lo editen al mismo tiempo en ramas distintas.
- 
+
 import { auth, db } from "./firebase-config.js";
 import {
   createUserWithEmailAndPassword,
@@ -16,7 +16,7 @@ import {
   sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
 import { doc, setDoc } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
- 
+
 // Traduce los códigos de error de Firebase a mensajes comprensibles.
 function traducirErrorAuth(error) {
   const mensajes = {
@@ -31,7 +31,7 @@ function traducirErrorAuth(error) {
   };
   return mensajes[error.code] || "Ocurrió un error inesperado. Intentá nuevamente.";
 }
- 
+
 // Registra un nuevo usuario con correo y contraseña, guarda su nombre
 // completo como displayName en Authentication, y crea su documento de
 // perfil en Firestore (colección "usuarios", identificado con su UID).
@@ -47,7 +47,7 @@ async function registrarUsuario(nombre, apellido, email, password) {
   try {
     const credencial = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(credencial.user, { displayName: nombre + " " + apellido });
- 
+
     await setDoc(doc(db, "usuarios", credencial.user.uid), {
       nombre: nombre,
       apellido: apellido,
@@ -56,13 +56,13 @@ async function registrarUsuario(nombre, apellido, email, password) {
       rol: "estudiante",
       fechaRegistro: new Date().toISOString(),
     });
- 
+
     return { exito: true };
   } catch (error) {
     return { exito: false, mensaje: traducirErrorAuth(error) };
   }
 }
- 
+
 // Inicia sesión con correo y contraseña.
 async function iniciarSesion(email, password) {
   try {
@@ -72,7 +72,7 @@ async function iniciarSesion(email, password) {
     return { exito: false, mensaje: traducirErrorAuth(error) };
   }
 }
- 
+
 // Cierra la sesión activa.
 async function cerrarSesion() {
   try {
@@ -82,15 +82,20 @@ async function cerrarSesion() {
     return { exito: false, mensaje: traducirErrorAuth(error) };
   }
 }
- 
-// Envía un correo de recuperación de contraseña.
+
+// Envía un correo de recuperación de contraseña. Se le pasa una URL de
+// "continuar" para que, después de restablecer la contraseña en la
+// página de Firebase, la persona tenga un link de vuelta a nuestro login.
 async function recuperarContrasena(email) {
+  const actionCodeSettings = {
+    url: window.location.origin + "/login.html",
+  };
   try {
-    await sendPasswordResetEmail(auth, email);
+    await sendPasswordResetEmail(auth, email, actionCodeSettings);
     return { exito: true };
   } catch (error) {
     return { exito: false, mensaje: traducirErrorAuth(error) };
   }
 }
- 
+
 export { registrarUsuario, iniciarSesion, cerrarSesion, recuperarContrasena };
