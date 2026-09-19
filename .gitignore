@@ -16,3 +16,5 @@ firebase-config.local.js
 
 # Logs
 *.log
+
+.firebase/
