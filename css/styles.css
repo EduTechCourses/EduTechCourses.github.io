@@ -103,7 +103,8 @@ a {
   color: var(--ink-soft);
   font-weight: 500;
   font-size: 0.94rem;
-  align-self: center;
+  align-self: start;
+  padding-left: 0.9rem;
 }
 
 .navbar-etc-light .login-link:hover {
@@ -122,6 +123,11 @@ a {
   font-weight: 500;
   font-size: 0.88rem;
   color: var(--ink);
+  margin-left: 0.6rem;
+}
+
+.navbar-etc-light [data-logout] {
+  margin-left: 0.6rem;
 }
 
 .user-chip .avatar-sm {
@@ -142,10 +148,34 @@ a {
   color: var(--ink-soft);
   font-weight: 500;
   font-size: 0.9rem;
+  padding-left: 0.9rem;
 }
 
 .admin-link:hover {
   color: var(--navy);
+}
+
+/* Ajustes de la navbar solo para pantallas grandes (desktop):
+   en mobile, login-link/admin-link/user-chip/logout llevan margen o
+   padding izquierdo para alinearse con Inicio/Catálogo al apilarse en
+   columna; en desktop vuelven a su alineación horizontal original. */
+@media (min-width: 992px) {
+  .navbar-etc-light .login-link {
+    align-self: center;
+    padding-left: 0;
+  }
+
+  .user-chip {
+    margin-left: 0;
+  }
+
+  .navbar-etc-light [data-logout] {
+    margin-left: 0;
+  }
+
+  .admin-link {
+    padding-left: 0;
+  }
 }
 
 /* Botón de marca (usado en navbar y footer) */
@@ -209,12 +239,6 @@ footer.site-footer .brand-name {
 
 .bg-soft {
   background: #eef1f6;
-}
-
-@media (max-width: 767.98px) {
-  .section {
-    padding: 2.5rem 0;
-  }
 }
 
 /* ---------- Tarjetas y badges de categoría (compartido) ---------- */
@@ -576,7 +600,12 @@ footer.site-footer .brand-name {
   padding: 4rem 0;
 }
 
+/* Ajustes generales para pantallas chicas (mobile) */
 @media (max-width: 767.98px) {
+  .section {
+    padding: 2.5rem 0;
+  }
+
   .hero h1 {
     font-size: 2rem;
   }
