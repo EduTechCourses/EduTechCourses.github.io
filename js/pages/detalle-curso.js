@@ -32,6 +32,7 @@ function renderizarCurso(curso) {
   document.getElementById("cursoNivel").textContent = curso.nivel;
  
   document.getElementById("cursoTemario").innerHTML = generarTemarioHTML(curso.temario);
+  document.getElementById("cursoModulos").textContent = curso.temario.length;
  
   const imagen = document.getElementById("cursoImagen");
   imagen.src = curso.imagen;
