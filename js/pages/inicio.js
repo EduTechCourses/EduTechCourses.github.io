@@ -1,34 +1,57 @@
 // EduTechCourses — lógica de la pantalla Inicio
-// Depende de js/modules/datos-cursos.js (debe cargarse antes que este archivo)
- 
-function mostrarDestacados() {
-  const idsDestacados = [1, 3, 5]; // Robótica desde cero, Diseño 3D con Blender, Inglés profesional
-  const destacados = cursos.filter((curso) => idsDestacados.includes(curso.id));
+// Muestra hasta 3 cursos activos marcados como destacado: true en Firestore.
+
+import {
+  obtenerCursosActivos,
+  datosCategoria,
+  generarEstrellasHTML,
+  escaparHTML
+} from "../modules/cursos-servicio.js";
+
+async function mostrarDestacados() {
   const contenedor = document.getElementById("cursosDestacados");
- 
-  contenedor.innerHTML = "";
+
+  let destacados;
+  try {
+    const cursos = await obtenerCursosActivos();
+    destacados = cursos.filter((curso) => curso.destacado).slice(0, 3);
+  } catch (error) {
+    console.error("Error al cargar destacados:", error);
+    contenedor.innerHTML = `
+      <div class="col-12">
+        <p class="text-body-secondary mb-0">No se pudieron cargar los cursos destacados. <a href="catalogo.html" class="text-navy fw-semibold">Ver el catálogo</a></p>
+      </div>
+    `;
+    return;
+  }
+
+  let html = "";
   destacados.forEach((curso) => {
-    contenedor.innerHTML += `
+    const cat = datosCategoria(curso.categoria);
+    const nombre = escaparHTML(curso.nombre);
+    html += `
       <div class="col-md-4">
         <div class="course-card">
-          <img src="${curso.imagen}" alt="Curso de ${curso.nombre}" class="course-thumb">
+          <img src="${escaparHTML(curso.imagen)}" alt="Curso de ${nombre}" class="course-thumb">
           <div class="card-body">
-            <span class="badge-category ${curso.categoriaClase}">${curso.categoriaLabel}</span>
-            <h3 class="h6 mt-3 mb-2">${curso.nombre}</h3>
+            <span class="badge-category ${cat.clase}">${cat.label}</span>
+            <h3 class="h6 mt-3 mb-2">${nombre}</h3>
             <div class="d-flex align-items-center gap-2 mb-1">
-              <span class="rating-stars">${generarEstrellasHTML(curso.rating)}</span>
-              <span class="rating-value">${curso.rating.toFixed(1)}</span>
+              <span class="rating-stars">${generarEstrellasHTML(curso.rating || 0)}</span>
+              <span class="rating-value">${(curso.rating || 0).toFixed(1)}</span>
             </div>
-            <p class="course-meta mb-3">${curso.estudiantes} estudiantes · ${curso.temario.length} módulos</p>
+            <p class="course-meta mb-3">${curso.estudiantes || 0} estudiantes · ${(curso.temario || []).length} módulos</p>
             <div class="d-flex justify-content-between align-items-center">
-              <span class="course-price">USD ${curso.precio} <small>/ curso</small></span>
-              <a href="detalle-curso.html?id=${curso.id}" class="btn btn-sm btn-outline-brand" style="color: var(--navy); border-color: var(--navy);">Ver curso</a>
+              <span class="course-price">USD ${Number(curso.precio)} <small>/ curso</small></span>
+              <a href="detalle-curso.html?id=${encodeURIComponent(curso.id)}" class="btn btn-sm btn-outline-brand" style="color: var(--navy); border-color: var(--navy);">Ver curso</a>
             </div>
           </div>
         </div>
       </div>
     `;
   });
+
+  contenedor.innerHTML = html;
 }
- 
-document.addEventListener("DOMContentLoaded", mostrarDestacados);
+
+mostrarDestacados();
