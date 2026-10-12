@@ -1,5 +1,5 @@
 # EduTechCourses.github.io
-Plataforma web de cursos digitales con suscripción — Taller Integrador, CERP del Litoral
+Plataforma web de cursos digitales con suscripción - Taller Integrador, CERP del Litoral
 
 ## Autenticación
 La plataforma utiliza Firebase Authentication con el proveedor Email/Contraseña.
@@ -10,6 +10,8 @@ Colección `usuarios`, un documento por usuario identificado con su UID de Fireb
 Colección `cursos`, un documento por curso. El id del documento es el que se usa en `detalle-curso.html?id=`. Campos: nombre, categoria (robotica, diseno, programacion, idiomas o mentorias), precio, nivel, descripcion, imagen, rating, estudiantes, temario (lista de { titulo, duracion, gratis }), activo, destacado, fechaCreacion. Las páginas públicas solo muestran los cursos con `activo: true`, y Inicio muestra hasta 3 con `destacado: true`.
 
 La carga inicial de los 6 cursos se hizo con `tools/seed-cursos.html`, una página de uso único que requiere sesión de administrador y está excluida del hosting en `firebase.json`.
+
+Colección `adquisiciones`, un documento por adquisición, con id `<uid>_<cursoId>`: esto impide registrar dos veces el mismo curso para el mismo usuario. Campos: uid, cursoId, cursoNombre, importe, metodoPago (siempre "simulado"), estado ("confirmada" o "cancelada") y fecha (hora del servidor). Al crearla, las reglas verifican que el uid sea el del usuario, que el curso esté activo y que el importe y el nombre coincidan con los datos reales del curso.
 
 ## Reglas de seguridad de Firestore
 Las reglas se publican desde la consola de Firebase (Firestore Database → Reglas). Esta es la versión vigente:
@@ -25,8 +27,26 @@ service cloud.firestore {
         get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.rol == "administrador";
     }
 
+    // Datos del curso, leídos del servidor (no del cliente).
+    function cursoDe(id) {
+      return get(/databases/$(database)/documents/cursos/$(id)).data;
+    }
+
     match /usuarios/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // Cada usuario lee su propio documento; el administrador lee todos.
+      allow read: if request.auth != null && (request.auth.uid == userId || esAdmin());
+
+      // Al registrarse, solo puede crear su documento con rol "estudiante".
+      allow create: if request.auth != null && request.auth.uid == userId
+        && request.resource.data.rol == "estudiante";
+
+      // Solo puede editar nombre, apellido y teléfono: el rol y el resto no se tocan.
+      allow update: if request.auth != null && request.auth.uid == userId
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(["nombre", "apellido", "telefono"]);
+
+      // Nadie elimina usuarios desde el cliente.
+      allow delete: if false;
     }
 
     // Cursos: cualquiera lee los activos; solo el admin lee inactivos y escribe.
@@ -34,6 +54,48 @@ service cloud.firestore {
       allow read: if esAdmin() || resource.data.activo == true;
       allow write: if esAdmin();
     }
+
+    // Adquisiciones: el id del documento es "<uid>_<cursoId>", lo que impide duplicarlas.
+    match /adquisiciones/{adqId} {
+      // Lectura por id: solo las propias (o el administrador). Funciona aunque el documento no exista.
+      allow get: if request.auth != null
+        && (esAdmin() || adqId.matches(request.auth.uid + "_.*"));
+
+      // Consultas (historial): solo las propias; el administrador todas.
+      allow list: if request.auth != null
+        && (esAdmin() || resource.data.uid == request.auth.uid);
+
+      // Creación validada contra los datos reales del curso.
+      allow create: if request.auth != null
+        && adqId == request.auth.uid + "_" + request.resource.data.cursoId
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(
+             ["uid", "cursoId", "cursoNombre", "importe", "metodoPago", "estado", "fecha"])
+        && request.resource.data.keys().hasAll(
+             ["uid", "cursoId", "cursoNombre", "importe", "metodoPago", "estado", "fecha"])
+        && request.resource.data.estado == "confirmada"
+        && request.resource.data.metodoPago == "simulado"
+        && request.resource.data.fecha == request.time
+        && cursoDe(request.resource.data.cursoId).activo == true
+        && request.resource.data.importe == cursoDe(request.resource.data.cursoId).precio
+        && request.resource.data.cursoNombre == cursoDe(request.resource.data.cursoId).nombre;
+
+      // El administrador solo puede cambiar el estado.
+      allow update: if esAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["estado"])
+        && request.resource.data.estado in ["confirmada", "cancelada"];
+
+      // Nadie elimina adquisiciones desde el cliente.
+      allow delete: if false;
+    }
   }
 }
 ```
+
+| Colección | Visitante | Estudiante | Administrador |
+|---|---|---|---|
+| `cursos` | Lee los activos | Lee los activos | Lee y escribe todos |
+| `usuarios` | — | Lee y edita su documento (solo nombre, apellido y teléfono); lo crea con rol "estudiante" | Lee todos |
+| `adquisiciones` | — | Crea y lee solo las propias | Lee todas y modifica el estado |
+
+Nadie puede eliminar usuarios ni adquisiciones desde el cliente.
