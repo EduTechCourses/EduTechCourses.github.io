@@ -99,3 +99,45 @@ service cloud.firestore {
 | `adquisiciones` | — | Crea y lee solo las propias | Lee todas y modifica el estado |
 
 Nadie puede eliminar usuarios ni adquisiciones desde el cliente.
+
+## Flujo de adquisición de cursos
+
+La adquisición de un curso usa un **pago simulado**: no se cobra nada ni se solicitan ni se guardan datos de tarjeta ni de ningún otro medio de pago.
+
+### Cómo funciona
+
+1. En `detalle-curso.html?id=…`, el botón «Suscribirme a este curso» comprueba si hay una sesión iniciada.
+2. Sin sesión, lleva a `login.html?volver=…`. Después de iniciar sesión, la persona regresa al mismo curso. Solo se aceptan páginas internas del sitio como destino: cualquier otro valor se ignora y se redirige a `perfil.html`.
+3. Con sesión, se abre un modal con el nombre y el precio del curso y el aviso de que el pago es simulado.
+4. Al confirmar, se crea el documento `adquisiciones/{uid}_{cursoId}` con los campos descritos en la sección Firestore (estado `confirmada`, método de pago `simulado` y fecha del servidor).
+5. El modal informa el resultado: confirmación con enlace a «Mis cursos», aviso de que el curso ya había sido adquirido (sin duplicar el registro) o un mensaje de error claro.
+
+Si la persona ya adquirió el curso, la pantalla de detalle lo refleja desde que carga.
+
+### Archivos involucrados
+
+| Archivo | Responsabilidad |
+|---|---|
+| `js/modules/adquisiciones-servicio.js` | Registra la adquisición (`adquirirCurso`) y la consulta (`obtenerAdquisicion`); traduce los errores de Firestore a mensajes comprensibles |
+| `js/pages/detalle-curso.js` | Botón «Suscribirme», modal de pago simulado y mensajes de resultado |
+| `detalle-curso.html` | Estructura del modal de pago simulado |
+| `login.html` | Regreso al curso de origen mediante el parámetro `volver` |
+
+### Resultados posibles
+
+`adquirirCurso` devuelve `{ exito: true }` o `{ exito: false, codigo, mensaje }`:
+
+| Código | Situación |
+|---|---|
+| `sin-sesion` | No hay una sesión iniciada |
+| `ya-adquirido` | La persona ya tenía una adquisición confirmada de ese curso |
+| `cancelada` | La adquisición existe pero fue cancelada por la administración |
+| `permiso-denegado` | Las reglas rechazaron el registro (por ejemplo, el curso ya no está activo o su precio cambió) |
+| `sin-conexion` | No hay conexión con el servidor |
+| `error` | Cualquier otro error inesperado |
+
+### Garantías de seguridad
+
+- El id `{uid}_{cursoId}` impide registrar dos veces el mismo curso para la misma persona.
+- Las reglas de Firestore validan que el importe y el nombre coincidan con los datos reales del curso, que el método de pago sea `simulado` y que la fecha sea la del servidor, por lo que el cliente no puede alterar esos valores.
+- Nadie puede eliminar adquisiciones; solo la administración puede cambiar su estado.
