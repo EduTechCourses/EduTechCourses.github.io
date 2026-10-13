@@ -151,6 +151,17 @@
   <script type="module">
     import { iniciarSesion, recuperarContrasena } from "./js/auth.js";
 
+    // Si la persona llegó desde otra pantalla (por ejemplo, el detalle de un curso),
+    // el parámetro ?volver= indica a dónde regresar tras iniciar sesión.
+    // Solo se aceptan páginas internas del sitio (nombre.html con parámetros
+    // opcionales), para impedir redirecciones hacia otros dominios.
+    function destinoDespuesDelLogin() {
+      const volver = new URLSearchParams(window.location.search).get("volver");
+      const esInterna = volver && /^[a-z0-9_-]+\.html(\?[a-z0-9_=&%.-]*)?$/i.test(volver);
+      const esAuth = volver && /^(login|registro)\.html/i.test(volver);
+      return esInterna && !esAuth ? volver : "perfil.html";
+    }
+
     const form = document.getElementById("formLogin");
     const mensaje = document.getElementById("loginMensaje");
 
@@ -178,7 +189,7 @@
       if (resultado.exito) {
         mensaje.className = "alert alert-success";
         mensaje.textContent = "¡Bienvenido! Iniciando sesión...";
-        setTimeout(() => { window.location.href = "perfil.html"; }, 800);
+        setTimeout(() => { window.location.href = destinoDespuesDelLogin(); }, 800);
       } else {
         mensaje.className = "alert alert-danger";
         mensaje.textContent = resultado.mensaje;
