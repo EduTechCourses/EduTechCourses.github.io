@@ -63,7 +63,8 @@
             </a>
             <a href="#" class="nav-link" onclick="mostrarSeccionPerfil('cursos'); return false;" id="nav-cursos">
               <span><i class="bi bi-collection me-2"></i>Mis cursos</span>
-              <span class="badge rounded-pill" style="background:#eaf3f0; color:var(--teal-dark);">2</span>
+              <span class="badge rounded-pill d-none" style="background:#eaf3f0; color:var(--teal-dark);"
+                id="perfilContadorCursos">0</span>
             </a>
             <hr class="my-2">
             <a href="#" class="nav-link text-danger" data-logout>
@@ -113,7 +114,7 @@
                   </div>
                   <div class="col-md-6">
                     <label for="perfilCursosActivos" class="form-label">Cursos activos</label>
-                    <input type="text" class="form-control" id="perfilCursosActivos" value="2 cursos" disabled>
+                    <input type="text" class="form-control" id="perfilCursosActivos" value="—" disabled>
                   </div>
                   <div class="col-md-6">
                     <label for="perfilMiembroDesde" class="form-label">Miembro desde</label>
@@ -121,8 +122,7 @@
                   </div>
                 </div>
 
-                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-4">
-                  <p class="small text-body-secondary mb-0"><strong class="text-navy">1</strong> curso completado</p>
+                <div class="d-flex justify-content-end align-items-center flex-wrap gap-2 mt-4">
                   <button type="submit" class="btn btn-brand">Guardar cambios</button>
                 </div>
               </form>
@@ -132,7 +132,7 @@
                 <div class="d-flex align-items-center gap-2">
                   <i class="bi bi-collection text-teal" style="font-size:1.3rem;"></i>
                   <div>
-                    <p class="fw-semibold mb-0 small">2 cursos activos</p>
+                    <p class="fw-semibold mb-0 small" id="perfilResumenCursos">Cargando tus cursos...</p>
                     <p class="small text-body-secondary mb-0">Accedés a cada curso de forma individual</p>
                   </div>
                 </div>
@@ -152,61 +152,22 @@
                 style="color:var(--navy); border-color:var(--navy);">+ Explorar más</a>
             </div>
 
-            <div class="stat-card p-0">
-              <div class="d-flex align-items-center gap-3 p-3 border-bottom">
-                <div class="course-thumb rounded-3"
-                  style="width:76px; height:60px; font-size:1.2rem; background: linear-gradient(135deg,#12305c,#1aa98b);">
-                  <i class="bi bi-cpu"></i>
-                </div>
-                <div class="flex-grow-1">
-                  <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
-                    <div>
-                      <p class="fw-semibold mb-0">Robótica desde cero</p>
-                      <p class="small text-body-secondary mb-0"><i class="bi bi-calendar3 me-1"></i>Adquirido el
-                        12/08/2026 · <i class="bi bi-clock me-1"></i>4 módulos</p>
-                    </div>
-                    <span class="badge-category badge-cat-teal">Robótica</span>
-                  </div>
-                  <div class="d-flex align-items-center gap-2 mt-2">
-                    <div class="progress progress-course flex-grow-1">
-                      <div class="progress-bar" role="progressbar" style="width: 68%; background: var(--teal);"
-                        aria-valuenow="68" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                    <span class="small fw-semibold text-navy">68%</span>
-                    <a href="detalle-curso.html" class="btn btn-brand btn-sm ms-2"><i
-                        class="bi bi-play-fill me-1"></i>Continuar</a>
-                  </div>
-                </div>
-              </div>
-
-              <div class="d-flex align-items-center gap-3 p-3">
-                <div class="course-thumb rounded-3"
-                  style="width:76px; height:60px; font-size:1.2rem; background: linear-gradient(135deg,#12305c,#2f6fed);">
-                  <i class="bi bi-translate"></i>
-                </div>
-                <div class="flex-grow-1">
-                  <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
-                    <div>
-                      <p class="fw-semibold mb-0">Inglés profesional</p>
-                      <p class="small text-body-secondary mb-0"><i class="bi bi-calendar3 me-1"></i>Adquirido el
-                        03/08/2026 · <i class="bi bi-clock me-1"></i>6 módulos</p>
-                    </div>
-                    <span class="badge-category badge-cat-pink">Idiomas</span>
-                  </div>
-                  <div class="d-flex align-items-center gap-2 mt-2">
-                    <div class="progress progress-course flex-grow-1">
-                      <div class="progress-bar" role="progressbar" style="width: 100%; background: var(--ink-faint);"
-                        aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                    <span class="small fw-semibold text-navy">Vencido</span>
-                    <a href="detalle-curso.html" class="btn btn-outline-brand btn-sm ms-2"
-                      style="color:var(--navy); border-color:var(--navy);">Renovar</a>
-                  </div>
-                </div>
-              </div>
+            <!-- El historial se genera con JS a partir de la colección "adquisiciones" (js/pages/perfil.js) -->
+            <div id="cursosCargando" class="stat-card text-center text-body-secondary py-5">
+              <div class="spinner-border spinner-border-sm me-2" aria-hidden="true"></div>
+              Cargando tus cursos...
             </div>
-            <p class="text-body-secondary small mt-3">El progreso y el historial se actualizarán de forma dinámica
-              cuando se integre la gestión de suscripciones.</p>
+
+            <div id="cursosError" class="alert alert-danger d-none" role="alert"></div>
+
+            <div id="cursosVacio" class="stat-card text-center py-5 d-none">
+              <i class="bi bi-collection display-5 text-body-secondary d-block mb-3"></i>
+              <p class="fw-semibold mb-1">Todavía no adquiriste ningún curso</p>
+              <p class="small text-body-secondary mb-3">Cuando adquieras uno, va a aparecer acá.</p>
+              <a href="catalogo.html" class="btn btn-brand btn-sm">Explorar el catálogo</a>
+            </div>
+
+            <div id="cursosLista" class="stat-card p-0 d-none"></div>
           </div>
 
         </div>
