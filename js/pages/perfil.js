@@ -7,6 +7,9 @@ import { doc, getDoc, updateDoc, collection, query, where, getDocs } from "https
 import { escaparHTML } from "../modules/cursos-servicio.js";
 
 let uidActual = null;
+// Rol tal como está guardado en Firestore ("estudiante" o "administrador").
+// No se lee del texto de la insignia, que se muestra con la primera letra en mayúscula.
+let rolActual = null;
 
 function obtenerIniciales(nombre, apellido) {
     const n = (nombre || "").trim();
@@ -162,6 +165,7 @@ onAuthStateChanged(auth, async function (usuario) {
     }
 
     const datos = snapshot.data();
+    rolActual = datos.rol;
     actualizarEncabezados(datos);
 
     document.getElementById("perfilNombre").value = datos.nombre;
@@ -204,7 +208,7 @@ formPerfil.addEventListener("submit", async function (event) {
             nombre: nombre,
             apellido: apellido,
             email: document.getElementById("perfilEmail").value,
-            rol: document.getElementById("perfilRolBadge").textContent,
+            rol: rolActual || "estudiante",
         });
 
         mensajePerfil.className = "alert alert-success";
