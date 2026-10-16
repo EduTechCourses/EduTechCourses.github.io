@@ -40,7 +40,63 @@ document.addEventListener("DOMContentLoaded", function () {
       window.location.href = "index.html";
     });
   });
+
+  mostrarAvisoDeUrl();
 });
+ 
+// Avisos que otras páginas piden mostrar mediante ?aviso=<código> en la URL
+// (por ejemplo, al redirigir a alguien que no tiene permisos para una página).
+// El texto sale de esta tabla y no de la URL, así que un valor desconocido
+// o manipulado simplemente se ignora.
+const AVISOS = {
+  "sin-permisos": {
+    tipo: "warning",
+    icono: "bi-shield-exclamation",
+    texto: "No tenés permisos para acceder a esa página."
+  },
+  "sesion-requerida": {
+    tipo: "info",
+    icono: "bi-info-circle",
+    texto: "Iniciá sesión para acceder a esa página."
+  }
+};
+
+// Muestra el aviso indicado en la URL justo debajo de la barra de navegación
+// y lo quita de la dirección, para que no reaparezca al recargar. Los demás
+// parámetros (como ?volver= en el login) se conservan.
+function mostrarAvisoDeUrl() {
+  const parametros = new URLSearchParams(window.location.search);
+  const codigo = parametros.get("aviso");
+  if (!codigo || !Object.prototype.hasOwnProperty.call(AVISOS, codigo)) return;
+
+  const barra = document.querySelector("nav.navbar");
+  if (!barra) return;
+
+  const aviso = AVISOS[codigo];
+  const contenedor = document.createElement("div");
+  contenedor.className = "container py-3";
+
+  const alerta = document.createElement("div");
+  alerta.className = "alert alert-" + aviso.tipo + " alert-dismissible fade show mb-0";
+  alerta.setAttribute("role", "alert");
+
+  const icono = document.createElement("i");
+  icono.className = "bi " + aviso.icono + " me-1";
+
+  const cerrar = document.createElement("button");
+  cerrar.type = "button";
+  cerrar.className = "btn-close";
+  cerrar.setAttribute("data-bs-dismiss", "alert");
+  cerrar.setAttribute("aria-label", "Cerrar");
+
+  alerta.append(icono, aviso.texto, cerrar);
+  contenedor.append(alerta);
+  barra.after(contenedor);
+
+  parametros.delete("aviso");
+  const resto = parametros.toString();
+  history.replaceState(null, "", window.location.pathname + (resto ? "?" + resto : "") + window.location.hash);
+}
  
 // Adapta la navbar según haya o no una sesión de Firebase activa.
 // Busca los contenedores #navAuthGuest / #navAuthUser en la página
