@@ -3,9 +3,13 @@
 
 import { auth, db } from "../firebase-config.js";
 import { onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
-import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+import { doc, getDoc, updateDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+import { escaparHTML } from "../modules/cursos-servicio.js";
 
 let uidActual = null;
+// Rol tal como está guardado en Firestore ("estudiante" o "administrador").
+// No se lee del texto de la insignia, que se muestra con la primera letra en mayúscula.
+let rolActual = null;
 
 function obtenerIniciales(nombre, apellido) {
     const n = (nombre || "").trim();
@@ -41,6 +45,108 @@ function actualizarEncabezados(datos) {
     document.getElementById("perfilEmailChico").textContent = datos.email;
 }
 
+// ---------- Historial de cursos adquiridos ----------
+
+function textoCantidadCursos(cantidad) {
+    return cantidad + (cantidad === 1 ? " curso" : " cursos");
+}
+
+// Muestra solo uno de los estados de la sección "Mis cursos".
+function mostrarEstadoCursos(estado) {
+    document.getElementById("cursosCargando").classList.toggle("d-none", estado !== "cargando");
+    document.getElementById("cursosError").classList.toggle("d-none", estado !== "error");
+    document.getElementById("cursosVacio").classList.toggle("d-none", estado !== "vacio");
+    document.getElementById("cursosLista").classList.toggle("d-none", estado !== "lista");
+}
+
+function formatearFechaAdquisicion(fecha) {
+    if (!fecha || typeof fecha.toDate !== "function") return "—";
+    return fecha.toDate().toLocaleDateString("es-UY", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
+function crearItemAdquisicion(adquisicion, esUltima) {
+    const confirmada = adquisicion.estado === "confirmada";
+    const nombre = escaparHTML(adquisicion.cursoNombre);
+    const bordeInferior = esUltima ? "" : " border-bottom";
+
+    const etiqueta = confirmada
+        ? '<span class="badge bg-success-subtle text-success-emphasis">Confirmada</span>'
+        : '<span class="badge bg-secondary-subtle text-secondary-emphasis">Cancelada</span>';
+
+    const accion = confirmada
+        ? `<a href="detalle-curso.html?id=${encodeURIComponent(adquisicion.cursoId)}" class="btn btn-brand btn-sm mt-2">Ver curso</a>`
+        : '<p class="small text-body-secondary mb-0 mt-2">Esta adquisición fue cancelada. Contactá a la administración de la plataforma.</p>';
+
+    return `
+        <div class="d-flex align-items-center gap-3 p-3${bordeInferior}">
+            <div class="course-thumb rounded-3 flex-shrink-0"
+                style="width:76px; height:60px; font-size:1.2rem; background: linear-gradient(135deg,#12305c,#1aa98b);">
+                <i class="bi bi-collection"></i>
+            </div>
+            <div class="flex-grow-1">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                    <div>
+                        <p class="fw-semibold mb-0">${nombre}</p>
+                        <p class="small text-body-secondary mb-0"><i class="bi bi-calendar3 me-1"></i>Adquirido el ${formatearFechaAdquisicion(adquisicion.fecha)} · USD ${Number(adquisicion.importe)}</p>
+                    </div>
+                    ${etiqueta}
+                </div>
+                ${accion}
+            </div>
+        </div>
+    `;
+}
+
+// Actualiza los contadores de la barra lateral, el formulario y el resumen.
+function actualizarContadoresCursos(cantidadActivos) {
+    const contador = document.getElementById("perfilContadorCursos");
+    contador.textContent = cantidadActivos;
+    contador.classList.toggle("d-none", cantidadActivos === 0);
+
+    document.getElementById("perfilCursosActivos").value = textoCantidadCursos(cantidadActivos);
+    document.getElementById("perfilResumenCursos").textContent = cantidadActivos === 0
+        ? "Todavía no tenés cursos activos"
+        : textoCantidadCursos(cantidadActivos) + (cantidadActivos === 1 ? " activo" : " activos");
+}
+
+// Lee las adquisiciones del usuario (las reglas solo permiten consultar las propias)
+// y las muestra de la más reciente a la más antigua.
+async function cargarHistorialCursos(uid) {
+    mostrarEstadoCursos("cargando");
+
+    try {
+        const consulta = query(collection(db, "adquisiciones"), where("uid", "==", uid));
+        const resultado = await getDocs(consulta);
+        const adquisiciones = resultado.docs.map((d) => d.data());
+
+        // Se ordena en el cliente para no depender de un índice compuesto en Firestore.
+        adquisiciones.sort((a, b) => {
+            const fa = a.fecha && a.fecha.toMillis ? a.fecha.toMillis() : 0;
+            const fb = b.fecha && b.fecha.toMillis ? b.fecha.toMillis() : 0;
+            return fb - fa;
+        });
+
+        const activos = adquisiciones.filter((a) => a.estado === "confirmada").length;
+        actualizarContadoresCursos(activos);
+
+        if (adquisiciones.length === 0) {
+            mostrarEstadoCursos("vacio");
+            return;
+        }
+
+        document.getElementById("cursosLista").innerHTML = adquisiciones
+            .map((a, indice) => crearItemAdquisicion(a, indice === adquisiciones.length - 1))
+            .join("");
+        mostrarEstadoCursos("lista");
+    } catch (error) {
+        console.error("Error al cargar el historial de cursos:", error);
+        document.getElementById("cursosError").textContent =
+            "No pudimos cargar tus cursos. Revisá tu conexión y recargá la página.";
+        document.getElementById("perfilResumenCursos").textContent = "No se pudieron cargar tus cursos";
+        mostrarEstadoCursos("error");
+    }
+}
+
 onAuthStateChanged(auth, async function (usuario) {
     if (!usuario) {
         window.location.href = "login.html";
@@ -48,6 +154,7 @@ onAuthStateChanged(auth, async function (usuario) {
     }
 
     uidActual = usuario.uid;
+    cargarHistorialCursos(uidActual);
     const referenciaDoc = doc(db, "usuarios", uidActual);
     const snapshot = await getDoc(referenciaDoc);
 
@@ -58,6 +165,7 @@ onAuthStateChanged(auth, async function (usuario) {
     }
 
     const datos = snapshot.data();
+    rolActual = datos.rol;
     actualizarEncabezados(datos);
 
     document.getElementById("perfilNombre").value = datos.nombre;
@@ -100,7 +208,7 @@ formPerfil.addEventListener("submit", async function (event) {
             nombre: nombre,
             apellido: apellido,
             email: document.getElementById("perfilEmail").value,
-            rol: document.getElementById("perfilRolBadge").textContent,
+            rol: rolActual || "estudiante",
         });
 
         mensajePerfil.className = "alert alert-success";

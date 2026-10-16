@@ -141,3 +141,29 @@ Si la persona ya adquirió el curso, la pantalla de detalle lo refleja desde que
 - El id `{uid}_{cursoId}` impide registrar dos veces el mismo curso para la misma persona.
 - Las reglas de Firestore validan que el importe y el nombre coincidan con los datos reales del curso, que el método de pago sea `simulado` y que la fecha sea la del servidor, por lo que el cliente no puede alterar esos valores.
 - Nadie puede eliminar adquisiciones; solo la administración puede cambiar su estado.
+
+## Historial de cursos en el perfil
+
+La pestaña «Mis cursos» de `perfil.html` muestra el historial real de adquisiciones de la persona con sesión iniciada. Ya no hay datos de ejemplo: la plataforma no registra progreso ni vencimientos de los cursos.
+
+### Cómo funciona
+
+1. `js/pages/perfil.js` consulta la colección `adquisiciones` con `where("uid", "==", uid)`. Las reglas de Firestore solo permiten consultar las adquisiciones propias.
+2. Las adquisiciones se ordenan por fecha, de la más reciente a la más antigua. El orden se hace en el cliente, por lo que no hace falta crear un índice compuesto en Firestore.
+3. Cada adquisición muestra el nombre del curso, la fecha, el importe y el estado:
+   - **Confirmada:** incluye el botón «Ver curso», que lleva a `detalle-curso.html?id=…`.
+   - **Cancelada:** muestra un aviso para contactar a la administración y no ofrece enlace al curso.
+4. El campo «Cursos activos», la insignia de «Mis cursos» y el resumen del perfil cuentan solo las adquisiciones confirmadas.
+
+### Estados de la sección
+
+| Estado | Cuándo se muestra |
+|---|---|
+| Cargando | Mientras se consulta Firestore |
+| Vacío | La persona todavía no adquirió ningún curso; ofrece un enlace al catálogo |
+| Lista | Hay al menos una adquisición |
+| Error | Falló la consulta (por ejemplo, sin conexión); pide revisar la conexión y recargar |
+
+### Rol y enlace «Admin»
+
+El enlace «Admin» de la barra superior se muestra solo si el rol guardado en Firestore es `administrador`. El perfil conserva ese rol tal como está en la base y no lo lee del texto de la insignia, por lo que el enlace se mantiene también después de guardar los cambios del perfil.
