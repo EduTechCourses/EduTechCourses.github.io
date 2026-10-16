@@ -11,9 +11,9 @@
 // IMPORTANTE (issue #32): este archivo se carga como
 // <script type="module"> en todas las páginas, porque necesita
 // importar auth de Firebase para detectar la sesión activa. Como los
-// módulos no crean funciones globales automáticamente, las funciones
-// llamadas desde atributos onclick="" del HTML (como
-// mostrarEstadoCurso) se asignan explícitamente a `window` al final.
+// módulos no crean funciones globales automáticamente, una función
+// llamada desde un atributo onclick="" del HTML tiene que asignarse
+// explícitamente a `window`.
  
 import { auth } from "./firebase-config.js";
 import { cerrarSesion } from "./auth.js";
@@ -41,36 +41,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 });
- 
-// Alterna entre vista de visitante/no suscripto y usuario suscripto,
-// usado en detalle-curso.html. Cuando exista Firestore, este estado
-// deberá reemplazarse por la consulta real de la suscripción.
-function mostrarEstadoCurso(estado) {
-  const previa = document.getElementById('estado-no-suscripto');
-  const completo = document.getElementById('estado-suscripto');
-  const btnPrevia = document.getElementById('btn-estado-previa');
-  const btnCompleto = document.getElementById('btn-estado-suscripto');
-  if (!previa || !completo) return;
- 
-  if (estado === 'suscripto') {
-    previa.classList.add('d-none');
-    completo.classList.remove('d-none');
-    btnCompleto.classList.add('active');
-    btnPrevia.classList.remove('active');
-  } else {
-    completo.classList.add('d-none');
-    previa.classList.remove('d-none');
-    btnPrevia.classList.add('active');
-    btnCompleto.classList.remove('active');
-  }
- 
-  const accionNoSuscripto = document.getElementById('accion-no-suscripto');
-  const accionSuscripto = document.getElementById('accion-suscripto');
-  if (accionNoSuscripto && accionSuscripto) {
-    accionNoSuscripto.classList.toggle('d-none', estado === 'suscripto');
-    accionSuscripto.classList.toggle('d-none', estado !== 'suscripto');
-  }
-}
  
 // Adapta la navbar según haya o no una sesión de Firebase activa.
 // Busca los contenedores #navAuthGuest / #navAuthUser en la página
@@ -106,8 +76,3 @@ function obtenerIniciales(texto) {
 onAuthStateChanged(auth, function (usuario) {
   actualizarNavbarSegunSesion(usuario);
 });
- 
-// Exponemos al alcance global las funciones llamadas desde onclick=""
-// en el HTML, ya que un <script type="module"> no las declara como
-// globales automáticamente.
-window.mostrarEstadoCurso = mostrarEstadoCurso;
