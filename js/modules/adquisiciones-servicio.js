@@ -14,6 +14,8 @@
 //
 // Las funciones usan auth.currentUser: deben llamarse después de que la
 // página haya resuelto la sesión (por ejemplo, desde el clic de un botón).
+// obtenerNivelAcceso es la excepción: espera por sí misma a que se resuelva
+// la sesión, así que puede llamarse apenas carga la página.
 
 import { auth, db } from "../firebase-config.js";
 import {
@@ -56,6 +58,29 @@ async function obtenerAdquisicion(cursoId) {
   return { id: snapshot.id, ...snapshot.data() };
 }
 
+// Devuelve el nivel de acceso de la persona actual a un curso:
+//   "visitante" -> no hay sesión iniciada
+//   "admin"     -> la persona tiene rol "administrador" (ve todo el contenido)
+//   "con-curso" -> tiene una adquisición confirmada de ese curso
+//   "sin-curso" -> tiene sesión, pero no adquirió el curso (o su adquisición
+//                  fue cancelada)
+// El resultado sale de Firestore, no de datos que pueda modificar el cliente.
+// Si falla alguna consulta, lanza el error para que la página decida qué hacer.
+async function obtenerNivelAcceso(cursoId) {
+  await auth.authStateReady();
+
+  const usuario = auth.currentUser;
+  if (!usuario) return "visitante";
+
+  const perfil = await getDoc(doc(db, "usuarios", usuario.uid));
+  if (perfil.exists() && perfil.data().rol === "administrador") return "admin";
+
+  const adquisicion = await obtenerAdquisicion(cursoId);
+  if (adquisicion && adquisicion.estado === "confirmada") return "con-curso";
+
+  return "sin-curso";
+}
+
 // Registra la adquisición (pago simulado) del curso para el usuario actual.
 // Recibe el curso tal como lo devuelve obtenerCursoPorId (id, nombre, precio).
 // Devuelve { exito: true } o { exito: false, codigo, mensaje }, con los códigos:
@@ -92,4 +117,4 @@ async function adquirirCurso(curso) {
   }
 }
 
-export { adquirirCurso, obtenerAdquisicion };
+export { adquirirCurso, obtenerAdquisicion, obtenerNivelAcceso };
