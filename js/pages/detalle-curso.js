@@ -1,8 +1,10 @@
 // EduTechCourses — lógica de la pantalla Detalle de curso
 // Lee el curso desde Firestore según el parámetro ?id= de la URL y gestiona
 // la adquisición del curso con pago simulado (modal #modalPago).
-// El alternador "Visitante / Usuario suscripto" sigue siendo demostrativo
-// (mostrarEstadoCurso en base.js) hasta la issue del control de acceso.
+//
+// Control de acceso: lo que se muestra (vista previa o contenido completo)
+// depende del nivel de acceso que devuelve obtenerNivelAcceso, que sale de
+// Firestore: "visitante", "sin-curso", "con-curso" o "admin".
 
 import { auth } from "../firebase-config.js";
 import {
@@ -10,7 +12,7 @@ import {
   datosCategoria,
   escaparHTML
 } from "../modules/cursos-servicio.js";
-import { adquirirCurso, obtenerAdquisicion } from "../modules/adquisiciones-servicio.js";
+import { adquirirCurso, obtenerNivelAcceso } from "../modules/adquisiciones-servicio.js";
 
 let cursoActual = null;
 
@@ -92,10 +94,52 @@ function mostrarErrorPago(mensaje) {
   caja.classList.remove("d-none");
 }
 
+// ---------- Control de acceso ----------
+
+const BLOQUES_CONTENIDO = ["estado-cargando", "estado-no-suscripto", "estado-suscripto"];
+const BLOQUES_ACCION = ["accion-cargando", "accion-no-suscripto", "accion-suscripto", "accion-admin"];
+
+// Deja visible solo el bloque indicado de la lista y oculta los demás.
+function mostrarSoloUno(ids, visible) {
+  ids.forEach((id) => {
+    document.getElementById(id).classList.toggle("d-none", id !== visible);
+  });
+}
+
+// Muestra la vista previa o el contenido completo, y la acción de la barra
+// lateral, según el nivel de acceso de la persona.
+function aplicarNivelAcceso(nivel) {
+  const contenidoCompleto = nivel === "con-curso" || nivel === "admin";
+  mostrarSoloUno(BLOQUES_CONTENIDO, contenidoCompleto ? "estado-suscripto" : "estado-no-suscripto");
+
+  const bloqueAccion = nivel === "admin" ? "accion-admin"
+    : nivel === "con-curso" ? "accion-suscripto"
+    : "accion-no-suscripto";
+  mostrarSoloUno(BLOQUES_ACCION, bloqueAccion);
+
+  document.getElementById("contenidoCompletoTexto").textContent = nivel === "admin"
+    ? "Estás viendo este curso como administrador: tenés acceso a todos los módulos, el PDF descargable y todos los videos."
+    : "Estás suscripto a este curso: tenés acceso a todos los módulos, el PDF descargable y todos los videos.";
+
+  document.getElementById("accionNota").textContent = nivel === "visitante"
+    ? "Se necesita una cuenta para suscribirte"
+    : "Pago simulado: no se solicitan datos de tarjeta";
+}
+
 // Refleja en la pantalla que el curso ya fue adquirido.
 function marcarComoAdquirido() {
-  if (typeof window.mostrarEstadoCurso === "function") {
-    window.mostrarEstadoCurso("suscripto");
+  aplicarNivelAcceso("con-curso");
+}
+
+// Consulta el nivel de acceso en Firestore y actualiza la pantalla. Si la
+// consulta falla, queda la vista previa (nunca se muestra el contenido completo
+// sin haberlo confirmado).
+async function resolverAcceso() {
+  try {
+    aplicarNivelAcceso(await obtenerNivelAcceso(cursoActual.id));
+  } catch (error) {
+    console.error("No se pudo consultar el acceso al curso:", error);
+    aplicarNivelAcceso("sin-curso");
   }
 }
 
@@ -143,24 +187,11 @@ async function confirmarAdquisicion() {
   boton.innerHTML = '<i class="bi bi-lock me-1"></i> Confirmar adquisición';
 }
 
-// Si la persona ya adquirió este curso, la pantalla lo muestra desde el inicio.
-async function revisarAdquisicionPrevia() {
-  try {
-    await auth.authStateReady();
-    const adquisicion = await obtenerAdquisicion(cursoActual.id);
-    if (adquisicion && adquisicion.estado === "confirmada") {
-      marcarComoAdquirido();
-    }
-  } catch (error) {
-    console.error("No se pudo consultar la adquisición del curso:", error);
-  }
-}
-
 function prepararAdquisicion() {
   const botonSuscribirme = document.getElementById("btnSuscribirme");
   botonSuscribirme.addEventListener("click", iniciarAdquisicion);
   document.getElementById("btnConfirmarPago").addEventListener("click", confirmarAdquisicion);
-  revisarAdquisicionPrevia();
+  resolverAcceso();
 }
 
 async function iniciarDetalle() {
