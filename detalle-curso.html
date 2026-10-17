@@ -62,18 +62,6 @@
         </ol>
       </nav>
 
-      <!-- Demo académica: alterna entre los dos estados pedidos por la consigna -->
-      <div class="alert alert-secondary d-flex flex-wrap align-items-center gap-2 justify-content-between" role="note">
-        <span class="small"><i class="bi bi-info-circle me-1"></i> Vista de demostración: alterná el estado de
-          suscripción para ver ambas versiones de esta pantalla.</span>
-        <div class="btn-group btn-group-sm" role="group" aria-label="Alternar estado de la suscripción">
-          <button type="button" id="btn-estado-previa" class="btn btn-outline-secondary active"
-            onclick="mostrarEstadoCurso('previa')">Visitante / sin suscripción</button>
-          <button type="button" id="btn-estado-suscripto" class="btn btn-outline-secondary"
-            onclick="mostrarEstadoCurso('suscripto')">Usuario suscripto</button>
-        </div>
-      </div>
-
       <div class="row g-5 mt-1" id="contenidoCurso">
         <div class="col-lg-8">
           <span class="badge-category" id="cursoBadge">Categoría</span>
@@ -99,12 +87,22 @@
             </div>
           </div>
 
-          <!-- Estado: visitante o usuario sin suscripción -->
-          <div id="estado-no-suscripto">
+          <!-- El estado de acceso se resuelve con Firestore (js/pages/detalle-curso.js):
+               mientras se consulta se muestra «estado-cargando»; después, la vista previa
+               o el contenido completo. Ante cualquier duda se muestra la vista previa. -->
+          <div id="estado-cargando">
+            <div class="stat-card text-center text-body-secondary py-4">
+              <div class="spinner-border spinner-border-sm me-2" aria-hidden="true"></div>
+              Verificando tu acceso al contenido...
+            </div>
+          </div>
+
+          <!-- Estado: visitante o usuario sin el curso -->
+          <div id="estado-no-suscripto" class="d-none">
             <div class="stat-card">
               <h2 class="h6 mb-2"><i class="bi bi-play-circle text-teal me-1"></i> Vista previa · Módulo 1</h2>
-              <p class="small text-body-secondary mb-3">Este es el único módulo accesible sin sesión iniciada. El resto
-                del contenido se desbloquea al suscribirte al curso.</p>
+              <p class="small text-body-secondary mb-3">Este es el único módulo disponible sin adquirir el curso. El
+                resto del contenido se desbloquea al suscribirte.</p>
               <div class="ratio ratio-16x9 rounded-3 overflow-hidden mb-2" style="background:#0b1f3d;">
                 <div class="d-flex align-items-center justify-content-center text-white">
                   <i class="bi bi-play-circle-fill" style="font-size:2.5rem;"></i>
@@ -114,12 +112,11 @@
             </div>
           </div>
 
-          <!-- Estado: usuario suscripto -->
+          <!-- Estado: usuario con el curso adquirido, o administrador -->
           <div id="estado-suscripto" class="d-none">
             <div class="stat-card" style="border-color: var(--teal);">
               <h2 class="h6 mb-2 text-teal"><i class="bi bi-unlock me-1"></i> Contenido completo desbloqueado</h2>
-              <p class="small text-body-secondary mb-3">Estás suscripto a este curso: tenés acceso a todos los módulos,
-                el PDF descargable y todos los videos.</p>
+              <p class="small text-body-secondary mb-3" id="contenidoCompletoTexto"></p>
               <div class="d-flex flex-column gap-2">
                 <a href="#" class="btn btn-outline-brand btn-sm" style="color: var(--navy); border-color: var(--navy);"
                   onclick="return false;"><i class="bi bi-file-earmark-pdf me-1"></i> Descargar guía en PDF</a>
@@ -137,17 +134,29 @@
             <p class="course-price mb-1" id="cursoPrecio">Cargando...</p>
             <p class="small text-body-secondary mb-3">Suscripción individual · acceso mientras esté activa</p>
 
-            <div id="accion-no-suscripto">
+            <div id="accion-cargando" class="text-center small text-body-secondary py-2">
+              <div class="spinner-border spinner-border-sm me-2" aria-hidden="true"></div>
+              Verificando tu acceso...
+            </div>
+            <div id="accion-no-suscripto" class="d-none">
               <button type="button" class="btn btn-brand w-100 mb-2" id="btnSuscribirme">
                 <i class="bi bi-lock me-1"></i> Suscribirme a este curso
               </button>
-              <p class="text-center small text-body-secondary mb-0">Se necesita una cuenta para suscribirte</p>
+              <p class="text-center small text-body-secondary mb-0" id="accionNota"></p>
             </div>
             <div id="accion-suscripto" class="d-none">
               <span class="badge bg-success-subtle text-success-emphasis w-100 py-2 mb-2 d-block"><i
                   class="bi bi-check-circle me-1"></i> Suscripción activa</span>
-              <a href="perfil.html" class="btn btn-outline-brand w-100"
-                style="color: var(--navy); border-color: var(--navy);">Ver en mi historial</a>
+              <a href="perfil.html?seccion=cursos" class="btn btn-outline-brand w-100"
+                style="color: var(--navy); border-color: var(--navy);">Ir a Mis cursos</a>
+            </div>
+            <div id="accion-admin" class="d-none">
+              <div class="alert alert-info small mb-2" role="note">
+                <i class="bi bi-shield-check me-1"></i> <strong>Accedés como administrador.</strong> Ves el contenido
+                completo de todos los cursos sin necesidad de adquirirlos.
+              </div>
+              <a href="admin.html" class="btn btn-outline-brand w-100"
+                style="color: var(--navy); border-color: var(--navy);">Ir al panel admin</a>
             </div>
 
             <hr>
@@ -222,7 +231,7 @@
             <i class="bi bi-check-circle-fill text-success display-5 d-block mb-2"></i>
             <p class="fw-semibold mb-1">¡Adquisición confirmada!</p>
             <p class="small text-body-secondary mb-3">Ya podés ver el curso en tu historial.</p>
-            <a href="perfil.html" class="btn btn-brand">Ir a Mis cursos</a>
+            <a href="perfil.html?seccion=cursos" class="btn btn-brand">Ir a Mis cursos</a>
           </div>
         </div>
         <div class="modal-footer" id="pagoAcciones">

@@ -167,3 +167,46 @@ La pestaña «Mis cursos» de `perfil.html` muestra el historial real de adquisi
 ### Rol y enlace «Admin»
 
 El enlace «Admin» de la barra superior se muestra solo si el rol guardado en Firestore es `administrador`. El perfil conserva ese rol tal como está en la base y no lo lee del texto de la insignia, por lo que el enlace se mantiene también después de guardar los cambios del perfil.
+
+## Control de acceso y permisos por rol
+
+El acceso a las páginas y al contenido de los cursos depende de la sesión y del rol guardado en Firestore (`estudiante` o `administrador`). Un visitante es quien no tiene sesión iniciada.
+
+### Qué puede hacer cada rol
+
+| Acción | Visitante | Estudiante | Administrador |
+|---|---|---|---|
+| Ver Inicio, Catálogo y el detalle de un curso (temario y vista previa del módulo 1) | Sí | Sí | Sí |
+| Adquirir un curso (pago simulado) | Debe iniciar sesión primero | Sí | No hace falta: ve todo sin adquirir |
+| Ver el contenido completo de un curso | No | Solo de los cursos que adquirió | De todos los cursos |
+| Entrar a «Mi perfil» y «Mis cursos» | Se redirige al login | Sí | Sí |
+| Entrar al panel administrativo (`admin.html`) | Se redirige al login | Se redirige a Inicio con un aviso de falta de permisos | Sí |
+
+### Detalle del curso según el acceso
+
+| Situación | Contenido | Acción en la barra lateral |
+|---|---|---|
+| Visitante | Solo la vista previa (módulo 1) | «Suscribirme», que lleva al login |
+| Usuario sin el curso | Solo la vista previa (módulo 1) | «Suscribirme», que abre el modal de pago simulado |
+| Usuario con el curso | Contenido completo | «Suscripción activa» y enlace a «Mis cursos» |
+| Administrador | Contenido completo | Aviso de acceso como administrador y enlace al panel |
+
+### Cómo se decide el acceso
+
+1. Al cargar `detalle-curso.html?id=…`, `js/pages/detalle-curso.js` llama a `obtenerNivelAcceso(cursoId)`, de `js/modules/adquisiciones-servicio.js`.
+2. La función espera a que se resuelva la sesión y devuelve uno de cuatro valores: `visitante` (sin sesión), `admin` (rol `administrador` en `usuarios/{uid}`), `con-curso` (adquisición `adquisiciones/{uid}_{cursoId}` con estado `confirmada`) o `sin-curso` (cualquier otro caso, incluida una adquisición cancelada).
+3. Mientras se consulta se muestra «Verificando tu acceso…». Si la consulta falla, queda la vista previa: nunca se muestra el contenido completo sin haberlo confirmado.
+4. Como el resultado sale de Firestore y no del navegador, se mantiene al recargar la página y al cerrar sesión e ingresar de nuevo. No existe ningún interruptor que permita ver el contenido completo sin haber adquirido el curso.
+
+### Redirecciones y avisos
+
+| Situación | Qué ocurre |
+|---|---|
+| Visitante entra a `perfil.html` o `admin.html` | Va a `login.html?volver=<página>&aviso=sesion-requerida`, con un aviso azul. Al iniciar sesión vuelve a la página que quería |
+| Estudiante entra a `admin.html` | Va a `index.html?aviso=sin-permisos`, con un aviso amarillo que explica que no tiene permisos |
+
+El aviso lo muestra `js/base.js` a partir del parámetro `?aviso=`. Solo se aceptan los códigos `sin-permisos` y `sesion-requerida`: el texto sale de una tabla del código y cualquier otro valor se ignora. Después de mostrarlo, el parámetro se quita de la dirección para que no reaparezca al recargar.
+
+### Alcance de la protección
+
+Las redirecciones y los estados de pantalla se resuelven en el navegador: sirven para orientar a la persona, pero no son la garantía de seguridad. Lo que realmente impide leer o modificar datos ajenos son las reglas de Firestore (ver «Reglas de seguridad de Firestore»), que se aplican en el servidor.
