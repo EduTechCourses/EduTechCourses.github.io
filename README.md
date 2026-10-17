@@ -210,3 +210,36 @@ El aviso lo muestra `js/base.js` a partir del parámetro `?aviso=`. Solo se acep
 ### Alcance de la protección
 
 Las redirecciones y los estados de pantalla se resuelven en el navegador: sirven para orientar a la persona, pero no son la garantía de seguridad. Lo que realmente impide leer o modificar datos ajenos son las reglas de Firestore (ver «Reglas de seguridad de Firestore»), que se aplican en el servidor.
+
+## Panel administrativo
+
+El panel (`admin.html`) solo lo puede abrir un usuario con rol `administrador`; cualquier otro es redirigido (ver «Control de acceso y permisos por rol»). Está dividido en cuatro secciones, y cada una es un módulo JavaScript independiente.
+
+### Estructura
+
+| Sección | Contenedor en `admin.html` | Módulo |
+|---|---|---|
+| Resumen | `#contenedor-resumen` | `js/pages/admin-resumen.js` |
+| Cursos | `#contenedor-cursos` | `js/pages/admin-cursos.js` |
+| Usuarios | `#contenedor-usuarios` | `js/pages/admin-usuarios.js` |
+| Adquisiciones | `#contenedor-adquisiciones` | `js/pages/admin-adquisiciones.js` |
+
+`js/pages/admin.js` comprueba la sesión y el rol, maneja el menú de secciones (lateral en pantallas grandes, en pastillas arriba en pantallas chicas) y llama al módulo de la sección cada vez que se abre. Ningún módulo se ejecuta antes de confirmar que el usuario es administrador.
+
+Cada módulo dibuja todo su contenido dentro de su contenedor y vuelve a pedir sus datos a Firestore, por lo que nunca muestra información vieja. Los modales se insertan en `#contenedor-modales`. Si un módulo falla, el panel muestra un aviso dentro de esa sección y las demás siguen funcionando. `admin.html` no contiene datos fijos.
+
+### Resumen
+
+_Pendiente de documentar._
+
+### Cursos
+
+_Pendiente de documentar._
+
+### Usuarios
+
+_Pendiente de documentar._
+
+### Adquisiciones
+
+_Pendiente de documentar._
