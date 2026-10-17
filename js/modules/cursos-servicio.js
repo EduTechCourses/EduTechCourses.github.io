@@ -1,8 +1,8 @@
 // EduTechCourses — acceso a la colección "cursos" de Firestore
 //
 // Reemplaza a js/modules/datos-cursos.js (catálogo hardcodeado).
-// Lo usan inicio.js, catalogo.js y detalle-curso.js, y más adelante
-// el panel admin. Centraliza las consultas para que ninguna página
+// Lo usan inicio.js, catalogo.js, detalle-curso.js y el panel admin.
+// Centraliza las consultas para que ninguna página
 // llame directamente al SDK de Firestore para leer cursos.
 //
 // Estructura de cada documento (id = id del documento):
@@ -16,6 +16,7 @@ import {
   getDocs,
   getDoc,
   doc,
+  updateDoc,
   query,
   where
 } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
@@ -45,6 +46,22 @@ async function obtenerCursosActivos() {
   return lista;
 }
  
+// Devuelve todos los cursos, activos e inactivos, ordenados por nombre.
+// Solo lo puede usar el administrador: las reglas de Firestore rechazan
+// esta consulta para cualquier otro rol. Lo usa el panel admin.
+async function obtenerTodosLosCursos() {
+  const snapshot = await getDocs(collection(db, "cursos"));
+  const lista = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+  lista.sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+  return lista;
+}
+
+// Activa o desactiva un curso (campo "activo"). Solo el administrador puede
+// escribir en "cursos". Si falla, lanza el error para que lo trate la pantalla.
+async function cambiarEstadoCurso(id, activo) {
+  await updateDoc(doc(db, "cursos", id), { activo: activo === true });
+}
+
 // Devuelve un curso por id, o null si no existe o no se puede leer
 // (por ejemplo, un curso inactivo consultado por un no-admin).
 async function obtenerCursoPorId(id) {
@@ -82,6 +99,8 @@ export {
   CATEGORIAS,
   datosCategoria,
   obtenerCursosActivos,
+  obtenerTodosLosCursos,
+  cambiarEstadoCurso,
   obtenerCursoPorId,
   generarEstrellasHTML,
   escaparHTML
