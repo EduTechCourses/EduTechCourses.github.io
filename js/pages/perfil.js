@@ -149,7 +149,7 @@ async function cargarHistorialCursos(uid) {
 
 onAuthStateChanged(auth, async function (usuario) {
     if (!usuario) {
-        window.location.href = "login.html";
+        window.location.href = "login.html?volver=perfil.html&aviso=sesion-requerida";
         return;
     }
 
@@ -229,3 +229,9 @@ function mostrarSeccionPerfil(seccion) {
     document.getElementById('nav-cursos').classList.toggle('active', seccion === 'cursos');
 }
 window.mostrarSeccionPerfil = mostrarSeccionPerfil;
+
+// ?seccion=cursos abre directamente la pestaña «Mis cursos» (la usan los
+// enlaces «Ir a Mis cursos» del detalle de un curso).
+if (new URLSearchParams(window.location.search).get("seccion") === "cursos") {
+    mostrarSeccionPerfil("cursos");
+}

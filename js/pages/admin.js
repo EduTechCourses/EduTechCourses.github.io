@@ -17,19 +17,22 @@ function obtenerIniciales(nombre, apellido) {
 // páginas (issue #43) es solo cosmético; ESTE chequeo es el que protege
 // de verdad el acceso a esta página.
 //
+// Issue #72: en ambos casos se redirige con un aviso (?aviso=, ver base.js).
+// El visitante vuelve a esta página después de iniciar sesión (?volver=).
+//
 // El body arranca oculto (visibility: hidden, definido en admin.html) para
 // evitar el parpadeo del contenido mientras se resuelve la sesión y el rol.
 // Solo se hace visible una vez confirmado que el usuario es administrador.
 onAuthStateChanged(auth, async function (usuario) {
     if (!usuario) {
-        window.location.href = "login.html";
+        window.location.href = "login.html?volver=admin.html&aviso=sesion-requerida";
         return;
     }
 
     const snapshot = await getDoc(doc(db, "usuarios", usuario.uid));
 
     if (!snapshot.exists() || snapshot.data().rol !== "administrador") {
-        window.location.href = "index.html";
+        window.location.href = "index.html?aviso=sin-permisos";
         return;
     }
 
