@@ -717,6 +717,13 @@ footer.site-footer .brand-name {
   color: #fff;
 }
 
+/* Menú de secciones del panel admin para pantallas chicas */
+.admin-nav-mobile {
+  --bs-nav-link-color: var(--navy);
+  --bs-nav-pills-link-active-bg: var(--navy-dark);
+}
+
+
 .table-admin thead {
   background: #f2f4f8;
 }
