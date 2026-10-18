@@ -238,7 +238,18 @@ _Pendiente de documentar._
 
 ### Usuarios
 
-_Pendiente de documentar._
+La sección lista los usuarios registrados, del más reciente al más antiguo. Arriba muestra tres indicadores (total de usuarios, estudiantes con cursos y estudiantes sin cursos) y debajo una tabla con el nombre, el correo, el rol, la cantidad de cursos adquiridos y la fecha de registro.
+
+Los cursos adquiridos cuentan solo las adquisiciones con estado `confirmada`: una adquisición cancelada no suma. No se muestra el teléfono y la sección es solo de consulta, sin acciones sobre los usuarios.
+
+Código:
+
+| Archivo | Responsabilidad |
+|---|---|
+| `js/pages/admin-usuarios.js` | Dibuja los indicadores y la tabla |
+| `js/modules/usuarios-servicio.js` | `obtenerUsuarios()` lee `usuarios` y `adquisiciones` y devuelve cada usuario con su cantidad de cursos adquiridos |
+
+No hizo falta cambiar las reglas de Firestore: el administrador ya puede leer todos los documentos de `usuarios` y de `adquisiciones`.
 
 ### Adquisiciones
 
