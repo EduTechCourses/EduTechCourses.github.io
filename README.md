@@ -32,6 +32,13 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/cursos/$(id)).data;
     }
 
+    // Devuelve true si el usuario autenticado tiene una adquisición confirmada de ese curso.
+    function tieneCurso(cursoId) {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/adquisiciones/$(request.auth.uid + "_" + cursoId))
+        && get(/databases/$(database)/documents/adquisiciones/$(request.auth.uid + "_" + cursoId)).data.estado == "confirmada";
+    }
+
     match /usuarios/{userId} {
       // Cada usuario lee su propio documento; el administrador lee todos.
       allow read: if request.auth != null && (request.auth.uid == userId || esAdmin());
@@ -49,9 +56,12 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // Cursos: cualquiera lee los activos; solo el admin lee inactivos y escribe.
+    // Cursos: cualquiera consulta los activos y el admin consulta todos. Un curso se abre por id
+    // si está activo, si es el admin o si la persona lo adquirió (aunque después se desactive).
+    // Solo el admin escribe.
     match /cursos/{cursoId} {
-      allow read: if esAdmin() || resource.data.activo == true;
+      allow list: if esAdmin() || resource.data.activo == true;
+      allow get: if esAdmin() || resource.data.activo == true || tieneCurso(cursoId);
       allow write: if esAdmin();
     }
 
@@ -94,11 +104,14 @@ service cloud.firestore {
 
 | Colección | Visitante | Estudiante | Administrador |
 |---|---|---|---|
-| `cursos` | Lee los activos | Lee los activos | Lee y escribe todos |
+| `cursos` | Consulta y abre los activos | Consulta los activos y abre también los que adquirió (aunque estén inactivos) | Lee y escribe todos |
 | `usuarios` | — | Lee y edita su documento (solo nombre, apellido y teléfono); lo crea con rol "estudiante" | Lee todos |
 | `adquisiciones` | — | Crea y lee solo las propias | Lee todas y modifica el estado |
 
 Nadie puede eliminar usuarios ni adquisiciones desde el cliente.
+
+Un curso que se desactiva deja de verse en Inicio y en Catálogo, pero quienes ya lo adquirieron (con la adquisición confirmada) siguen pudiendo abrir su página de detalle.
+
 
 ## Flujo de adquisición de cursos
 
