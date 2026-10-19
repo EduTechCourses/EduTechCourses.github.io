@@ -242,4 +242,23 @@ _Pendiente de documentar._
 
 ### Adquisiciones
 
-_Pendiente de documentar._
+La sección lista todas las adquisiciones de la plataforma, de la más reciente a la más antigua, con la fecha, la persona (nombre y correo), el curso, el importe y el estado. Arriba muestra cuatro indicadores (total, confirmadas, canceladas e ingresos simulados) y un filtro por estado que solo cambia las filas visibles de la tabla.
+
+Los ingresos son simulados: suman el importe de las adquisiciones confirmadas, pero no se cobra nada.
+
+Cada fila tiene un botón para cambiar el estado, siempre con confirmación en un modal:
+
+- **Cancelar** (adquisiciones confirmadas): la persona deja de ver el contenido completo del curso y, si intenta adquirirlo de nuevo, la plataforma le avisa que la adquisición fue cancelada.
+- **Reactivar** (adquisiciones canceladas): la persona vuelve a tener acceso al contenido.
+
+Después de cada cambio la sección vuelve a pedir los datos a Firestore. Si el cambio falla, el modal muestra el error y no modifica la adquisición.
+
+Código:
+
+| Archivo | Responsabilidad |
+|---|---|
+| `js/pages/admin-adquisiciones.js` | Dibuja indicadores, filtro y tabla, y maneja el modal de confirmación |
+| `js/modules/adquisiciones-servicio.js` | `obtenerTodasLasAdquisiciones()` devuelve todas las adquisiciones con el nombre y el correo de la persona; `cambiarEstadoAdquisicion(id, estado)` cambia el estado a `confirmada` o `cancelada` |
+
+No hizo falta cambiar las reglas de Firestore: el administrador ya puede leer todas las adquisiciones y modificar únicamente el campo `estado`.
+
