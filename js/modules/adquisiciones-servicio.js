@@ -16,12 +16,19 @@
 // página haya resuelto la sesión (por ejemplo, desde el clic de un botón).
 // obtenerNivelAcceso es la excepción: espera por sí misma a que se resuelva
 // la sesión, así que puede llamarse apenas carga la página.
+//
+// Panel administrativo: obtenerTodasLasAdquisiciones y cambiarEstadoAdquisicion
+// las usa la sección "Adquisiciones" del panel. Las reglas de Firestore solo se
+// las permiten al administrador, y este solo puede modificar el campo "estado".
 
 import { auth, db } from "../firebase-config.js";
 import {
+  collection,
   doc,
   getDoc,
+  getDocs,
   setDoc,
+  updateDoc,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 
@@ -117,4 +124,71 @@ async function adquirirCurso(curso) {
   }
 }
 
-export { adquirirCurso, obtenerAdquisicion, obtenerNivelAcceso };
+// Convierte el valor guardado en Firestore (Timestamp) en una fecha, o null.
+function aFecha(valor) {
+  if (!valor) return null;
+  if (typeof valor.toDate === "function") return valor.toDate();
+  const fecha = new Date(valor);
+  return isNaN(fecha.getTime()) ? null : fecha;
+}
+
+// Devuelve todas las adquisiciones de la plataforma, de la más reciente a la
+// más antigua, con el nombre y el correo de la persona que las hizo:
+//   { id, uid, cursoId, cursoNombre, importe, estado, fecha (Date o null),
+//     estudiante, email }
+// Solo para el administrador. Si falla alguna consulta, lanza el error.
+async function obtenerTodasLasAdquisiciones() {
+  const [adquisiciones, usuarios] = await Promise.all([
+    getDocs(collection(db, "adquisiciones")),
+    getDocs(collection(db, "usuarios"))
+  ]);
+
+  const personas = {};
+  usuarios.docs.forEach((d) => {
+    const datos = d.data();
+    personas[d.id] = {
+      nombre: ((datos.nombre || "") + " " + (datos.apellido || "")).trim(),
+      email: datos.email || ""
+    };
+  });
+
+  const lista = adquisiciones.docs.map((d) => {
+    const datos = d.data();
+    const persona = personas[datos.uid] || { nombre: "", email: "" };
+    return {
+      id: d.id,
+      uid: datos.uid,
+      cursoId: datos.cursoId,
+      cursoNombre: datos.cursoNombre,
+      importe: Number(datos.importe) || 0,
+      estado: datos.estado,
+      fecha: aFecha(datos.fecha),
+      estudiante: persona.nombre,
+      email: persona.email
+    };
+  });
+
+  lista.sort((a, b) => {
+    const fa = a.fecha ? a.fecha.getTime() : 0;
+    const fb = b.fecha ? b.fecha.getTime() : 0;
+    return fb - fa;
+  });
+  return lista;
+}
+
+// Cambia el estado de una adquisición a "confirmada" o "cancelada". Es lo único
+// que las reglas permiten modificar. Si falla, lanza el error.
+async function cambiarEstadoAdquisicion(id, estado) {
+  if (estado !== "confirmada" && estado !== "cancelada") {
+    throw new Error("Estado de adquisición no válido: " + estado);
+  }
+  await updateDoc(doc(db, "adquisiciones", id), { estado: estado });
+}
+
+export {
+  adquirirCurso,
+  obtenerAdquisicion,
+  obtenerNivelAcceso,
+  obtenerTodasLasAdquisiciones,
+  cambiarEstadoAdquisicion
+};
