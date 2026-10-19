@@ -12,11 +12,14 @@
 // Issue #79: lista todos los cursos (activos e inactivos) y permite activarlos
 // o desactivarlos. Un curso inactivo desaparece de las páginas públicas.
 // Issue #80: botón "Nuevo curso" con un formulario en un modal para crear cursos.
+// Issue #81: botón "Editar" en cada fila; abre el mismo formulario con los datos
+// del curso para modificarlos.
 
 import {
   obtenerTodosLosCursos,
   cambiarEstadoCurso,
   crearCurso,
+  actualizarCurso,
   CATEGORIAS,
   NIVELES,
   datosCategoria,
@@ -74,6 +77,8 @@ function filaHTML(curso) {
       <td class="text-nowrap">USD ${escaparHTML(String(curso.precio))}</td>
       <td class="text-nowrap"><span class="status-dot ${activo ? "active" : "inactive"}"></span>${activo ? "Activo" : "Inactivo"}</td>
       <td class="text-end pe-3 text-nowrap">
+        <button type="button" class="btn btn-link btn-sm p-0 me-3 text-decoration-none"
+          data-accion="editar" data-id="${escaparAtributo(curso.id)}">Editar</button>
         <button type="button" class="btn btn-link btn-sm p-0 link-secondary text-decoration-none"
           data-accion="estado" data-id="${escaparAtributo(curso.id)}" data-activo="${activo}">
           ${activo ? "Desactivar" : "Activar"}
@@ -190,10 +195,16 @@ export async function iniciarCursos(contenedor) {
   const botonGuardar = document.getElementById(ID_MODAL + "Guardar");
   const avisoModal = document.getElementById(ID_MODAL + "Error");
 
+  // Cursos que se ven en la tabla y curso que se está editando (null si el
+  // formulario está creando uno nuevo).
+  let cursosActuales = [];
+  let cursoEditando = null;
+
   // Trae los cursos y dibuja la sección completa. "aviso" es un mensaje opcional
   // ({ texto, tipo }) que se muestra arriba de las tarjetas: tipo "success" o "danger".
   async function dibujar(aviso) {
     const cursos = await obtenerTodosLosCursos();
+    cursosActuales = cursos;
 
     const activos = cursos.filter((c) => c.activo === true).length;
     const estudiantes = cursos.reduce((suma, c) => suma + (Number(c.estudiantes) || 0), 0);
@@ -209,7 +220,16 @@ export async function iniciarCursos(contenedor) {
       `</div>` +
       tablaHTML(cursos);
 
-    contenedor.querySelector('[data-accion="nuevo"]').addEventListener("click", abrirModalNuevo);
+    contenedor.querySelector('[data-accion="nuevo"]').addEventListener("click", function () {
+      abrirModal(null);
+    });
+
+    contenedor.querySelectorAll('[data-accion="editar"]').forEach(function (boton) {
+      boton.addEventListener("click", function () {
+        const curso = cursosActuales.find((c) => c.id === boton.dataset.id);
+        if (curso) abrirModal(curso);
+      });
+    });
 
     contenedor.querySelectorAll('[data-accion="estado"]').forEach(function (boton) {
       boton.addEventListener("click", function () {
@@ -239,11 +259,25 @@ export async function iniciarCursos(contenedor) {
     await dibujar();
   }
 
-  function abrirModalNuevo() {
+  // Abre el formulario vacío (curso null) o con los datos del curso a editar.
+  function abrirModal(curso) {
+    cursoEditando = curso;
     formulario.reset();
     formulario.classList.remove("was-validated");
     avisoModal.classList.add("d-none");
     botonGuardar.disabled = false;
+
+    document.getElementById(ID_MODAL + "Titulo").textContent = curso ? "Editar curso" : "Nuevo curso";
+    botonGuardar.textContent = curso ? "Guardar cambios" : "Crear curso";
+
+    if (curso) {
+      document.getElementById("cursoNombre").value = curso.nombre || "";
+      document.getElementById("cursoCategoria").value = curso.categoria || "";
+      document.getElementById("cursoPrecio").value = curso.precio;
+      document.getElementById("cursoNivel").value = curso.nivel || "";
+      document.getElementById("cursoDescripcion").value = curso.descripcion || "";
+      document.getElementById("cursoTemario").value = (curso.temario || []).map((m) => m.titulo).join("\n");
+    }
     modal.show();
   }
 
@@ -267,22 +301,30 @@ export async function iniciarCursos(contenedor) {
       temario: document.getElementById("cursoTemario").value.split("\n")
     };
 
+    const editando = cursoEditando;
     botonGuardar.disabled = true;
     avisoModal.classList.add("d-none");
 
     try {
-      await crearCurso(datos);
+      if (editando) {
+        await actualizarCurso(editando.id, datos);
+      } else {
+        await crearCurso(datos);
+      }
     } catch (error) {
-      console.error("No se pudo crear el curso:", error);
-      avisoModal.textContent = "No se pudo crear el curso. Revisá tu conexión e intentá de nuevo.";
+      console.error("No se pudo guardar el curso:", error);
+      avisoModal.textContent = "No se pudo guardar el curso. Revisá tu conexión e intentá de nuevo.";
       avisoModal.classList.remove("d-none");
       botonGuardar.disabled = false;
       return;
     }
 
     modal.hide();
+    const texto = editando
+      ? "Curso «" + datos.nombre + "» actualizado."
+      : "Curso «" + datos.nombre + "» creado. Ya está activo y se ve en el catálogo.";
     try {
-      await dibujar({ texto: "Curso «" + datos.nombre + "» creado. Ya está activo y se ve en el catálogo.", tipo: "success" });
+      await dibujar({ texto: texto, tipo: "success" });
     } catch (error) {
       errorDeRecarga(error);
     }
