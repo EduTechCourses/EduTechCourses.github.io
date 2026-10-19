@@ -230,7 +230,23 @@ Cada módulo dibuja todo su contenido dentro de su contenedor y vuelve a pedir s
 
 ### Resumen
 
-_Pendiente de documentar._
+La sección muestra una vista general de la plataforma, solo de consulta:
+
+- **Indicadores:** usuarios registrados, cursos activos (con el total de cursos), adquisiciones confirmadas e ingresos simulados.
+- **Cursos más adquiridos:** ranking de hasta 5 cursos según la cantidad de adquisiciones confirmadas, con una barra proporcional al primero.
+- **Últimas adquisiciones:** las 5 más recientes, con el curso, la persona, la fecha, el importe y el estado (incluye las canceladas).
+
+Los ingresos son simulados: suman el importe de las adquisiciones confirmadas, pero no se cobra nada. Los datos se piden a Firestore cada vez que se abre la sección.
+
+Código:
+
+| Archivo | Responsabilidad |
+|---|---|
+| `js/pages/admin-resumen.js` | Dibuja los indicadores, el ranking y la lista de últimas adquisiciones |
+| `js/modules/resumen-servicio.js` | `obtenerResumen()` lee `cursos`, `usuarios` y `adquisiciones` y calcula los indicadores |
+
+No hizo falta cambiar las reglas de Firestore: el administrador ya puede leer las tres colecciones.
+
 
 ### Cursos
 
