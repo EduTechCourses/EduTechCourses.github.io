@@ -72,15 +72,20 @@ async function cambiarEstadoCurso(id, activo) {
 
 // Convierte las líneas escritas en el panel (una por módulo) en el temario que
 // se guarda en Firestore. El primer módulo es la vista previa gratuita.
-function temarioDesdeLineas(lineas) {
+// "previo" es el temario que tenía el curso antes de editarlo (opcional): los
+// módulos que conservan su título mantienen la duración que ya tenían.
+function temarioDesdeLineas(lineas, previo) {
+  const anteriores = previo || [];
   return lineas
     .map((linea) => String(linea).trim())
     .filter((linea) => linea !== "")
-    .map((titulo, indice) => ({
-      titulo: titulo,
-      duracion: indice === 0 ? "Vista previa gratuita" : "PDF + video",
-      gratis: indice === 0
-    }));
+    .map((titulo, indice) => {
+      const existente = anteriores.find((modulo) => modulo.titulo === titulo);
+      let duracion = "PDF + video";
+      if (indice === 0) duracion = "Vista previa gratuita";
+      else if (existente && !existente.gratis) duracion = existente.duracion;
+      return { titulo: titulo, duracion: duracion, gratis: indice === 0 };
+    });
 }
 
 // Revisa los datos que carga el administrador. Lanza un Error con el motivo si
@@ -120,6 +125,28 @@ async function crearCurso(datos) {
     fechaCreacion: serverTimestamp()
   });
   return id;
+}
+
+// Actualiza los datos editables de un curso: nombre, categoría, precio, nivel,
+// descripción y temario. "datos" trae los mismos campos que crearCurso. No se
+// tocan la imagen, el rating, los estudiantes, el estado, el destacado ni la
+// fecha de creación. Solo el administrador puede escribir en "cursos".
+// Si falla, lanza el error para que lo trate la pantalla.
+async function actualizarCurso(id, datos) {
+  validarDatosCurso(datos);
+
+  const referencia = doc(db, "cursos", id);
+  const actual = await getDoc(referencia);
+  if (!actual.exists()) throw new Error("El curso ya no existe.");
+
+  await updateDoc(referencia, {
+    nombre: String(datos.nombre).trim(),
+    categoria: datos.categoria,
+    precio: Number(datos.precio),
+    nivel: datos.nivel,
+    descripcion: String(datos.descripcion).trim(),
+    temario: temarioDesdeLineas(datos.temario, actual.data().temario)
+  });
 }
 
 // Devuelve un curso por id, o null si no existe o no se puede leer
@@ -163,6 +190,7 @@ export {
   obtenerTodosLosCursos,
   cambiarEstadoCurso,
   crearCurso,
+  actualizarCurso,
   obtenerCursoPorId,
   generarEstrellasHTML,
   escaparHTML
