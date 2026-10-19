@@ -16,7 +16,9 @@ import {
   getDocs,
   getDoc,
   doc,
+  setDoc,
   updateDoc,
+  serverTimestamp,
   query,
   where
 } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
@@ -34,6 +36,12 @@ const CATEGORIAS = {
 function datosCategoria(clave) {
   return CATEGORIAS[clave] || { label: clave || "Sin categoría", clase: "" };
 }
+
+// Niveles que se pueden elegir al crear o editar un curso desde el panel.
+const NIVELES = ["Inicial", "Intermedio", "Avanzado", "Todos los niveles"];
+
+// Imagen que se asigna a los cursos nuevos creados desde el panel.
+const IMAGEN_CURSO_POR_DEFECTO = "assets/img/curso-nuevo.svg";
  
 // Devuelve los cursos activos, ordenados por nombre. El filtro
 // activo == true es obligatorio: las reglas de Firestore rechazan
@@ -60,6 +68,58 @@ async function obtenerTodosLosCursos() {
 // escribir en "cursos". Si falla, lanza el error para que lo trate la pantalla.
 async function cambiarEstadoCurso(id, activo) {
   await updateDoc(doc(db, "cursos", id), { activo: activo === true });
+}
+
+// Convierte las líneas escritas en el panel (una por módulo) en el temario que
+// se guarda en Firestore. El primer módulo es la vista previa gratuita.
+function temarioDesdeLineas(lineas) {
+  return lineas
+    .map((linea) => String(linea).trim())
+    .filter((linea) => linea !== "")
+    .map((titulo, indice) => ({
+      titulo: titulo,
+      duracion: indice === 0 ? "Vista previa gratuita" : "PDF + video",
+      gratis: indice === 0
+    }));
+}
+
+// Revisa los datos que carga el administrador. Lanza un Error con el motivo si
+// alguno no es válido (la pantalla ya valida, esto es una segunda barrera).
+function validarDatosCurso(datos) {
+  if (!datos || String(datos.nombre || "").trim() === "") throw new Error("El título es obligatorio.");
+  if (!CATEGORIAS[datos.categoria]) throw new Error("La categoría no es válida.");
+  if (!(Number(datos.precio) > 0)) throw new Error("El precio tiene que ser mayor que cero.");
+  if (!NIVELES.includes(datos.nivel)) throw new Error("El nivel no es válido.");
+  if (String(datos.descripcion || "").trim() === "") throw new Error("La descripción es obligatoria.");
+  if (temarioDesdeLineas(datos.temario || []).length === 0) throw new Error("El temario necesita al menos un módulo.");
+}
+
+// Crea un curso nuevo y devuelve su id. "datos" trae nombre, categoria, precio,
+// nivel, descripcion y temario (lista de líneas, una por módulo). El resto de
+// los campos arrancan con valores por defecto: el curso nace activo, sin
+// destacar, con rating 0, sin estudiantes y con la imagen por defecto.
+// El id empieza con "c" y usa solo minúsculas y números, porque viaja en la
+// dirección detalle-curso.html?id=... y en el parámetro "volver" del login.
+// Solo el administrador puede escribir en "cursos". Si falla, lanza el error.
+async function crearCurso(datos) {
+  validarDatosCurso(datos);
+
+  const id = "c" + Date.now().toString(36);
+  await setDoc(doc(db, "cursos", id), {
+    nombre: String(datos.nombre).trim(),
+    categoria: datos.categoria,
+    precio: Number(datos.precio),
+    nivel: datos.nivel,
+    descripcion: String(datos.descripcion).trim(),
+    imagen: IMAGEN_CURSO_POR_DEFECTO,
+    rating: 0,
+    estudiantes: 0,
+    temario: temarioDesdeLineas(datos.temario),
+    activo: true,
+    destacado: false,
+    fechaCreacion: serverTimestamp()
+  });
+  return id;
 }
 
 // Devuelve un curso por id, o null si no existe o no se puede leer
@@ -97,10 +157,12 @@ function escaparHTML(texto) {
  
 export {
   CATEGORIAS,
+  NIVELES,
   datosCategoria,
   obtenerCursosActivos,
   obtenerTodosLosCursos,
   cambiarEstadoCurso,
+  crearCurso,
   obtenerCursoPorId,
   generarEstrellasHTML,
   escaparHTML
