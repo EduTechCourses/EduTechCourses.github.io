@@ -11,13 +11,19 @@
 //
 // Issue #79: lista todos los cursos (activos e inactivos) y permite activarlos
 // o desactivarlos. Un curso inactivo desaparece de las páginas públicas.
+// Issue #80: botón "Nuevo curso" con un formulario en un modal para crear cursos.
 
 import {
   obtenerTodosLosCursos,
   cambiarEstadoCurso,
+  crearCurso,
+  CATEGORIAS,
+  NIVELES,
   datosCategoria,
   escaparHTML
 } from "../modules/cursos-servicio.js";
+
+const ID_MODAL = "modalCurso";
 
 // Escapa texto para usarlo dentro de un atributo HTML entre comillas.
 function escaparAtributo(texto) {
@@ -27,9 +33,14 @@ function escaparAtributo(texto) {
 function encabezadoHTML(total) {
   const texto = total === 1 ? "1 curso en total." : total + " cursos en total.";
   return `
-    <div class="mb-4">
-      <h1 class="h4 mb-1">Gestión de cursos</h1>
-      <p class="text-body-secondary small mb-0">${texto}</p>
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+      <div>
+        <h1 class="h4 mb-1">Gestión de cursos</h1>
+        <p class="text-body-secondary small mb-0">${texto}</p>
+      </div>
+      <button type="button" class="btn btn-brand" data-accion="nuevo">
+        <i class="bi bi-plus-lg me-1"></i> Nuevo curso
+      </button>
     </div>`;
 }
 
@@ -94,52 +105,188 @@ function tablaHTML(cursos) {
     </div>`;
 }
 
-// Trae los cursos y dibuja la sección completa. "aviso" es un mensaje de error
-// opcional que se muestra arriba de la tabla (por ejemplo, si falló un cambio).
-async function dibujar(contenedor, aviso) {
-  const cursos = await obtenerTodosLosCursos();
+// Inserta (o reemplaza) el modal del formulario en #contenedor-modales.
+function insertarModal() {
+  const anterior = document.getElementById(ID_MODAL);
+  if (anterior) anterior.remove();
 
-  const activos = cursos.filter((c) => c.activo === true).length;
-  const estudiantes = cursos.reduce((suma, c) => suma + (Number(c.estudiantes) || 0), 0);
+  const categorias = Object.keys(CATEGORIAS)
+    .map((clave) => `<option value="${clave}">${escaparHTML(CATEGORIAS[clave].label)}</option>`)
+    .join("");
+  const niveles = NIVELES
+    .map((nivel) => `<option value="${escaparAtributo(nivel)}">${escaparHTML(nivel)}</option>`)
+    .join("");
 
-  contenedor.innerHTML =
-    encabezadoHTML(cursos.length) +
-    (aviso ? `<div class="alert alert-danger" role="alert">${escaparHTML(aviso)}</div>` : "") +
-    `<div class="row g-3 mb-4">` +
-    tarjetaHTML(cursos.length, "Total cursos") +
-    tarjetaHTML(activos, "Activos", "var(--teal-dark)") +
-    tarjetaHTML(cursos.length - activos, "Inactivos", "var(--ink-faint)") +
-    tarjetaHTML(estudiantes, "Estudiantes totales") +
-    `</div>` +
-    tablaHTML(cursos);
+  document.getElementById("contenedor-modales").insertAdjacentHTML("beforeend", `
+    <div class="modal fade" id="${ID_MODAL}" tabindex="-1" aria-labelledby="${ID_MODAL}Titulo" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title h5" id="${ID_MODAL}Titulo">Nuevo curso</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <form id="formularioCurso" novalidate>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label for="cursoNombre" class="form-label">Título del curso</label>
+                <input type="text" class="form-control" id="cursoNombre" maxlength="80" required>
+                <div class="invalid-feedback">Escribí el título del curso.</div>
+              </div>
+              <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                  <label for="cursoCategoria" class="form-label">Categoría</label>
+                  <select id="cursoCategoria" class="form-select" required>
+                    <option value="">Elegir...</option>
+                    ${categorias}
+                  </select>
+                  <div class="invalid-feedback">Elegí una categoría.</div>
+                </div>
+                <div class="col-md-6">
+                  <label for="cursoPrecio" class="form-label">Precio (USD)</label>
+                  <input type="number" class="form-control" id="cursoPrecio" min="1" step="1" required>
+                  <div class="invalid-feedback">Ingresá un precio mayor que cero.</div>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="cursoNivel" class="form-label">Nivel</label>
+                <select id="cursoNivel" class="form-select" required>
+                  <option value="">Elegir...</option>
+                  ${niveles}
+                </select>
+                <div class="invalid-feedback">Elegí un nivel.</div>
+              </div>
+              <div class="mb-3">
+                <label for="cursoDescripcion" class="form-label">Descripción</label>
+                <textarea class="form-control" id="cursoDescripcion" rows="3" required></textarea>
+                <div class="invalid-feedback">Escribí una descripción.</div>
+              </div>
+              <div class="mb-1">
+                <label for="cursoTemario" class="form-label">Temario (un módulo por línea)</label>
+                <textarea class="form-control" id="cursoTemario" rows="4"
+                  placeholder="Introducción&#10;Fundamentos&#10;Proyecto final" required></textarea>
+                <div class="form-text">El primer módulo es la vista previa gratuita.</div>
+                <div class="invalid-feedback">Escribí al menos un módulo.</div>
+              </div>
+              <div class="alert alert-danger d-none mt-3 mb-0" role="alert" id="${ID_MODAL}Error"></div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button type="submit" class="btn btn-brand" id="${ID_MODAL}Guardar">Crear curso</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>`);
 
-  contenedor.querySelectorAll('[data-accion="estado"]').forEach(function (boton) {
-    boton.addEventListener("click", function () {
-      cambiarEstado(contenedor, boton).catch(function (error) {
-        console.error("No se pudo recargar la sección de cursos:", error);
-        contenedor.innerHTML =
-          '<div class="alert alert-danger" role="alert">No se pudo cargar esta sección. Probá recargar la página.</div>';
-      });
-    });
-  });
-}
-
-async function cambiarEstado(contenedor, boton) {
-  const activar = boton.dataset.activo !== "true";
-  boton.disabled = true;
-  boton.textContent = "Guardando…";
-
-  try {
-    await cambiarEstadoCurso(boton.dataset.id, activar);
-  } catch (error) {
-    console.error("No se pudo cambiar el estado del curso:", error);
-    await dibujar(contenedor, "No se pudo cambiar el estado del curso. Revisá tu conexión e intentá de nuevo.");
-    return;
-  }
-  await dibujar(contenedor);
+  return document.getElementById(ID_MODAL);
 }
 
 export async function iniciarCursos(contenedor) {
   contenedor.innerHTML = '<p class="text-body-secondary">Cargando cursos…</p>';
-  await dibujar(contenedor);
+
+  const elementoModal = insertarModal();
+  const modal = window.bootstrap.Modal.getOrCreateInstance(elementoModal);
+  const formulario = document.getElementById("formularioCurso");
+  const botonGuardar = document.getElementById(ID_MODAL + "Guardar");
+  const avisoModal = document.getElementById(ID_MODAL + "Error");
+
+  // Trae los cursos y dibuja la sección completa. "aviso" es un mensaje opcional
+  // ({ texto, tipo }) que se muestra arriba de las tarjetas: tipo "success" o "danger".
+  async function dibujar(aviso) {
+    const cursos = await obtenerTodosLosCursos();
+
+    const activos = cursos.filter((c) => c.activo === true).length;
+    const estudiantes = cursos.reduce((suma, c) => suma + (Number(c.estudiantes) || 0), 0);
+
+    contenedor.innerHTML =
+      encabezadoHTML(cursos.length) +
+      (aviso ? `<div class="alert alert-${aviso.tipo}" role="alert">${escaparHTML(aviso.texto)}</div>` : "") +
+      `<div class="row g-3 mb-4">` +
+      tarjetaHTML(cursos.length, "Total cursos") +
+      tarjetaHTML(activos, "Activos", "var(--teal-dark)") +
+      tarjetaHTML(cursos.length - activos, "Inactivos", "var(--ink-faint)") +
+      tarjetaHTML(estudiantes, "Estudiantes totales") +
+      `</div>` +
+      tablaHTML(cursos);
+
+    contenedor.querySelector('[data-accion="nuevo"]').addEventListener("click", abrirModalNuevo);
+
+    contenedor.querySelectorAll('[data-accion="estado"]').forEach(function (boton) {
+      boton.addEventListener("click", function () {
+        cambiarEstado(boton).catch(errorDeRecarga);
+      });
+    });
+  }
+
+  function errorDeRecarga(error) {
+    console.error("No se pudo recargar la sección de cursos:", error);
+    contenedor.innerHTML =
+      '<div class="alert alert-danger" role="alert">No se pudo cargar esta sección. Probá recargar la página.</div>';
+  }
+
+  async function cambiarEstado(boton) {
+    const activar = boton.dataset.activo !== "true";
+    boton.disabled = true;
+    boton.textContent = "Guardando…";
+
+    try {
+      await cambiarEstadoCurso(boton.dataset.id, activar);
+    } catch (error) {
+      console.error("No se pudo cambiar el estado del curso:", error);
+      await dibujar({ texto: "No se pudo cambiar el estado del curso. Revisá tu conexión e intentá de nuevo.", tipo: "danger" });
+      return;
+    }
+    await dibujar();
+  }
+
+  function abrirModalNuevo() {
+    formulario.reset();
+    formulario.classList.remove("was-validated");
+    avisoModal.classList.add("d-none");
+    botonGuardar.disabled = false;
+    modal.show();
+  }
+
+  formulario.addEventListener("submit", async function (evento) {
+    evento.preventDefault();
+
+    // Se quitan los espacios sobrantes antes de validar, para que un campo con
+    // solo espacios cuente como vacío.
+    formulario.querySelectorAll("input[type=text], textarea").forEach(function (campo) {
+      campo.value = campo.value.trim();
+    });
+    formulario.classList.add("was-validated");
+    if (!formulario.checkValidity()) return;
+
+    const datos = {
+      nombre: document.getElementById("cursoNombre").value,
+      categoria: document.getElementById("cursoCategoria").value,
+      precio: Number(document.getElementById("cursoPrecio").value),
+      nivel: document.getElementById("cursoNivel").value,
+      descripcion: document.getElementById("cursoDescripcion").value,
+      temario: document.getElementById("cursoTemario").value.split("\n")
+    };
+
+    botonGuardar.disabled = true;
+    avisoModal.classList.add("d-none");
+
+    try {
+      await crearCurso(datos);
+    } catch (error) {
+      console.error("No se pudo crear el curso:", error);
+      avisoModal.textContent = "No se pudo crear el curso. Revisá tu conexión e intentá de nuevo.";
+      avisoModal.classList.remove("d-none");
+      botonGuardar.disabled = false;
+      return;
+    }
+
+    modal.hide();
+    try {
+      await dibujar({ texto: "Curso «" + datos.nombre + "» creado. Ya está activo y se ve en el catálogo.", tipo: "success" });
+    } catch (error) {
+      errorDeRecarga(error);
+    }
+  });
+
+  await dibujar();
 }
