@@ -234,7 +234,18 @@ _Pendiente de documentar._
 
 ### Cursos
 
-_Pendiente de documentar._
+La sección lista todos los cursos de la colección `cursos`, activos e inactivos, ordenados por nombre. Arriba muestra cuatro indicadores (total, activos, inactivos y estudiantes totales) y debajo una tabla con la imagen, el nombre, la categoría, el precio y el estado de cada curso.
+
+Cada fila tiene el botón «Desactivar» o «Activar», que cambia el campo `activo` del curso. Un curso inactivo deja de aparecer en Inicio y en Catálogo, y su página de detalle no se abre para quien no sea administrador; el administrador lo sigue viendo en esta tabla y puede volver a activarlo. Después de cada cambio la sección vuelve a pedir los datos a Firestore; si el cambio falla, se muestra un aviso arriba de la tabla y el estado del curso no se modifica.
+
+Código:
+
+| Archivo | Responsabilidad |
+|---|---|
+| `js/pages/admin-cursos.js` | Dibuja la sección y atiende los botones de estado |
+| `js/modules/cursos-servicio.js` | `obtenerTodosLosCursos()` devuelve todos los cursos; `cambiarEstadoCurso(id, activo)` actualiza el campo `activo` |
+
+No hizo falta cambiar las reglas de Firestore: solo el administrador puede leer los cursos inactivos y escribir en `cursos`.
 
 ### Usuarios
 
