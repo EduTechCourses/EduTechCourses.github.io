@@ -5,7 +5,7 @@ Plataforma web de cursos digitales con suscripción - Taller Integrador, CERP de
 La plataforma utiliza Firebase Authentication con el proveedor Email/Contraseña.
 
 ## Firestore
-Colección `usuarios`, un documento por usuario identificado con su UID de Firebase Authentication. Campos: nombre, apellido, email, telefono, rol, fechaRegistro.
+Colección `usuarios`, un documento por usuario identificado con su UID de Firebase Authentication. Campos: nombre, apellido, email, telefono, rol, fechaRegistro y, de forma opcional, fotoUrl (dirección de la foto de perfil en Cloudinary).
 
 Colección `cursos`, un documento por curso. El id del documento es el que se usa en `detalle-curso.html?id=`. Campos: nombre, categoria (robotica, diseno, programacion, idiomas o mentorias), precio, nivel, descripcion, imagen, rating, estudiantes, temario (lista de { titulo, duracion, gratis }), activo, destacado, fechaCreacion y, de forma opcional, vistaPreviaUrl (enlace al video de vista previa, público). Las páginas públicas solo muestran los cursos con `activo: true`, y Inicio muestra hasta 3 con `destacado: true`.
 
@@ -49,10 +49,14 @@ service cloud.firestore {
       allow create: if request.auth != null && request.auth.uid == userId
         && request.resource.data.rol == "estudiante";
 
-      // Solo puede editar nombre, apellido y teléfono: el rol y el resto no se tocan.
+      // Solo puede editar nombre, apellido, teléfono y foto de perfil: el rol y el resto no se tocan.
+      // La foto, si existe, tiene que ser una imagen de nuestra cuenta de Cloudinary.
       allow update: if request.auth != null && request.auth.uid == userId
         && request.resource.data.diff(resource.data).affectedKeys()
-             .hasOnly(["nombre", "apellido", "telefono"]);
+             .hasOnly(["nombre", "apellido", "telefono", "fotoUrl"])
+        && (!("fotoUrl" in request.resource.data)
+            || (request.resource.data.fotoUrl is string
+                && request.resource.data.fotoUrl.matches("https://res\\.cloudinary\\.com/ef2ky2pq/image/upload/.+")));
 
       // Nadie elimina usuarios desde el cliente.
       allow delete: if false;
@@ -114,7 +118,7 @@ service cloud.firestore {
 | Colección | Visitante | Estudiante | Administrador |
 |---|---|---|---|
 | `cursos` | Consulta y abre los activos | Consulta los activos y abre también los que adquirió (aunque estén inactivos) | Lee y escribe todos |
-| `usuarios` | — | Lee y edita su documento (solo nombre, apellido y teléfono); lo crea con rol "estudiante" | Lee todos |
+| `usuarios` | — | Lee y edita su documento (solo nombre, apellido, teléfono y foto de perfil); lo crea con rol "estudiante" | Lee todos |
 | `adquisiciones` | — | Crea y lee solo las propias | Lee todas y modifica el estado |
 | `cursos/{id}/contenido` | — | Lee solo la de los cursos que adquirió | Lee y escribe |
 
@@ -248,6 +252,28 @@ La página lee `cursos/{id}/contenido/principal` solo cuando la persona tiene ac
 ### Alcance de la protección
 
 Las redirecciones y los estados de pantalla se resuelven en el navegador: sirven para orientar a la persona, pero no son la garantía de seguridad. Lo que realmente impide leer o modificar datos ajenos son las reglas de Firestore (ver «Reglas de seguridad de Firestore»), que se aplican en el servidor.
+
+## Imágenes (Cloudinary)
+
+Las imágenes no se guardan en Firebase: se suben a Cloudinary (cuenta gratuita, sin tarjeta) y en Firestore se guarda solo su dirección (URL).
+
+### Cómo funciona
+
+1. Las páginas que suben imágenes cargan el widget oficial de Cloudinary (`upload-widget.cloudinary.com`) antes de sus módulos. `js/modules/imagenes-servicio.js` lo configura y lo abre.
+2. Se usan dos «upload presets» sin firma (Unsigned): `usuarios_web`, que guarda en la carpeta `usuarios`, y `cursos_web`, que guarda en la carpeta `cursos`. El «cloud name» (`ef2ky2pq`) identifica la cuenta de Cloudinary y no es una clave secreta.
+3. La persona elige un archivo del dispositivo o saca una foto. Se aceptan imágenes JPG, PNG o WEBP de hasta 3 MB.
+4. Cloudinary devuelve una dirección con la forma `https://res.cloudinary.com/ef2ky2pq/image/upload/…`. Antes de guardarla o mostrarla, el código comprueba que sea de nuestra cuenta; cualquier otra dirección se descarta.
+5. Al mostrar la imagen se pide a Cloudinary una versión recortada y optimizada para el tamaño que se necesita, para que las páginas no descarguen la imagen original.
+
+### Foto de perfil
+
+En `perfil.html`, el botón de la cámara sobre el avatar abre el widget. La dirección se guarda en el campo `fotoUrl` de `usuarios/{uid}` y se copia en el `photoURL` de la cuenta de Firebase Authentication, de donde la lee la barra de navegación de todas las páginas. «Quitar foto» borra ambos datos. Sin foto se muestran las iniciales.
+
+Las reglas de Firestore permiten que cada persona edite su `fotoUrl` solo si es una imagen de nuestra cuenta de Cloudinary.
+
+### Limitación conocida
+
+Los presets sin firma no llevan clave secreta, por lo que cualquier persona que conozca su nombre podría subir imágenes a la cuenta. Por eso el tamaño y los formatos se limitan también en el propio preset. Como mejora, las subidas podrían firmarse con una Cloud Function.
 
 ## Panel administrativo
 
