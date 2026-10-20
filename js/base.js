@@ -17,6 +17,7 @@
  
 import { auth } from "./firebase-config.js";
 import { cerrarSesion } from "./auth.js";
+import { urlOptimizada } from "./modules/imagenes-servicio.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
  
 document.addEventListener("DOMContentLoaded", function () {
@@ -115,7 +116,20 @@ function actualizarNavbarSegunSesion(usuario) {
     const nombreSpan = document.getElementById('navNombreUsuario');
     const avatarSpan = document.getElementById('navAvatarIniciales');
     if (nombreSpan) nombreSpan.textContent = nombre;
-    if (avatarSpan) avatarSpan.textContent = obtenerIniciales(nombre);
+    if (avatarSpan) {
+      // La foto de perfil se guarda en la cuenta de Firebase (photoURL). Solo se
+      // muestra si es una imagen de nuestra cuenta de Cloudinary; si no, iniciales.
+      const foto = urlOptimizada(usuario.photoURL, 52, 52);
+      if (foto) {
+        const imagen = document.createElement('img');
+        imagen.className = 'avatar-img';
+        imagen.alt = '';
+        imagen.src = foto;
+        avatarSpan.replaceChildren(imagen);
+      } else {
+        avatarSpan.textContent = obtenerIniciales(nombre);
+      }
+    }
   } else {
     navUser.classList.add('d-none');
     navGuest.classList.remove('d-none');
