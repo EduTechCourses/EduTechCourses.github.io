@@ -1,8 +1,8 @@
 // EduTechCourses — acceso a la colección "cursos" de Firestore
 //
 // Reemplaza a js/modules/datos-cursos.js (catálogo hardcodeado).
-// Lo usan inicio.js, catalogo.js y detalle-curso.js, y más adelante
-// el panel admin. Centraliza las consultas para que ninguna página
+// Lo usan inicio.js, catalogo.js, detalle-curso.js y el panel admin.
+// Centraliza las consultas para que ninguna página
 // llame directamente al SDK de Firestore para leer cursos.
 //
 // Estructura de cada documento (id = id del documento):
@@ -16,6 +16,9 @@ import {
   getDocs,
   getDoc,
   doc,
+  setDoc,
+  updateDoc,
+  serverTimestamp,
   query,
   where
 } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
@@ -33,6 +36,12 @@ const CATEGORIAS = {
 function datosCategoria(clave) {
   return CATEGORIAS[clave] || { label: clave || "Sin categoría", clase: "" };
 }
+
+// Niveles que se pueden elegir al crear o editar un curso desde el panel.
+const NIVELES = ["Inicial", "Intermedio", "Avanzado", "Todos los niveles"];
+
+// Imagen que se asigna a los cursos nuevos creados desde el panel.
+const IMAGEN_CURSO_POR_DEFECTO = "assets/img/curso-nuevo.svg";
  
 // Devuelve los cursos activos, ordenados por nombre. El filtro
 // activo == true es obligatorio: las reglas de Firestore rechazan
@@ -45,6 +54,101 @@ async function obtenerCursosActivos() {
   return lista;
 }
  
+// Devuelve todos los cursos, activos e inactivos, ordenados por nombre.
+// Solo lo puede usar el administrador: las reglas de Firestore rechazan
+// esta consulta para cualquier otro rol. Lo usa el panel admin.
+async function obtenerTodosLosCursos() {
+  const snapshot = await getDocs(collection(db, "cursos"));
+  const lista = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+  lista.sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+  return lista;
+}
+
+// Activa o desactiva un curso (campo "activo"). Solo el administrador puede
+// escribir en "cursos". Si falla, lanza el error para que lo trate la pantalla.
+async function cambiarEstadoCurso(id, activo) {
+  await updateDoc(doc(db, "cursos", id), { activo: activo === true });
+}
+
+// Convierte las líneas escritas en el panel (una por módulo) en el temario que
+// se guarda en Firestore. El primer módulo es la vista previa gratuita.
+// "previo" es el temario que tenía el curso antes de editarlo (opcional): los
+// módulos que conservan su título mantienen la duración que ya tenían.
+function temarioDesdeLineas(lineas, previo) {
+  const anteriores = previo || [];
+  return lineas
+    .map((linea) => String(linea).trim())
+    .filter((linea) => linea !== "")
+    .map((titulo, indice) => {
+      const existente = anteriores.find((modulo) => modulo.titulo === titulo);
+      let duracion = "PDF + video";
+      if (indice === 0) duracion = "Vista previa gratuita";
+      else if (existente && !existente.gratis) duracion = existente.duracion;
+      return { titulo: titulo, duracion: duracion, gratis: indice === 0 };
+    });
+}
+
+// Revisa los datos que carga el administrador. Lanza un Error con el motivo si
+// alguno no es válido (la pantalla ya valida, esto es una segunda barrera).
+function validarDatosCurso(datos) {
+  if (!datos || String(datos.nombre || "").trim() === "") throw new Error("El título es obligatorio.");
+  if (!CATEGORIAS[datos.categoria]) throw new Error("La categoría no es válida.");
+  if (!(Number(datos.precio) > 0)) throw new Error("El precio tiene que ser mayor que cero.");
+  if (!NIVELES.includes(datos.nivel)) throw new Error("El nivel no es válido.");
+  if (String(datos.descripcion || "").trim() === "") throw new Error("La descripción es obligatoria.");
+  if (temarioDesdeLineas(datos.temario || []).length === 0) throw new Error("El temario necesita al menos un módulo.");
+}
+
+// Crea un curso nuevo y devuelve su id. "datos" trae nombre, categoria, precio,
+// nivel, descripcion y temario (lista de líneas, una por módulo). El resto de
+// los campos arrancan con valores por defecto: el curso nace activo, sin
+// destacar, con rating 0, sin estudiantes y con la imagen por defecto.
+// El id empieza con "c" y usa solo minúsculas y números, porque viaja en la
+// dirección detalle-curso.html?id=... y en el parámetro "volver" del login.
+// Solo el administrador puede escribir en "cursos". Si falla, lanza el error.
+async function crearCurso(datos) {
+  validarDatosCurso(datos);
+
+  const id = "c" + Date.now().toString(36);
+  await setDoc(doc(db, "cursos", id), {
+    nombre: String(datos.nombre).trim(),
+    categoria: datos.categoria,
+    precio: Number(datos.precio),
+    nivel: datos.nivel,
+    descripcion: String(datos.descripcion).trim(),
+    imagen: IMAGEN_CURSO_POR_DEFECTO,
+    rating: 0,
+    estudiantes: 0,
+    temario: temarioDesdeLineas(datos.temario),
+    activo: true,
+    destacado: false,
+    fechaCreacion: serverTimestamp()
+  });
+  return id;
+}
+
+// Actualiza los datos editables de un curso: nombre, categoría, precio, nivel,
+// descripción y temario. "datos" trae los mismos campos que crearCurso. No se
+// tocan la imagen, el rating, los estudiantes, el estado, el destacado ni la
+// fecha de creación. Solo el administrador puede escribir en "cursos".
+// Si falla, lanza el error para que lo trate la pantalla.
+async function actualizarCurso(id, datos) {
+  validarDatosCurso(datos);
+
+  const referencia = doc(db, "cursos", id);
+  const actual = await getDoc(referencia);
+  if (!actual.exists()) throw new Error("El curso ya no existe.");
+
+  await updateDoc(referencia, {
+    nombre: String(datos.nombre).trim(),
+    categoria: datos.categoria,
+    precio: Number(datos.precio),
+    nivel: datos.nivel,
+    descripcion: String(datos.descripcion).trim(),
+    temario: temarioDesdeLineas(datos.temario, actual.data().temario)
+  });
+}
+
 // Devuelve un curso por id, o null si no existe o no se puede leer
 // (por ejemplo, un curso inactivo consultado por un no-admin).
 async function obtenerCursoPorId(id) {
@@ -80,8 +184,13 @@ function escaparHTML(texto) {
  
 export {
   CATEGORIAS,
+  NIVELES,
   datosCategoria,
   obtenerCursosActivos,
+  obtenerTodosLosCursos,
+  cambiarEstadoCurso,
+  crearCurso,
+  actualizarCurso,
   obtenerCursoPorId,
   generarEstrellasHTML,
   escaparHTML
