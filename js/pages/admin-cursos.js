@@ -14,6 +14,8 @@
 // Issue #80: botón "Nuevo curso" con un formulario en un modal para crear cursos.
 // Issue #81: botón "Editar" en cada fila; abre el mismo formulario con los datos
 // del curso para modificarlos.
+// Issue #86: el formulario suma tres enlaces opcionales (vista previa pública,
+// guía en PDF y video completo) que se guardan con contenido-servicio.js.
 
 import {
   obtenerTodosLosCursos,
@@ -25,6 +27,11 @@ import {
   datosCategoria,
   escaparHTML
 } from "../modules/cursos-servicio.js";
+import {
+  urlParaIncrustar,
+  obtenerContenido,
+  guardarEnlacesCurso
+} from "../modules/contenido-servicio.js";
 
 const ID_MODAL = "modalCurso";
 
@@ -130,7 +137,7 @@ function insertarModal() {
             <h2 class="modal-title h5" id="${ID_MODAL}Titulo">Nuevo curso</h2>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
           </div>
-          <form id="formularioCurso" novalidate>
+          <form id="formularioCurso" novalidate class="d-flex flex-column overflow-hidden">
             <div class="modal-body">
               <div class="mb-3">
                 <label for="cursoNombre" class="form-label">Título del curso</label>
@@ -172,6 +179,28 @@ function insertarModal() {
                 <div class="form-text">El primer módulo es la vista previa gratuita.</div>
                 <div class="invalid-feedback">Escribí al menos un módulo.</div>
               </div>
+              <hr class="my-4">
+              <p class="small text-body-secondary mb-3">
+                Enlaces opcionales de Google Drive (Compartir → «Cualquier persona con el enlace») o de YouTube.
+              </p>
+              <div class="mb-3">
+                <label for="cursoVistaPrevia" class="form-label">Video de vista previa</label>
+                <input type="text" class="form-control" id="cursoVistaPrevia" placeholder="https://drive.google.com/file/d/…">
+                <div class="form-text">Video corto que ve cualquier persona en la página del curso.</div>
+                <div class="invalid-feedback">Pegá un enlace de Google Drive o de YouTube válido.</div>
+              </div>
+              <div class="mb-3">
+                <label for="cursoPdf" class="form-label">Guía en PDF</label>
+                <input type="text" class="form-control" id="cursoPdf" placeholder="https://drive.google.com/file/d/…">
+                <div class="form-text">Solo la ven quienes adquirieron el curso (y el administrador).</div>
+                <div class="invalid-feedback">Pegá un enlace de Google Drive válido.</div>
+              </div>
+              <div class="mb-1">
+                <label for="cursoVideo" class="form-label">Video del curso completo</label>
+                <input type="text" class="form-control" id="cursoVideo" placeholder="https://drive.google.com/file/d/…">
+                <div class="form-text">Solo lo ven quienes adquirieron el curso (y el administrador).</div>
+                <div class="invalid-feedback">Pegá un enlace de Google Drive o de YouTube válido.</div>
+              </div>
               <div class="alert alert-danger d-none mt-3 mb-0" role="alert" id="${ID_MODAL}Error"></div>
             </div>
             <div class="modal-footer">
@@ -200,6 +229,26 @@ export async function iniciarCursos(contenedor) {
   let cursosActuales = [];
   let cursoEditando = null;
 
+  // Campos de enlaces y el tipo de enlace que acepta cada uno.
+  const CAMPOS_ENLACE = [
+    { id: "cursoVistaPrevia", tipo: "video" },
+    { id: "cursoPdf", tipo: "pdf" },
+    { id: "cursoVideo", tipo: "video" }
+  ];
+
+  // Marca el campo como inválido si tiene un enlace que no se puede usar.
+  function validarEnlace(campo) {
+    const elemento = document.getElementById(campo.id);
+    const valor = elemento.value.trim();
+    elemento.setCustomValidity(valor !== "" && !urlParaIncrustar(valor, campo.tipo) ? "Enlace no válido" : "");
+  }
+
+  CAMPOS_ENLACE.forEach(function (campo) {
+    document.getElementById(campo.id).addEventListener("input", function () {
+      validarEnlace(campo);
+    });
+  });
+
   // Trae los cursos y dibuja la sección completa. "aviso" es un mensaje opcional
   // ({ texto, tipo }) que se muestra arriba de las tarjetas: tipo "success" o "danger".
   async function dibujar(aviso) {
@@ -221,13 +270,25 @@ export async function iniciarCursos(contenedor) {
       tablaHTML(cursos);
 
     contenedor.querySelector('[data-accion="nuevo"]').addEventListener("click", function () {
-      abrirModal(null);
+      abrirModal(null, null);
     });
 
     contenedor.querySelectorAll('[data-accion="editar"]').forEach(function (boton) {
-      boton.addEventListener("click", function () {
+      boton.addEventListener("click", async function () {
         const curso = cursosActuales.find((c) => c.id === boton.dataset.id);
-        if (curso) abrirModal(curso);
+        if (!curso) return;
+
+        // Los enlaces del PDF y del video se leen antes de abrir el formulario:
+        // si no se pudieran leer, guardar los dejaría vacíos sin querer.
+        let contenido;
+        try {
+          contenido = await obtenerContenido(curso.id);
+        } catch (error) {
+          console.error("No se pudo leer el contenido del curso:", error);
+          await dibujar({ texto: "No se pudieron cargar los enlaces del curso. Intentá de nuevo.", tipo: "danger" }).catch(errorDeRecarga);
+          return;
+        }
+        abrirModal(curso, contenido);
       });
     });
 
@@ -260,7 +321,8 @@ export async function iniciarCursos(contenedor) {
   }
 
   // Abre el formulario vacío (curso null) o con los datos del curso a editar.
-  function abrirModal(curso) {
+  // "contenido" trae { pdfUrl, videoUrl } del curso que se edita.
+  function abrirModal(curso, contenido) {
     cursoEditando = curso;
     formulario.reset();
     formulario.classList.remove("was-validated");
@@ -277,7 +339,11 @@ export async function iniciarCursos(contenedor) {
       document.getElementById("cursoNivel").value = curso.nivel || "";
       document.getElementById("cursoDescripcion").value = curso.descripcion || "";
       document.getElementById("cursoTemario").value = (curso.temario || []).map((m) => m.titulo).join("\n");
+      document.getElementById("cursoVistaPrevia").value = curso.vistaPreviaUrl || "";
+      document.getElementById("cursoPdf").value = contenido.pdfUrl;
+      document.getElementById("cursoVideo").value = contenido.videoUrl;
     }
+    CAMPOS_ENLACE.forEach(validarEnlace);
     modal.show();
   }
 
@@ -289,6 +355,7 @@ export async function iniciarCursos(contenedor) {
     formulario.querySelectorAll("input[type=text], textarea").forEach(function (campo) {
       campo.value = campo.value.trim();
     });
+    CAMPOS_ENLACE.forEach(validarEnlace);
     formulario.classList.add("was-validated");
     if (!formulario.checkValidity()) return;
 
@@ -300,16 +367,24 @@ export async function iniciarCursos(contenedor) {
       descripcion: document.getElementById("cursoDescripcion").value,
       temario: document.getElementById("cursoTemario").value.split("\n")
     };
+    const enlaces = {
+      vistaPreviaUrl: document.getElementById("cursoVistaPrevia").value,
+      pdfUrl: document.getElementById("cursoPdf").value,
+      videoUrl: document.getElementById("cursoVideo").value
+    };
+    const hayEnlaces = enlaces.vistaPreviaUrl !== "" || enlaces.pdfUrl !== "" || enlaces.videoUrl !== "";
 
     const editando = cursoEditando;
     botonGuardar.disabled = true;
     avisoModal.classList.add("d-none");
 
+    let idCurso;
     try {
       if (editando) {
         await actualizarCurso(editando.id, datos);
+        idCurso = editando.id;
       } else {
-        await crearCurso(datos);
+        idCurso = await crearCurso(datos);
       }
     } catch (error) {
       console.error("No se pudo guardar el curso:", error);
@@ -319,7 +394,30 @@ export async function iniciarCursos(contenedor) {
       return;
     }
 
+    // Al editar siempre se guardan los enlaces (para poder borrarlos); al crear,
+    // solo si se cargó alguno.
+    let enlacesGuardados = true;
+    if (editando || hayEnlaces) {
+      try {
+        await guardarEnlacesCurso(idCurso, enlaces);
+      } catch (error) {
+        console.error("No se pudieron guardar los enlaces del curso:", error);
+        enlacesGuardados = false;
+      }
+    }
+
     modal.hide();
+    if (!enlacesGuardados) {
+      try {
+        await dibujar({
+          texto: "El curso «" + datos.nombre + "» se guardó, pero no se pudieron guardar los enlaces. Abrilo con «Editar» para cargarlos de nuevo.",
+          tipo: "danger"
+        });
+      } catch (error) {
+        errorDeRecarga(error);
+      }
+      return;
+    }
     const texto = editando
       ? "Curso «" + datos.nombre + "» actualizado."
       : "Curso «" + datos.nombre + "» creado. Ya está activo y se ve en el catálogo.";
