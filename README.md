@@ -7,7 +7,9 @@ La plataforma utiliza Firebase Authentication con el proveedor Email/Contraseña
 ## Firestore
 Colección `usuarios`, un documento por usuario identificado con su UID de Firebase Authentication. Campos: nombre, apellido, email, telefono, rol, fechaRegistro.
 
-Colección `cursos`, un documento por curso. El id del documento es el que se usa en `detalle-curso.html?id=`. Campos: nombre, categoria (robotica, diseno, programacion, idiomas o mentorias), precio, nivel, descripcion, imagen, rating, estudiantes, temario (lista de { titulo, duracion, gratis }), activo, destacado, fechaCreacion. Las páginas públicas solo muestran los cursos con `activo: true`, y Inicio muestra hasta 3 con `destacado: true`.
+Colección `cursos`, un documento por curso. El id del documento es el que se usa en `detalle-curso.html?id=`. Campos: nombre, categoria (robotica, diseno, programacion, idiomas o mentorias), precio, nivel, descripcion, imagen, rating, estudiantes, temario (lista de { titulo, duracion, gratis }), activo, destacado, fechaCreacion y, de forma opcional, vistaPreviaUrl (enlace al video de vista previa, público). Las páginas públicas solo muestran los cursos con `activo: true`, y Inicio muestra hasta 3 con `destacado: true`.
+
+Subcolección `cursos/{id}/contenido`, con un único documento `principal`: guarda los enlaces del contenido protegido del curso, `pdfUrl` (guía en PDF) y `videoUrl` (video del curso completo). Solo los lee el administrador o quien adquirió el curso (ver «Contenido de los cursos (PDF y videos)»).
 
 La carga inicial de los 6 cursos se hizo con `tools/seed-cursos.html`, una página de uso único que requiere sesión de administrador y está excluida del hosting en `firebase.json`.
 
@@ -63,6 +65,13 @@ service cloud.firestore {
       allow list: if esAdmin() || resource.data.activo == true;
       allow get: if esAdmin() || resource.data.activo == true || tieneCurso(cursoId);
       allow write: if esAdmin();
+
+      // Contenido protegido (enlaces del PDF y del video completo): solo el admin y quien
+      // adquirió el curso. Las reglas de un documento no se heredan a sus subcolecciones.
+      match /contenido/{docId} {
+        allow read: if esAdmin() || tieneCurso(cursoId);
+        allow write: if esAdmin();
+      }
     }
 
     // Adquisiciones: el id del documento es "<uid>_<cursoId>", lo que impide duplicarlas.
@@ -107,11 +116,11 @@ service cloud.firestore {
 | `cursos` | Consulta y abre los activos | Consulta los activos y abre también los que adquirió (aunque estén inactivos) | Lee y escribe todos |
 | `usuarios` | — | Lee y edita su documento (solo nombre, apellido y teléfono); lo crea con rol "estudiante" | Lee todos |
 | `adquisiciones` | — | Crea y lee solo las propias | Lee todas y modifica el estado |
+| `cursos/{id}/contenido` | — | Lee solo la de los cursos que adquirió | Lee y escribe |
 
 Nadie puede eliminar usuarios ni adquisiciones desde el cliente.
 
 Un curso que se desactiva deja de verse en Inicio y en Catálogo, pero quienes ya lo adquirieron (con la adquisición confirmada) siguen pudiendo abrir su página de detalle.
-
 
 ## Flujo de adquisición de cursos
 
@@ -189,7 +198,7 @@ El acceso a las páginas y al contenido de los cursos depende de la sesión y de
 
 | Acción | Visitante | Estudiante | Administrador |
 |---|---|---|---|
-| Ver Inicio, Catálogo y el detalle de un curso (temario y vista previa del módulo 1) | Sí | Sí | Sí |
+| Ver Inicio, Catálogo y el detalle de un curso (temario y vista previa) | Sí | Sí | Sí |
 | Adquirir un curso (pago simulado) | Debe iniciar sesión primero | Sí | No hace falta: ve todo sin adquirir |
 | Ver el contenido completo de un curso | No | Solo de los cursos que adquirió | De todos los cursos |
 | Entrar a «Mi perfil» y «Mis cursos» | Se redirige al login | Sí | Sí |
@@ -199,8 +208,8 @@ El acceso a las páginas y al contenido de los cursos depende de la sesión y de
 
 | Situación | Contenido | Acción en la barra lateral |
 |---|---|---|
-| Visitante | Solo la vista previa (módulo 1) | «Suscribirme», que lleva al login |
-| Usuario sin el curso | Solo la vista previa (módulo 1) | «Suscribirme», que abre el modal de pago simulado |
+| Visitante | Solo la vista previa, si el curso la tiene | «Suscribirme», que lleva al login |
+| Usuario sin el curso | Solo la vista previa, si el curso la tiene | «Suscribirme», que abre el modal de pago simulado |
 | Usuario con el curso | Contenido completo | «Suscripción activa» y enlace a «Mis cursos» |
 | Administrador | Contenido completo | Aviso de acceso como administrador y enlace al panel |
 
@@ -219,6 +228,22 @@ El acceso a las páginas y al contenido de los cursos depende de la sesión y de
 | Estudiante entra a `admin.html` | Va a `index.html?aviso=sin-permisos`, con un aviso amarillo que explica que no tiene permisos |
 
 El aviso lo muestra `js/base.js` a partir del parámetro `?aviso=`. Solo se aceptan los códigos `sin-permisos` y `sesion-requerida`: el texto sale de una tabla del código y cualquier otro valor se ignora. Después de mostrarlo, el parámetro se quita de la dirección para que no reaparezca al recargar.
+
+### Contenido de los cursos (PDF y videos)
+
+Cada curso puede tener hasta tres enlaces, que se cargan desde el formulario de la sección Cursos del panel administrativo:
+
+| Enlace | Dónde se guarda | Quién lo ve |
+|---|---|---|
+| `vistaPreviaUrl` | Documento del curso (`cursos/{id}`) | Cualquier persona, en la página del curso |
+| `pdfUrl` | `cursos/{id}/contenido/principal` | Quien adquirió el curso y el administrador |
+| `videoUrl` | `cursos/{id}/contenido/principal` | Quien adquirió el curso y el administrador |
+
+Los enlaces pueden ser de Google Drive (video o PDF, compartidos con «Cualquier persona con el enlace») o de YouTube (solo video). El panel valida el enlace antes de guardarlo. Para mostrarlo, `js/modules/contenido-servicio.js` lo convierte a su dirección de incrustación usando solo el identificador del archivo (por ejemplo `https://drive.google.com/file/d/<id>/preview`) y `js/pages/detalle-curso.js` lo coloca en un `iframe`: un enlace de cualquier otro sitio no se muestra. Si el curso todavía no tiene contenido cargado, la página lo indica.
+
+La página lee `cursos/{id}/contenido/principal` solo cuando la persona tiene acceso (adquisición confirmada o administrador). Las reglas de Firestore rechazan esa lectura a cualquier otra persona, por lo que los enlaces del PDF y del video completo no llegan al navegador de un visitante ni de quien no adquirió el curso. La subcolección tiene su propia regla porque las reglas de un documento no se heredan a sus subcolecciones.
+
+**Limitación conocida.** Los archivos están en Google Drive con acceso «Cualquier persona con el enlace». La página no muestra el enlace, pero quien tiene acceso al contenido puede obtenerlo con las herramientas del navegador o desde el menú del reproductor y compartirlo, y cualquiera que lo reciba puede abrir el archivo. Una protección total requeriría servir los archivos con enlaces temporales desde Firebase Storage, que queda como mejora futura.
 
 ### Alcance de la protección
 
@@ -243,26 +268,44 @@ Cada módulo dibuja todo su contenido dentro de su contenedor y vuelve a pedir s
 
 ### Resumen
 
-_Pendiente de documentar._
+La sección muestra una vista general de la plataforma, solo de consulta:
 
-### Cursos
+- **Indicadores:** usuarios registrados, cursos activos (con el total de cursos), adquisiciones confirmadas e ingresos simulados.
+- **Cursos más adquiridos:** ranking de hasta 5 cursos según la cantidad de adquisiciones confirmadas, con una barra proporcional al primero.
+- **Últimas adquisiciones:** las 5 más recientes, con el curso, la persona, la fecha, el importe y el estado (incluye las canceladas).
 
-La sección lista todos los cursos de la colección `cursos`, activos e inactivos, ordenados por nombre. Arriba muestra cuatro indicadores (total, activos, inactivos y estudiantes totales) y debajo una tabla con la imagen, el nombre, la categoría, el precio y el estado de cada curso.
-
-**Activar y desactivar.** Cada fila tiene el botón «Desactivar» o «Activar», que cambia el campo `activo` del curso. Un curso inactivo deja de aparecer en Inicio y en Catálogo, y su página de detalle no se abre para quien no sea administrador; el administrador lo sigue viendo en esta tabla y puede volver a activarlo. Después de cada cambio la sección vuelve a pedir los datos a Firestore; si el cambio falla, se muestra un aviso arriba de la tabla y el estado del curso no se modifica.
-
-**Crear un curso.** El botón «Nuevo curso» abre un formulario en un modal con título, categoría, precio (mayor que cero), nivel, descripción y temario (un módulo por línea; el primero es la vista previa gratuita). El formulario valida los campos antes de guardar y los espacios sobrantes no cuentan como contenido. El curso nuevo nace activo, sin destacar, con rating 0, sin estudiantes y con la imagen `assets/img/curso-nuevo.svg`, por lo que aparece enseguida en el catálogo. Su id empieza con «c» y usa solo minúsculas y números, porque viaja en la dirección `detalle-curso.html?id=…` y en el parámetro `volver` del login.
-
-**Editar un curso.** El botón «Editar» de cada fila abre el mismo formulario con los datos del curso. Se pueden modificar el título, la categoría, el precio, el nivel, la descripción y el temario. No se tocan la imagen, el rating, los estudiantes, el estado, el destacado ni la fecha de creación. Al guardar el temario, los módulos que conservan su título mantienen su duración y solo el primer módulo queda como vista previa gratuita.
+Los ingresos son simulados: suman el importe de las adquisiciones confirmadas, pero no se cobra nada. Los datos se piden a Firestore cada vez que se abre la sección.
 
 Código:
 
 | Archivo | Responsabilidad |
 |---|---|
-| `js/pages/admin-cursos.js` | Dibuja la sección, el formulario del modal (para crear y para editar) y atiende los botones |
+| `js/pages/admin-resumen.js` | Dibuja los indicadores, el ranking y la lista de últimas adquisiciones |
+| `js/modules/resumen-servicio.js` | `obtenerResumen()` lee `cursos`, `usuarios` y `adquisiciones` y calcula los indicadores |
+
+No hizo falta cambiar las reglas de Firestore: el administrador ya puede leer las tres colecciones.
+
+### Cursos
+
+La sección lista todos los cursos de la colección `cursos`, activos e inactivos, ordenados por nombre. Arriba muestra cuatro indicadores (total, activos, inactivos y estudiantes totales) y debajo una tabla con la imagen, el nombre, la categoría, el precio y el estado de cada curso.
+
+**Activar y desactivar.** Cada fila tiene el botón «Desactivar» o «Activar», que cambia el campo `activo` del curso. Un curso inactivo deja de aparecer en Inicio y en Catálogo, y su página de detalle solo se abre para el administrador y para quienes ya lo adquirieron; el administrador lo sigue viendo en esta tabla y puede volver a activarlo. Después de cada cambio la sección vuelve a pedir los datos a Firestore; si el cambio falla, se muestra un aviso arriba de la tabla y el estado del curso no se modifica.
+
+**Crear un curso.** El botón «Nuevo curso» abre un formulario en un modal con título, categoría, precio (mayor que cero), nivel, descripción y temario (un módulo por línea; el primero es la vista previa gratuita). El formulario valida los campos antes de guardar y los espacios sobrantes no cuentan como contenido. El curso nuevo nace activo, sin destacar, con rating 0, sin estudiantes y con la imagen `assets/img/curso-nuevo.svg`, por lo que aparece enseguida en el catálogo. Su id empieza con «c» y usa solo minúsculas y números, porque viaja en la dirección `detalle-curso.html?id=…` y en el parámetro `volver` del login.
+
+**Editar un curso.** El botón «Editar» de cada fila abre el mismo formulario con los datos del curso. Se pueden modificar el título, la categoría, el precio, el nivel, la descripción y el temario. No se tocan la imagen, el rating, los estudiantes, el estado, el destacado ni la fecha de creación. Al guardar el temario, los módulos que conservan su título mantienen su duración y solo el primer módulo queda como vista previa gratuita.
+
+**Enlaces del contenido.** El mismo formulario, al crear y al editar, tiene tres campos opcionales: el video de vista previa (público), la guía en PDF y el video del curso completo. Aceptan enlaces de Google Drive o de YouTube y se validan antes de guardar; al editar, un campo vacío borra el enlace anterior. El PDF y el video completo se guardan aparte, en `cursos/{id}/contenido/principal`, que solo pueden leer el administrador y quienes adquirieron el curso (ver «Contenido de los cursos (PDF y videos)»).
+
+Código:
+
+| Archivo | Responsabilidad |
+|---|---|
+| `js/pages/admin-cursos.js` | Dibuja la sección, el formulario del modal (para crear y para editar, con los tres enlaces) y atiende los botones |
+| `js/modules/contenido-servicio.js` | Valida los enlaces, los convierte a su dirección de incrustación y los guarda y lee (`guardarEnlacesCurso`, `obtenerContenido`, `urlParaIncrustar`) |
 | `js/modules/cursos-servicio.js` | `obtenerTodosLosCursos()` devuelve todos los cursos; `cambiarEstadoCurso(id, activo)` actualiza el campo `activo`; `crearCurso(datos)` valida y guarda un curso nuevo; `actualizarCurso(id, datos)` valida y actualiza solo los campos editables |
 
-No hizo falta cambiar las reglas de Firestore: solo el administrador puede leer los cursos inactivos y escribir en `cursos`.
+Las reglas de Firestore permiten escribir en `cursos` y en su subcolección `contenido` solo al administrador.
 
 ### Usuarios
 
@@ -300,4 +343,3 @@ Código:
 | `js/modules/adquisiciones-servicio.js` | `obtenerTodasLasAdquisiciones()` devuelve todas las adquisiciones con el nombre y el correo de la persona; `cambiarEstadoAdquisicion(id, estado)` cambia el estado a `confirmada` o `cancelada` |
 
 No hizo falta cambiar las reglas de Firestore: el administrador ya puede leer todas las adquisiciones y modificar únicamente el campo `estado`.
-
