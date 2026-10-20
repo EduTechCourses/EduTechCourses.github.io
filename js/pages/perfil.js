@@ -3,13 +3,18 @@
 
 import { auth, db } from "../firebase-config.js";
 import { onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
-import { doc, getDoc, updateDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+import { doc, getDoc, updateDoc, deleteField, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 import { escaparHTML } from "../modules/cursos-servicio.js";
+import { PRESET_USUARIOS, urlOptimizada, abrirSubidaImagen } from "../modules/imagenes-servicio.js";
 
 let uidActual = null;
 // Rol tal como está guardado en Firestore ("estudiante" o "administrador").
 // No se lee del texto de la insignia, que se muestra con la primera letra en mayúscula.
 let rolActual = null;
+// Dirección de la foto de perfil guardada en Firestore ("" si no tiene).
+let fotoActual = "";
+// Últimos datos con los que se dibujaron los encabezados (nombre, correo y rol guardados).
+let encabezadoActual = null;
 
 function obtenerIniciales(nombre, apellido) {
     const n = (nombre || "").trim();
@@ -24,7 +29,26 @@ function formatearFecha(isoString) {
     return fecha.toLocaleDateString("es-UY", { day: "numeric", month: "long", year: "numeric" });
 }
 
+// Dibuja en un avatar la foto de perfil o, si no hay, las iniciales.
+// Cada avatar tiene un <span class="avatar-texto"> y un <img class="avatar-img">.
+function pintarAvatar(avatar, iniciales, fotoUrl, tamano) {
+    const texto = avatar.querySelector(".avatar-texto");
+    const imagen = avatar.querySelector(".avatar-img");
+    const foto = urlOptimizada(fotoUrl, tamano, tamano);
+
+    texto.textContent = iniciales;
+    texto.classList.toggle("d-none", foto !== "");
+    imagen.classList.toggle("d-none", foto === "");
+    if (foto !== "") {
+        imagen.src = foto;
+    } else {
+        imagen.removeAttribute("src");
+    }
+    document.getElementById("btnQuitarFoto").classList.toggle("d-none", foto === "");
+}
+
 function actualizarEncabezados(datos) {
+    encabezadoActual = datos;
     const nombreCompleto = datos.nombre + " " + datos.apellido;
     const iniciales = obtenerIniciales(datos.nombre, datos.apellido);
     const rolCapitalizado = datos.rol.charAt(0).toUpperCase() + datos.rol.slice(1);
@@ -32,15 +56,15 @@ function actualizarEncabezados(datos) {
     // Issue #43: el link "Admin" solo se muestra si el rol es administrador.
     document.getElementById("navAdminLink").classList.toggle("d-none", datos.rol !== "administrador");
 
-    document.getElementById("navAvatarSm").textContent = iniciales;
+    pintarAvatar(document.getElementById("navAvatarSm"), iniciales, fotoActual, 52);
     document.getElementById("navNombreSm").textContent = nombreCompleto;
 
-    document.getElementById("perfilAvatarGrande").childNodes[0].textContent = iniciales + " ";
+    pintarAvatar(document.getElementById("perfilAvatarGrande"), iniciales, fotoActual, 160);
     document.getElementById("perfilNombreCompleto").textContent = nombreCompleto;
     document.getElementById("perfilEmailSidebar").textContent = datos.email;
     document.getElementById("perfilRolBadge").textContent = rolCapitalizado;
 
-    document.getElementById("perfilAvatarChico").textContent = iniciales;
+    pintarAvatar(document.getElementById("perfilAvatarChico"), iniciales, fotoActual, 104);
     document.getElementById("perfilNombreChico").textContent = nombreCompleto;
     document.getElementById("perfilEmailChico").textContent = datos.email;
 }
@@ -166,6 +190,7 @@ onAuthStateChanged(auth, async function (usuario) {
 
     const datos = snapshot.data();
     rolActual = datos.rol;
+    fotoActual = datos.fotoUrl || "";
     actualizarEncabezados(datos);
 
     document.getElementById("perfilNombre").value = datos.nombre;
@@ -220,6 +245,50 @@ formPerfil.addEventListener("submit", async function (event) {
 
     boton.disabled = false;
     boton.textContent = "Guardar cambios";
+});
+
+// ---------- Foto de perfil (Cloudinary) ----------
+
+function mostrarMensajePerfil(tipo, texto) {
+    mensajePerfil.className = "alert alert-" + tipo;
+    mensajePerfil.textContent = texto;
+}
+
+// Guarda la dirección de la foto en el perfil (Firestore) y en la cuenta de
+// Firebase Authentication, de donde la lee la barra de navegación de las demás
+// páginas. Con url = "" la foto se quita.
+async function guardarFoto(url) {
+    try {
+        await updateDoc(doc(db, "usuarios", uidActual), { fotoUrl: url === "" ? deleteField() : url });
+    } catch (error) {
+        console.error("No se pudo guardar la foto de perfil:", error);
+        mostrarMensajePerfil("danger", "No pudimos guardar la foto. Intentá nuevamente.");
+        return;
+    }
+
+    fotoActual = url;
+    if (encabezadoActual) actualizarEncabezados(encabezadoActual);
+    mostrarMensajePerfil("success", url === "" ? "Quitaste tu foto de perfil." : "Foto de perfil actualizada.");
+
+    // Si esto falla, la foto ya quedó guardada: solo la barra de otras páginas
+    // seguiría mostrando las iniciales hasta el próximo cambio.
+    try {
+        await updateProfile(auth.currentUser, { photoURL: url === "" ? null : url });
+    } catch (error) {
+        console.error("No se pudo actualizar la foto de la cuenta:", error);
+    }
+}
+
+document.getElementById("btnCambiarFoto").addEventListener("click", function () {
+    abrirSubidaImagen(
+        PRESET_USUARIOS,
+        function (url) { guardarFoto(url); },
+        function (mensaje) { mostrarMensajePerfil("danger", mensaje); }
+    );
+});
+
+document.getElementById("btnQuitarFoto").addEventListener("click", function () {
+    guardarFoto("");
 });
 
 function mostrarSeccionPerfil(seccion) {
