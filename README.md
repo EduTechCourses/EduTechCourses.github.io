@@ -240,12 +240,14 @@ La sección lista todos los cursos de la colección `cursos`, activos e inactivo
 
 **Crear un curso.** El botón «Nuevo curso» abre un formulario en un modal con título, categoría, precio (mayor que cero), nivel, descripción y temario (un módulo por línea; el primero es la vista previa gratuita). El formulario valida los campos antes de guardar y los espacios sobrantes no cuentan como contenido. El curso nuevo nace activo, sin destacar, con rating 0, sin estudiantes y con la imagen `assets/img/curso-nuevo.svg`, por lo que aparece enseguida en el catálogo. Su id empieza con «c» y usa solo minúsculas y números, porque viaja en la dirección `detalle-curso.html?id=…` y en el parámetro `volver` del login.
 
+**Editar un curso.** El botón «Editar» de cada fila abre el mismo formulario con los datos del curso. Se pueden modificar el título, la categoría, el precio, el nivel, la descripción y el temario. No se tocan la imagen, el rating, los estudiantes, el estado, el destacado ni la fecha de creación. Al guardar el temario, los módulos que conservan su título mantienen su duración y solo el primer módulo queda como vista previa gratuita.
+
 Código:
 
 | Archivo | Responsabilidad |
 |---|---|
-| `js/pages/admin-cursos.js` | Dibuja la sección, el formulario del modal y atiende los botones |
-| `js/modules/cursos-servicio.js` | `obtenerTodosLosCursos()` devuelve todos los cursos; `cambiarEstadoCurso(id, activo)` actualiza el campo `activo`; `crearCurso(datos)` valida y guarda un curso nuevo |
+| `js/pages/admin-cursos.js` | Dibuja la sección, el formulario del modal (para crear y para editar) y atiende los botones |
+| `js/modules/cursos-servicio.js` | `obtenerTodosLosCursos()` devuelve todos los cursos; `cambiarEstadoCurso(id, activo)` actualiza el campo `activo`; `crearCurso(datos)` valida y guarda un curso nuevo; `actualizarCurso(id, datos)` valida y actualiza solo los campos editables |
 
 No hizo falta cambiar las reglas de Firestore: solo el administrador puede leer los cursos inactivos y escribir en `cursos`.
 
