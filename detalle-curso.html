@@ -100,15 +100,11 @@
           <!-- Estado: visitante o usuario sin el curso -->
           <div id="estado-no-suscripto" class="d-none">
             <div class="stat-card">
-              <h2 class="h6 mb-2"><i class="bi bi-play-circle text-teal me-1"></i> Vista previa · Módulo 1</h2>
-              <p class="small text-body-secondary mb-3">Este es el único módulo disponible sin adquirir el curso. El
-                resto del contenido se desbloquea al suscribirte.</p>
-              <div class="ratio ratio-16x9 rounded-3 overflow-hidden mb-2" style="background:#0b1f3d;">
-                <div class="d-flex align-items-center justify-content-center text-white">
-                  <i class="bi bi-play-circle-fill" style="font-size:2.5rem;"></i>
-                </div>
-              </div>
-              <p class="small text-body-secondary mb-0">Video de introducción — 6 min</p>
+              <h2 class="h6 mb-2"><i class="bi bi-play-circle text-teal me-1"></i> Vista previa gratuita</h2>
+              <p class="small text-body-secondary mb-3">Este es el único contenido disponible sin adquirir el curso. La
+                guía en PDF y el video completo se desbloquean al suscribirte.</p>
+              <!-- js/pages/detalle-curso.js coloca acá el video de vista previa del curso, o un aviso si todavía no tiene. -->
+              <div id="vistaPreviaContenedor"></div>
             </div>
           </div>
 
@@ -117,12 +113,9 @@
             <div class="stat-card" style="border-color: var(--teal);">
               <h2 class="h6 mb-2 text-teal"><i class="bi bi-unlock me-1"></i> Contenido completo desbloqueado</h2>
               <p class="small text-body-secondary mb-3" id="contenidoCompletoTexto"></p>
-              <div class="d-flex flex-column gap-2">
-                <a href="#" class="btn btn-outline-brand btn-sm" style="color: var(--navy); border-color: var(--navy);"
-                  onclick="return false;"><i class="bi bi-file-earmark-pdf me-1"></i> Descargar guía en PDF</a>
-                <a href="#" class="btn btn-outline-brand btn-sm" style="color: var(--navy); border-color: var(--navy);"
-                  onclick="return false;"><i class="bi bi-collection-play me-1"></i> Ver todos los videos del curso</a>
-              </div>
+              <!-- js/pages/detalle-curso.js coloca acá el video y la guía en PDF del curso,
+                   que se leen de Firestore solo cuando la persona tiene acceso. -->
+              <div id="contenidoProtegido"></div>
             </div>
           </div>
         </div>
@@ -161,8 +154,9 @@
 
             <hr>
             <ul class="list-unstyled small text-body-secondary mb-0">
-              <li class="d-flex gap-2 mb-2"><i class="bi bi-file-earmark-pdf"></i> Guía descargable en PDF</li>
-              <li class="d-flex gap-2 mb-2"><i class="bi bi-collection-play"></i> <span id="cursoModulos">4</span> módulos en video</li>
+              <li class="d-flex gap-2 mb-2"><i class="bi bi-file-earmark-pdf"></i> Guía del curso en PDF</li>
+              <li class="d-flex gap-2 mb-2"><i class="bi bi-collection-play"></i> <span id="cursoModulos">4</span>
+                módulos con video y guía</li>
               <li class="d-flex gap-2"><i class="bi bi-infinity"></i> Acceso mientras la suscripción esté activa</li>
             </ul>
           </div>

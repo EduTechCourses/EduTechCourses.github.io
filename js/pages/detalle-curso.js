@@ -5,6 +5,12 @@
 // Control de acceso: lo que se muestra (vista previa o contenido completo)
 // depende del nivel de acceso que devuelve obtenerNivelAcceso, que sale de
 // Firestore: "visitante", "sin-curso", "con-curso" o "admin".
+//
+// Contenido (issue #86): la vista previa es un video público guardado en el
+// curso (vistaPreviaUrl). El video y la guía en PDF se leen de
+// cursos/{id}/contenido/principal solo cuando la persona tiene acceso; las
+// reglas de Firestore rechazan esa lectura a cualquier otra persona. Los
+// enlaces se convierten a su dirección de incrustación (ver contenido-servicio.js).
 
 import { auth } from "../firebase-config.js";
 import {
@@ -13,8 +19,10 @@ import {
   escaparHTML
 } from "../modules/cursos-servicio.js";
 import { adquirirCurso, obtenerNivelAcceso } from "../modules/adquisiciones-servicio.js";
+import { urlParaIncrustar, obtenerContenido } from "../modules/contenido-servicio.js";
 
 let cursoActual = null;
+let contenidoCargado = false;
 
 function generarTemarioHTML(temario) {
   let html = "";
@@ -70,6 +78,95 @@ function mostrarMensajeCentral(icono, titulo, texto) {
   `;
 }
 
+// ---------- Vista previa y contenido del curso ----------
+
+// Arma un iframe con atributos puestos uno por uno (sin armar HTML con texto),
+// dentro de una caja con proporción fija. "proporcion" es el alto como porcentaje
+// del ancho: 56.25 para un video 16:9 y más alto para una hoja de PDF.
+function crearReproductor(direccion, titulo, proporcion) {
+  const caja = document.createElement("div");
+  caja.className = "ratio rounded-3 overflow-hidden";
+  caja.style.setProperty("--bs-aspect-ratio", proporcion + "%");
+
+  const marco = document.createElement("iframe");
+  marco.src = direccion;
+  marco.title = titulo;
+  marco.loading = "lazy";
+  marco.allow = "autoplay; fullscreen";
+
+  caja.appendChild(marco);
+  return caja;
+}
+
+function crearSubtitulo(texto) {
+  const subtitulo = document.createElement("h3");
+  subtitulo.className = "h6 mb-2";
+  subtitulo.textContent = texto;
+  return subtitulo;
+}
+
+// Muestra el video de vista previa del curso, o un aviso si todavía no tiene.
+function mostrarVistaPrevia(curso) {
+  const contenedor = document.getElementById("vistaPreviaContenedor");
+  contenedor.textContent = "";
+
+  const direccion = curso.vistaPreviaUrl ? urlParaIncrustar(curso.vistaPreviaUrl, "video") : null;
+  if (direccion) {
+    contenedor.appendChild(crearReproductor(direccion, "Vista previa de " + curso.nombre, 56.25));
+    return;
+  }
+
+  const aviso = document.createElement("p");
+  aviso.className = "small text-body-secondary mb-0";
+  aviso.textContent = "Este curso todavía no tiene un video de vista previa.";
+  contenedor.appendChild(aviso);
+}
+
+// Lee el video y la guía en PDF del curso y los muestra. Solo se llama cuando
+// la persona tiene acceso; si las reglas rechazaran la lectura, se avisa.
+async function cargarContenidoProtegido() {
+  if (contenidoCargado) return;
+  contenidoCargado = true;
+
+  const caja = document.getElementById("contenidoProtegido");
+  caja.innerHTML = `
+    <div class="small text-body-secondary">
+      <div class="spinner-border spinner-border-sm me-2" aria-hidden="true"></div>
+      Cargando el contenido del curso...
+    </div>`;
+
+  try {
+    const contenido = await obtenerContenido(cursoActual.id);
+    const video = urlParaIncrustar(contenido.videoUrl, "video");
+    const pdf = urlParaIncrustar(contenido.pdfUrl, "pdf");
+
+    caja.textContent = "";
+
+    if (!video && !pdf) {
+      const aviso = document.createElement("p");
+      aviso.className = "small text-body-secondary mb-0";
+      aviso.textContent = "El contenido de este curso todavía no está disponible. Volvé a probar más adelante.";
+      caja.appendChild(aviso);
+      return;
+    }
+
+    if (video) {
+      caja.appendChild(crearSubtitulo("Video del curso"));
+      caja.appendChild(crearReproductor(video, "Video de " + cursoActual.nombre, 56.25));
+    }
+    if (pdf) {
+      const subtitulo = crearSubtitulo("Guía en PDF");
+      if (video) subtitulo.classList.add("mt-4");
+      caja.appendChild(subtitulo);
+      caja.appendChild(crearReproductor(pdf, "Guía en PDF de " + cursoActual.nombre, 130));
+    }
+  } catch (error) {
+    console.error("No se pudo cargar el contenido del curso:", error);
+    contenidoCargado = false;
+    caja.innerHTML = '<div class="alert alert-warning small mb-0" role="alert">No pudimos cargar el contenido del curso. Recargá la página para intentarlo de nuevo.</div>';
+  }
+}
+
 // ---------- Adquisición con pago simulado ----------
 
 function elModalPago() {
@@ -114,12 +211,14 @@ function aplicarNivelAcceso(nivel) {
 
   const bloqueAccion = nivel === "admin" ? "accion-admin"
     : nivel === "con-curso" ? "accion-suscripto"
-    : "accion-no-suscripto";
+      : "accion-no-suscripto";
   mostrarSoloUno(BLOQUES_ACCION, bloqueAccion);
 
   document.getElementById("contenidoCompletoTexto").textContent = nivel === "admin"
-    ? "Estás viendo este curso como administrador: tenés acceso a todos los módulos, el PDF descargable y todos los videos."
-    : "Estás suscripto a este curso: tenés acceso a todos los módulos, el PDF descargable y todos los videos.";
+    ? "Estás viendo este curso como administrador: tenés acceso a todo el contenido, la guía en PDF y el video del curso."
+    : "Estás suscripto a este curso: tenés acceso a todo el contenido, la guía en PDF y el video del curso.";
+
+  if (contenidoCompleto) cargarContenidoProtegido();
 
   document.getElementById("accionNota").textContent = nivel === "visitante"
     ? "Se necesita una cuenta para suscribirte"
@@ -210,6 +309,7 @@ async function iniciarDetalle() {
     }
     cursoActual = curso;
     renderizarCurso(curso);
+    mostrarVistaPrevia(curso);
     prepararAdquisicion();
   } catch (error) {
     console.error("Error al cargar el curso:", error);
