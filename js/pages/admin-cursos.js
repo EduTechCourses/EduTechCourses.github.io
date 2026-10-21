@@ -60,7 +60,7 @@ function encabezadoHTML(total) {
 function tarjetaHTML(valor, etiqueta, color) {
   const estilo = color ? ` style="color:${color};"` : "";
   return `
-    <div class="col-6 col-md-3">
+    <div class="col-6 col-md-4">
       <div class="stat-card">
         <p class="stat-value mb-0"${estilo}>${valor}</p>
         <p class="stat-label mb-0">${etiqueta}</p>
@@ -318,7 +318,6 @@ export async function iniciarCursos(contenedor) {
     cursosActuales = cursos;
 
     const activos = cursos.filter((c) => c.activo === true).length;
-    const estudiantes = cursos.reduce((suma, c) => suma + (Number(c.estudiantes) || 0), 0);
 
     contenedor.innerHTML =
       encabezadoHTML(cursos.length) +
@@ -327,7 +326,6 @@ export async function iniciarCursos(contenedor) {
       tarjetaHTML(cursos.length, "Total cursos") +
       tarjetaHTML(activos, "Activos", "var(--teal-dark)") +
       tarjetaHTML(cursos.length - activos, "Inactivos", "var(--ink-faint)") +
-      tarjetaHTML(estudiantes, "Estudiantes totales") +
       `</div>` +
       tablaHTML(cursos);
 
