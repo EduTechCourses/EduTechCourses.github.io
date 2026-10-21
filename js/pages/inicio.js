@@ -4,7 +4,6 @@
 import {
   obtenerCursosActivos,
   datosCategoria,
-  generarEstrellasHTML,
   escaparHTML
 } from "../modules/cursos-servicio.js";
 
@@ -36,11 +35,7 @@ async function mostrarDestacados() {
           <div class="card-body">
             <span class="badge-category ${cat.clase}">${cat.label}</span>
             <h3 class="h6 mt-3 mb-2">${nombre}</h3>
-            <div class="d-flex align-items-center gap-2 mb-1">
-              <span class="rating-stars">${generarEstrellasHTML(curso.rating || 0)}</span>
-              <span class="rating-value">${(curso.rating || 0).toFixed(1)}</span>
-            </div>
-            <p class="course-meta mb-3">${curso.estudiantes || 0} estudiantes · ${(curso.temario || []).length} módulos</p>
+            <p class="course-meta mb-3">${(curso.temario || []).length} módulos</p>
             <div class="d-flex justify-content-between align-items-center">
               <span class="course-price">USD ${Number(curso.precio)} <small>/ curso</small></span>
               <a href="detalle-curso.html?id=${encodeURIComponent(curso.id)}" class="btn btn-sm btn-outline-brand" style="color: var(--navy); border-color: var(--navy);">Ver curso</a>
