@@ -6,6 +6,7 @@ import {
   datosCategoria,
   escaparHTML
 } from "../modules/cursos-servicio.js";
+import { obtenerResumenValoraciones, valoracionHTML } from "../modules/valoraciones-servicio.js";
 
 async function mostrarDestacados() {
   const contenedor = document.getElementById("cursosDestacados");
@@ -24,6 +25,14 @@ async function mostrarDestacados() {
     return;
   }
 
+  // Si no se pueden leer las opiniones, los cursos se muestran igual, sin promedios.
+  let resumenValoraciones = {};
+  try {
+    resumenValoraciones = await obtenerResumenValoraciones();
+  } catch (error) {
+    console.error("No se pudieron cargar las valoraciones:", error);
+  }
+
   let html = "";
   destacados.forEach((curso) => {
     const cat = datosCategoria(curso.categoria);
@@ -34,7 +43,7 @@ async function mostrarDestacados() {
           <img src="${escaparHTML(curso.imagen)}" alt="Curso de ${nombre}" class="course-thumb">
           <div class="card-body">
             <span class="badge-category ${cat.clase}">${cat.label}</span>
-            <h3 class="h6 mt-3 mb-2">${nombre}</h3>
+            <h3 class="h6 mt-3 mb-2">${nombre}</h3>            <h3 class="h6 mt-3 mb-2">${nombre}</h3>${valoracionHTML(resumenValoraciones[curso.id])}
             <p class="course-meta mb-3">${(curso.temario || []).length} módulos</p>
             <div class="d-flex justify-content-between align-items-center">
               <span class="course-price">USD ${Number(curso.precio)} <small>/ curso</small></span>
