@@ -6,7 +6,6 @@
 import {
   obtenerCursosActivos,
   datosCategoria,
-  generarEstrellasHTML,
   escaparHTML
 } from "../modules/cursos-servicio.js";
 
@@ -27,11 +26,7 @@ function mostrarCursos(lista) {
           <img src="${escaparHTML(curso.imagen)}" alt="Curso de ${nombre}" class="course-thumb">
           <div class="card-body">
             <span class="badge-category ${cat.clase}">${cat.label}</span>
-            <h3 class="h6 mt-3 mb-2">${nombre}</h3>
-            <div class="d-flex align-items-center gap-2 mb-1">
-              <span class="rating-stars">${generarEstrellasHTML(curso.rating || 0)}</span>
-              <span class="rating-value">${(curso.rating || 0).toFixed(1)}</span>
-            </div>
+            <h3 class="h6 mt-3 mb-2">${nombre}</h3>${(curso.temario || []).length} módulos
             <p class="course-meta mb-3">${curso.estudiantes || 0} estudiantes · ${(curso.temario || []).length} módulos</p>
             <a href="detalle-curso.html?id=${encodeURIComponent(curso.id)}" class="fw-semibold text-navy small text-decoration-none">Ver curso <i class="bi bi-arrow-right"></i></a>
           </div>
