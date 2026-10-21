@@ -1,6 +1,10 @@
 // EduTechCourses — lógica de la pantalla Detalle de curso
 // Lee el curso desde Firestore según el parámetro ?id= de la URL y gestiona
-// la adquisición del curso con pago simulado (modal #modalPago).
+// la adquisición del curso con Mercado Pago en modo de prueba (modal #modalPago).
+//
+// Pago (issue #93): «Confirmar adquisición» lleva al checkout de Mercado Pago.
+// Al volver, la dirección trae payment_id y status; la página confirma el pago
+// con Mercado Pago (verificarPago) y recién entonces registra la adquisición.
 //
 // Control de acceso: lo que se muestra (vista previa o contenido completo)
 // depende del nivel de acceso que devuelve obtenerNivelAcceso, que sale de
@@ -18,7 +22,17 @@ import {
   datosCategoria,
   escaparHTML
 } from "../modules/cursos-servicio.js";
-import { adquirirCurso, obtenerNivelAcceso } from "../modules/adquisiciones-servicio.js";
+import {
+  adquirirCurso,
+  comprobarAdquisicionPosible,
+  obtenerNivelAcceso
+} from "../modules/adquisiciones-servicio.js";
+import {
+  crearCheckout,
+  verificarPago,
+  leerVueltaDePago,
+  limpiarVueltaDePago
+} from "../modules/mercadopago-servicio.js";
 import { urlParaIncrustar, obtenerContenido } from "../modules/contenido-servicio.js";
 
 let cursoActual = null;
@@ -167,22 +181,37 @@ async function cargarContenidoProtegido() {
   }
 }
 
-// ---------- Adquisición con pago simulado ----------
+// ---------- Adquisición con Mercado Pago (modo de prueba) ----------
 
 function elModalPago() {
   return document.getElementById("modalPago");
+}
+
+function restaurarBotonPago() {
+  const boton = document.getElementById("btnConfirmarPago");
+  boton.disabled = false;
+  boton.innerHTML = '<i class="bi bi-lock me-1"></i> Confirmar adquisición';
 }
 
 // Deja el modal en su estado inicial: resumen visible, sin mensajes.
 function reiniciarModalPago() {
   document.getElementById("pagoResumen").classList.remove("d-none");
   document.getElementById("pagoAcciones").classList.remove("d-none");
+  document.getElementById("pagoVerificando").classList.add("d-none");
   document.getElementById("pagoExito").classList.add("d-none");
   document.getElementById("pagoError").classList.add("d-none");
+  restaurarBotonPago();
+}
 
-  const boton = document.getElementById("btnConfirmarPago");
-  boton.disabled = false;
-  boton.innerHTML = '<i class="bi bi-lock me-1"></i> Confirmar adquisición';
+function mostrarEstadoModalPago(idVisible) {
+  ["pagoResumen", "pagoAcciones", "pagoVerificando", "pagoExito"].forEach((id) => {
+    document.getElementById(id).classList.toggle("d-none", id !== idVisible);
+  });
+}
+
+function llenarResumenPago() {
+  document.getElementById("pagoCursoNombre").textContent = cursoActual.nombre;
+  document.getElementById("pagoCursoPrecio").innerHTML = `USD ${Number(cursoActual.precio)}`;
 }
 
 function mostrarErrorPago(mensaje) {
@@ -222,7 +251,7 @@ function aplicarNivelAcceso(nivel) {
 
   document.getElementById("accionNota").textContent = nivel === "visitante"
     ? "Se necesita una cuenta para suscribirte"
-    : "Pago simulado: no se solicitan datos de tarjeta";
+    : "Pago con Mercado Pago en modo de prueba: no se cobra dinero real";
 }
 
 // Refleja en la pantalla que el curso ya fue adquirido.
@@ -253,44 +282,116 @@ async function iniciarAdquisicion() {
     return;
   }
 
-  document.getElementById("pagoCursoNombre").textContent = cursoActual.nombre;
-  document.getElementById("pagoCursoPrecio").innerHTML = `USD ${Number(cursoActual.precio)}`;
+  llenarResumenPago();
   reiniciarModalPago();
   bootstrap.Modal.getOrCreateInstance(elModalPago()).show();
 }
 
-// Clic en «Confirmar adquisición» dentro del modal.
+// Clic en «Confirmar adquisición» dentro del modal: comprueba que la persona
+// no tenga ya el curso y la lleva al checkout de Mercado Pago.
 async function confirmarAdquisicion() {
   const boton = document.getElementById("btnConfirmarPago");
   boton.disabled = true;
-  boton.innerHTML = '<span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span> Procesando...';
+  boton.innerHTML = '<span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span> Conectando con Mercado Pago...';
   document.getElementById("pagoError").classList.add("d-none");
 
-  const resultado = await adquirirCurso(cursoActual);
+  const previo = await comprobarAdquisicionPosible(cursoActual.id);
+  if (!previo.exito) {
+    // Ya lo tenía: no se cobra de nuevo, solo se informa y se refleja el estado.
+    if (previo.codigo === "ya-adquirido") marcarComoAdquirido();
+    mostrarErrorPago(previo.mensaje);
+    restaurarBotonPago();
+    return;
+  }
+
+  try {
+    // El botón queda deshabilitado mientras el navegador va a Mercado Pago.
+    window.location.href = await crearCheckout(cursoActual);
+  } catch (error) {
+    mostrarErrorPago(error.message);
+    restaurarBotonPago();
+  }
+}
+
+// Al volver de Mercado Pago: confirma el pago y, si está aprobado, registra la
+// adquisición. Devuelve { exito: true } o { exito: false, mensaje, reintentar,
+// pendiente }. "reintentar" indica que falló la conexión: la persona puede haber
+// pagado, así que conviene recargar la página en lugar de pagar otra vez.
+// "pendiente" indica que el pago existe pero no está aprobado: no se ofrece
+// pagar de nuevo para no cobrar dos veces.
+async function registrarPagoAlVolver(vuelta) {
+  if (!vuelta.pagoId) {
+    return { exito: false, mensaje: "El pago no se completó. Podés intentarlo de nuevo cuando quieras." };
+  }
+
+  await auth.authStateReady();
+  if (!auth.currentUser) {
+    return { exito: false, mensaje: "Iniciá sesión con la cuenta con la que pagaste para terminar la adquisición.", reintentar: true };
+  }
+
+  try {
+    const verificacion = await verificarPago(vuelta.pagoId, cursoActual);
+    if (!verificacion.aprobado) {
+      return { exito: false, mensaje: verificacion.mensaje, pendiente: Boolean(verificacion.pendiente) };
+    }
+  } catch (error) {
+    return {
+      exito: false,
+      mensaje: error.message + (error.reintentar ? " Recargá la página para volver a comprobar tu pago." : ""),
+      reintentar: Boolean(error.reintentar)
+    };
+  }
+
+  const registro = await adquirirCurso(cursoActual, vuelta.pagoId);
+  if (registro.exito || registro.codigo === "ya-adquirido") return { exito: true };
+  return {
+    exito: false,
+    mensaje: registro.mensaje,
+    reintentar: registro.codigo === "sin-conexion" || registro.codigo === "error"
+  };
+}
+
+// Muestra en el modal la verificación del pago y su resultado.
+async function procesarVueltaDePago(vuelta) {
+  llenarResumenPago();
+  reiniciarModalPago();
+  mostrarEstadoModalPago("pagoVerificando");
+  bootstrap.Modal.getOrCreateInstance(elModalPago()).show();
+
+  const resultado = await registrarPagoAlVolver(vuelta);
 
   if (resultado.exito) {
-    document.getElementById("pagoResumen").classList.add("d-none");
-    document.getElementById("pagoAcciones").classList.add("d-none");
-    document.getElementById("pagoExito").classList.remove("d-none");
+    limpiarVueltaDePago();
+    mostrarEstadoModalPago("pagoExito");
     marcarComoAdquirido();
     return;
   }
 
-  // Ya lo tenía: no se duplica nada, solo se informa y se refleja el estado.
-  if (resultado.codigo === "ya-adquirido") {
-    marcarComoAdquirido();
+  // Con un error de conexión se dejan los datos del pago en la dirección para
+  // poder recargar. Solo se ofrece pagar de nuevo si no hay un pago en curso.
+  if (!resultado.reintentar) limpiarVueltaDePago();
+  if (resultado.reintentar || resultado.pendiente) {
+    mostrarEstadoModalPago("pagoError");
+  } else {
+    reiniciarModalPago();
   }
-
   mostrarErrorPago(resultado.mensaje);
-  boton.disabled = false;
-  boton.innerHTML = '<i class="bi bi-lock me-1"></i> Confirmar adquisición';
 }
 
-function prepararAdquisicion() {
+async function prepararAdquisicion() {
   const botonSuscribirme = document.getElementById("btnSuscribirme");
   botonSuscribirme.addEventListener("click", iniciarAdquisicion);
   document.getElementById("btnConfirmarPago").addEventListener("click", confirmarAdquisicion);
-  resolverAcceso();
+
+  // Si se vuelve con «Atrás» desde Mercado Pago, el botón no queda trabado.
+  window.addEventListener("pageshow", (evento) => {
+    if (evento.persisted) restaurarBotonPago();
+  });
+
+  await resolverAcceso();
+
+  const vuelta = leerVueltaDePago();
+  if (vuelta) await procesarVueltaDePago(vuelta);
 }
 
 async function iniciarDetalle() {

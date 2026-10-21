@@ -1,11 +1,14 @@
 // EduTechCourses — acceso a la colección "adquisiciones" de Firestore
 //
-// Registra y consulta las adquisiciones de cursos. El pago es SIMULADO:
-// no se piden ni se guardan datos de tarjetas ni de ningún medio de pago.
+// Registra y consulta las adquisiciones de cursos. El pago se hace con
+// Mercado Pago en modo de prueba (ver mercadopago-servicio.js): la plataforma
+// no pide ni guarda datos de tarjetas ni de ningún medio de pago.
 //
 // Estructura del documento adquisiciones/{uid}_{cursoId}:
-//   uid, cursoId, cursoNombre, importe, metodoPago ("simulado"),
-//   estado ("confirmada" o "cancelada"), fecha (hora del servidor)
+//   uid, cursoId, cursoNombre, importe, metodoPago ("mercadopago", o
+//   "simulado" en las adquisiciones anteriores a Mercado Pago), pagoId (número
+//   de pago de Mercado Pago, solo con "mercadopago"), estado ("confirmada" o
+//   "cancelada"), fecha (hora del servidor)
 //
 // El id combina usuario y curso, por eso Firestore impide registrar dos
 // veces la misma adquisición. Las reglas de seguridad (ver README) validan
@@ -88,36 +91,55 @@ async function obtenerNivelAcceso(cursoId) {
   return "sin-curso";
 }
 
-// Registra la adquisición (pago simulado) del curso para el usuario actual.
-// Recibe el curso tal como lo devuelve obtenerCursoPorId (id, nombre, precio).
+// Comprueba, antes de mandar a pagar, que haya sesión y que la persona no
+// tenga ya el curso (ni una adquisición cancelada de ese curso).
 // Devuelve { exito: true } o { exito: false, codigo, mensaje }, con los códigos:
 // "sin-sesion", "ya-adquirido", "cancelada", "permiso-denegado", "sin-conexion"
 // y "error".
-async function adquirirCurso(curso) {
-  const usuario = auth.currentUser;
-  if (!usuario) {
+async function comprobarAdquisicionPosible(cursoId) {
+  if (!auth.currentUser) {
     return fallo("sin-sesion", "Iniciá sesión para adquirir un curso.");
   }
 
   try {
-    const existente = await obtenerAdquisicion(curso.id);
+    const existente = await obtenerAdquisicion(cursoId);
     if (existente) {
       if (existente.estado === "cancelada") {
         return fallo("cancelada", "Tu adquisición de este curso fue cancelada. Contactá a la administración de la plataforma.");
       }
       return fallo("ya-adquirido", "Ya adquiriste este curso.");
     }
+    return { exito: true };
+  } catch (error) {
+    return traducirErrorFirestore(error);
+  }
+}
 
-    await setDoc(doc(db, "adquisiciones", idAdquisicion(usuario.uid, curso.id)), {
-      uid: usuario.uid,
-      cursoId: curso.id,
-      cursoNombre: curso.nombre,
-      importe: Number(curso.precio),
-      metodoPago: "simulado",
-      estado: "confirmada",
-      fecha: serverTimestamp()
-    });
+// Registra la adquisición del curso para el usuario actual.
+// Recibe el curso tal como lo devuelve obtenerCursoPorId (id, nombre, precio)
+// y el número de pago de Mercado Pago, que ya tiene que estar verificado como
+// aprobado (ver verificarPago en mercadopago-servicio.js). Sin número de pago,
+// la adquisición se registra como "simulado", como antes de Mercado Pago.
+// Devuelve { exito: true } o { exito: false, codigo, mensaje }, con los mismos
+// códigos que comprobarAdquisicionPosible.
+async function adquirirCurso(curso, pagoId) {
+  const previo = await comprobarAdquisicionPosible(curso.id);
+  if (!previo.exito) return previo;
 
+  const usuario = auth.currentUser;
+  const adquisicion = {
+    uid: usuario.uid,
+    cursoId: curso.id,
+    cursoNombre: curso.nombre,
+    importe: Number(curso.precio),
+    metodoPago: pagoId ? "mercadopago" : "simulado",
+    estado: "confirmada",
+    fecha: serverTimestamp()
+  };
+  if (pagoId) adquisicion.pagoId = String(pagoId);
+
+  try {
+    await setDoc(doc(db, "adquisiciones", idAdquisicion(usuario.uid, curso.id)), adquisicion);
     return { exito: true };
   } catch (error) {
     return traducirErrorFirestore(error);
@@ -188,6 +210,7 @@ async function cambiarEstadoAdquisicion(id, estado) {
 export {
   adquirirCurso,
   obtenerAdquisicion,
+  comprobarAdquisicionPosible,
   obtenerNivelAcceso,
   obtenerTodasLasAdquisiciones,
   cambiarEstadoAdquisicion

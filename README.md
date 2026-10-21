@@ -13,7 +13,7 @@ Subcolección `cursos/{id}/contenido`, con un único documento `principal`: guar
 
 La carga inicial de los 6 cursos se hizo con `tools/seed-cursos.html`, una página de uso único que requiere sesión de administrador y está excluida del hosting en `firebase.json`.
 
-Colección `adquisiciones`, un documento por adquisición, con id `<uid>_<cursoId>`: esto impide registrar dos veces el mismo curso para el mismo usuario. Campos: uid, cursoId, cursoNombre, importe, metodoPago (siempre "simulado"), estado ("confirmada" o "cancelada") y fecha (hora del servidor). Al crearla, las reglas verifican que el uid sea el del usuario, que el curso esté activo y que el importe y el nombre coincidan con los datos reales del curso.
+Colección `adquisiciones`, un documento por adquisición, con id `<uid>_<cursoId>`: esto impide registrar dos veces el mismo curso para el mismo usuario. Campos: uid, cursoId, cursoNombre, importe, metodoPago ("mercadopago", o "simulado" en las adquisiciones anteriores a Mercado Pago), pagoId (número de pago de Mercado Pago, solo con "mercadopago"), estado ("confirmada" o "cancelada") y fecha (hora del servidor). Al crearla, las reglas verifican que el uid sea el del usuario, que el curso esté activo y que el importe y el nombre coincidan con los datos reales del curso.
 
 ## Reglas de seguridad de Firestore
 Las reglas se publican desde la consola de Firebase (Firestore Database → Reglas). Esta es la versión vigente:
@@ -88,16 +88,21 @@ service cloud.firestore {
       allow list: if request.auth != null
         && (esAdmin() || resource.data.uid == request.auth.uid);
 
-      // Creación validada contra los datos reales del curso.
+      // Creación validada contra los datos reales del curso. El método de pago es
+      // "mercadopago" (con el número de pago) o "simulado" (flujo anterior).
       allow create: if request.auth != null
         && adqId == request.auth.uid + "_" + request.resource.data.cursoId
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.keys().hasOnly(
-             ["uid", "cursoId", "cursoNombre", "importe", "metodoPago", "estado", "fecha"])
+             ["uid", "cursoId", "cursoNombre", "importe", "metodoPago", "pagoId", "estado", "fecha"])
         && request.resource.data.keys().hasAll(
              ["uid", "cursoId", "cursoNombre", "importe", "metodoPago", "estado", "fecha"])
         && request.resource.data.estado == "confirmada"
-        && request.resource.data.metodoPago == "simulado"
+        && ((request.resource.data.metodoPago == "simulado"
+              && !request.resource.data.keys().hasAny(["pagoId"]))
+            || (request.resource.data.metodoPago == "mercadopago"
+              && request.resource.data.pagoId is string
+              && request.resource.data.pagoId.size() > 0))
         && request.resource.data.fecha == request.time
         && cursoDe(request.resource.data.cursoId).activo == true
         && request.resource.data.importe == cursoDe(request.resource.data.cursoId).precio
@@ -128,15 +133,16 @@ Un curso que se desactiva deja de verse en Inicio y en Catálogo, pero quienes y
 
 ## Flujo de adquisición de cursos
 
-La adquisición de un curso usa un **pago simulado**: no se cobra nada ni se solicitan ni se guardan datos de tarjeta ni de ningún otro medio de pago.
+La adquisición de un curso se paga con **Mercado Pago en modo de prueba** (Checkout Pro): no se cobra dinero real y la plataforma no solicita ni guarda datos de tarjeta ni de ningún otro medio de pago. La configuración está en «Pago con Mercado Pago (modo de prueba)».
 
 ### Cómo funciona
 
 1. En `detalle-curso.html?id=…`, el botón «Suscribirme a este curso» comprueba si hay una sesión iniciada.
 2. Sin sesión, lleva a `login.html?volver=…`. Después de iniciar sesión, la persona regresa al mismo curso. Solo se aceptan páginas internas del sitio como destino: cualquier otro valor se ignora y se redirige a `perfil.html`.
-3. Con sesión, se abre un modal con el nombre y el precio del curso y el aviso de que el pago es simulado.
-4. Al confirmar, se crea el documento `adquisiciones/{uid}_{cursoId}` con los campos descritos en la sección Firestore (estado `confirmada`, método de pago `simulado` y fecha del servidor).
-5. El modal informa el resultado: confirmación con enlace a «Mis cursos», aviso de que el curso ya había sido adquirido (sin duplicar el registro) o un mensaje de error claro.
+3. Con sesión, se abre un modal con el nombre y el precio del curso y el aviso de que el pago es con Mercado Pago en modo de prueba.
+4. Al confirmar, se comprueba que la persona no tenga ya el curso y se la lleva al checkout de Mercado Pago, que muestra el nombre del curso y el total.
+5. Al terminar, Mercado Pago la devuelve a la página del curso. El modal se reabre, consulta el pago en Mercado Pago y, si está aprobado y corresponde a esa cuenta, ese curso y ese importe, crea el documento `adquisiciones/{uid}_{cursoId}` (estado `confirmada`, método de pago `mercadopago`, número de pago y fecha del servidor).
+6. El modal informa el resultado: confirmación con enlace a «Mis cursos», pago rechazado o no completado (se puede volver a intentar), pago pendiente o un mensaje de error claro.
 
 Si la persona ya adquirió el curso, la pantalla de detalle lo refleja desde que carga.
 
@@ -144,14 +150,16 @@ Si la persona ya adquirió el curso, la pantalla de detalle lo refleja desde que
 
 | Archivo | Responsabilidad |
 |---|---|
-| `js/modules/adquisiciones-servicio.js` | Registra la adquisición (`adquirirCurso`) y la consulta (`obtenerAdquisicion`); traduce los errores de Firestore a mensajes comprensibles |
-| `js/pages/detalle-curso.js` | Botón «Suscribirme», modal de pago simulado y mensajes de resultado |
-| `detalle-curso.html` | Estructura del modal de pago simulado |
+| `js/modules/adquisiciones-servicio.js` | Comprueba si se puede adquirir (`comprobarAdquisicionPosible`), registra la adquisición (`adquirirCurso`) y la consulta (`obtenerAdquisicion`); traduce los errores de Firestore a mensajes comprensibles |
+| `js/modules/mercadopago-servicio.js` | Pide el checkout al servidor de pagos (`crearCheckout`), lee la vuelta de Mercado Pago y verifica el pago (`verificarPago`) |
+| `js/pages/detalle-curso.js` | Botón «Suscribirme», modal de pago, redirección a Mercado Pago, verificación al volver y mensajes de resultado |
+| `detalle-curso.html` | Estructura del modal de pago |
+| `servidor/mercadopago-worker.js` | Servidor de pagos (Cloudflare Worker): crea el checkout y consulta los pagos con el Access Token |
 | `login.html` | Regreso al curso de origen mediante el parámetro `volver` |
 
 ### Resultados posibles
 
-`adquirirCurso` devuelve `{ exito: true }` o `{ exito: false, codigo, mensaje }`:
+`comprobarAdquisicionPosible` y `adquirirCurso` devuelven `{ exito: true }` o `{ exito: false, codigo, mensaje }`:
 
 | Código | Situación |
 |---|---|
@@ -165,8 +173,41 @@ Si la persona ya adquirió el curso, la pantalla de detalle lo refleja desde que
 ### Garantías de seguridad
 
 - El id `{uid}_{cursoId}` impide registrar dos veces el mismo curso para la misma persona.
-- Las reglas de Firestore validan que el importe y el nombre coincidan con los datos reales del curso, que el método de pago sea `simulado` y que la fecha sea la del servidor, por lo que el cliente no puede alterar esos valores.
+- Las reglas de Firestore validan que el importe y el nombre coincidan con los datos reales del curso, que el método de pago sea `mercadopago` (con número de pago) o `simulado`, y que la fecha sea la del servidor, por lo que el cliente no puede alterar esos valores.
+- El checkout se arma en el servidor de pagos con el nombre y el precio leídos de Firestore, no con datos del navegador.
+- Antes de registrar la adquisición, la página consulta el pago en Mercado Pago y comprueba que esté aprobado y que coincidan la cuenta y el curso. Si el pago quedó en dólares, también comprueba el importe; si Mercado Pago lo convirtió a pesos, no hay cotización contra la cual comparar, pero el importe lo fijó el servidor con el precio de Firestore.
 - Nadie puede eliminar adquisiciones; solo la administración puede cambiar su estado.
+
+## Pago con Mercado Pago (modo de prueba)
+
+El Access Token de Mercado Pago es secreto, así que no puede ir en el JavaScript del sitio. Por eso hay un servidor de pagos chico, un **Worker de Cloudflare** (gratis, sin tarjeta), con el código de `servidor/mercadopago-worker.js`. El sitio le pide el checkout y la verificación del pago; el Access Token queda guardado como secreto en Cloudflare. La Public Key no se usa.
+
+### Configurar el servidor de pagos
+
+1. Crear una cuenta en [dash.cloudflare.com](https://dash.cloudflare.com).
+2. En **Workers & Pages**, crear un Worker a partir de «Hello World» con el nombre `edutech-mercadopago` y desplegarlo.
+3. Abrir **Edit code**, reemplazar todo el código por el de `servidor/mercadopago-worker.js` y desplegar.
+4. En **Settings > Variables and Secrets**, agregar un secreto (tipo *Secret*) llamado `MP_ACCESS_TOKEN` con el Access Token de prueba de Mercado Pago (empieza con `APP_USR-`). Opcional: una variable `MONEDA` (por defecto `USD`).
+5. Copiar la dirección del Worker (`https://edutech-mercadopago.<subdominio>.workers.dev`) en `URL_SERVIDOR_PAGOS`, al principio de `js/modules/mercadopago-servicio.js`.
+6. Publicar en la consola de Firebase las reglas de Firestore de este README (aceptan `metodoPago: "mercadopago"` y `pagoId`).
+
+Para comprobarlo, al abrir la dirección del Worker en el navegador tiene que aparecer `"accessTokenConfigurado": true`. Si se cambia `servidor/mercadopago-worker.js`, hay que volver a pegarlo en Cloudflare.
+
+### Probar un pago
+
+1. En [Tus integraciones](https://www.mercadopago.com.uy/developers/panel/app) de Mercado Pago, abrir la aplicación y, en **Cuentas de prueba**, crear una cuenta **compradora** de Uruguay.
+2. Abrir el sitio en una **ventana de incógnito**, iniciar sesión en la plataforma, elegir un curso y confirmar la adquisición.
+3. En el checkout, ingresar con la cuenta compradora de prueba (si pide un código, está en Cuentas de prueba) y pagar con una tarjeta de prueba, por ejemplo Visa `4509 9535 6623 3704`, CVV `123`, vencimiento `11/30`, documento `12345678`.
+4. El nombre del titular define el resultado: `APRO` aprueba el pago, `OTHE` lo rechaza y `CONT` lo deja pendiente.
+
+Se puede probar desde Live Server (`localhost` o `127.0.0.1`): Mercado Pago no acepta direcciones locales como retorno, por eso vuelve primero al Worker, que reenvía a la página del curso.
+
+### Limitaciones conocidas
+
+- Mercado Pago Uruguay convierte el precio en dólares a pesos uruguayos con su propia cotización, así que el checkout muestra el total en pesos (por ejemplo, USD 29 → $ 1.169,28). En Firestore la adquisición queda con el precio del curso en dólares.
+- La adquisición la registra el navegador al volver de Mercado Pago. Si la persona cierra la página antes de volver, el pago queda hecho pero el curso no se habilita. La solución completa son las notificaciones (webhooks) de Mercado Pago, que necesitan que el servidor escriba en Firestore.
+- Los pagos pendientes no habilitan el curso. Por eso el checkout no ofrece pagos en efectivo (Abitab, Red Pagos).
+- Las reglas siguen aceptando `metodoPago: "simulado"` para no romper el sitio publicado mientras se integra esta rama; se puede quitar después.
 
 ## Historial de cursos en el perfil
 
