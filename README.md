@@ -1,19 +1,52 @@
 # EduTechCourses.github.io
 Plataforma web de cursos digitales con suscripción - Taller Integrador, CERP del Litoral
 
+## Sitio publicado
+
+https://edutechcourses-e8f3c.web.app (Firebase Hosting)
+
+## Tecnologías
+
+- HTML, CSS y Bootstrap 5, con el sistema de diseño compartido de `css/styles.css` (paleta azul navy y verde azulado, tipografías Space Grotesk e Inter).
+- JavaScript sin frameworks, en módulos ES: `js/pages/` tiene la lógica de cada pantalla y `js/modules/` los servicios compartidos.
+- Firebase Authentication, Firestore y Hosting (SDK 12.18.0 por CDN).
+- Cloudinary para las imágenes y un Worker de Cloudflare para el pago con Mercado Pago en modo de prueba.
+
+## Cómo probar la plataforma
+
+- Abrir el sitio publicado, o el proyecto en local con Live Server desde `localhost`. Para el ingreso con Google el dominio tiene que estar autorizado en Firebase: `localhost` y `edutechcourses-e8f3c.web.app` lo están, pero `127.0.0.1` no.
+- Cuentas de prueba: `latourrobinson+admin@gmail.com` (rol administrador) y `latourrobinson+prueba4@gmail.com` (rol estudiante). Las contraseñas se entregan junto con la documentación de la entrega.
+- Un visitante puede ver Inicio, Catálogo y el detalle de los cursos. Para adquirir un curso hay que iniciar sesión y pagar con Mercado Pago en modo de prueba (ver «Probar un pago»).
+
+## Flujo de trabajo
+
+Cada tarea sale de una issue, se desarrolla en una rama propia creada desde `develop`, con commits progresivos que mencionan la issue, y se integra con un Pull Request a `develop` revisado por otra persona del equipo. La rama `main` se actualiza al cerrar cada sprint, con un Pull Request de `develop` revisado por todo el equipo.
+
 ## Autenticación
-La plataforma utiliza Firebase Authentication con el proveedor Email/Contraseña.
+La plataforma utiliza Firebase Authentication con dos proveedores: Email/Contraseña y Google.
+
+### Ingreso con Google
+
+El botón «Continuar con Google» de `login.html` abre una ventana emergente de Google (`signInWithPopup`).
+
+- **Archivos:** `js/firebase-config.js` crea y exporta `googleProvider`; `js/auth.js` tiene `iniciarSesionConGoogle`; `login.html` conecta el botón y muestra un aviso en rojo si el ingreso falla (por ejemplo, si se cierra o se bloquea la ventana de Google).
+- **Primer ingreso:** si la persona no tenía cuenta, se crea su documento en `usuarios` con rol `estudiante`, igual que en el registro con correo. Las reglas de Firestore no cambiaron: ya exigen que el uid sea el de la persona y que el rol sea `estudiante`.
+- **Volver al curso:** si se llegó desde un curso, tras ingresar se vuelve a él, igual que con correo y contraseña.
+- **Foto:** la foto de la cuenta de Google no se muestra. La plataforma solo acepta imágenes de su cuenta de Cloudinary, así que sin foto propia se ven las iniciales.
+- **Configuración en Firebase:** Authentication → Método de acceso → Google → Habilitar, con el correo de asistencia del proyecto, y revisar en Configuración → Dominios autorizados que estén los dominios desde donde se usa el sitio.
 
 ## Firestore
 Colección `usuarios`, un documento por usuario identificado con su UID de Firebase Authentication. Campos: nombre, apellido, email, telefono, rol, fechaRegistro y, de forma opcional, fotoUrl (dirección de la foto de perfil en Cloudinary).
 
-Colección `cursos`, un documento por curso. El id del documento es el que se usa en `detalle-curso.html?id=`. Campos: nombre, categoria (robotica, diseno, programacion, idiomas o mentorias), precio, nivel, descripcion, imagen, rating, estudiantes, temario (lista de { titulo, duracion, gratis }), activo, destacado, fechaCreacion y, de forma opcional, vistaPreviaUrl (enlace al video de vista previa, público). Las páginas públicas solo muestran los cursos con `activo: true`, y Inicio muestra hasta 3 con `destacado: true`.
+Colección `cursos`, un documento por curso. El id del documento es el que se usa en `detalle-curso.html?id=`. Campos: nombre, categoria (robotica, diseno, programacion, idiomas o mentorias), precio, nivel, descripcion, imagen, temario (lista de { titulo, duracion, gratis }), activo, destacado, fechaCreacion y, de forma opcional, vistaPreviaUrl (enlace al video de vista previa, público). Los campos `rating` y `estudiantes` quedaron de la carga inicial y ya no se muestran: los promedios y la cantidad de opiniones salen de la colección `valoraciones`, y la plataforma no muestra cantidades de estudiantes. Las páginas públicas solo muestran los cursos con `activo: true`, e Inicio muestra hasta 3 con `destacado: true`. El campo `destacado` se marca a mano en Firestore: el panel administrativo no lo modifica.
 
 Subcolección `cursos/{id}/contenido`, con un único documento `principal`: guarda los enlaces del contenido protegido del curso, `pdfUrl` (guía en PDF) y `videoUrl` (video del curso completo). Solo los lee el administrador o quien adquirió el curso (ver «Contenido de los cursos (PDF y videos)»).
 
 La carga inicial de los 6 cursos se hizo con `tools/seed-cursos.html`, una página de uso único que requiere sesión de administrador y está excluida del hosting en `firebase.json`.
 
 Colección `adquisiciones`, un documento por adquisición, con id `<uid>_<cursoId>`: esto impide registrar dos veces el mismo curso para el mismo usuario. Campos: uid, cursoId, cursoNombre, importe, metodoPago ("mercadopago", o "simulado" en las adquisiciones anteriores a Mercado Pago), pagoId (número de pago de Mercado Pago, solo con "mercadopago"), estado ("confirmada" o "cancelada") y fecha (hora del servidor). Al crearla, las reglas verifican que el uid sea el del usuario, que el curso esté activo y que el importe y el nombre coincidan con los datos reales del curso.
+
+Colección `valoraciones`, un documento por opinión, con id `<cursoId>_<uid>`: esto impide opinar dos veces sobre el mismo curso. Campos: cursoId, uid, nombreUsuario (nombre y inicial del apellido, copiados del perfil al opinar), puntuacion (entero de 1 a 5), texto (de 3 a 500 caracteres) y fecha (hora del servidor). Ver «Valoraciones y opiniones de los cursos».
 
 ## Reglas de seguridad de Firestore
 Las reglas se publican desde la consola de Firebase (Firestore Database → Reglas). Esta es la versión vigente:
@@ -116,6 +149,36 @@ service cloud.firestore {
       // Nadie elimina adquisiciones desde el cliente.
       allow delete: if false;
     }
+
+    // Valoraciones de los cursos: el id del documento es "<cursoId>_<uid>", lo que impide
+    // opinar dos veces sobre el mismo curso. Cualquiera las lee. Solo opina quien adquirió
+    // el curso (adquisición confirmada). No se editan ni se borran.
+    match /valoraciones/{valoracionId} {
+      allow read: if true;
+
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(
+             ["cursoId", "uid", "nombreUsuario", "puntuacion", "texto", "fecha"])
+        && request.resource.data.keys().hasAll(
+             ["cursoId", "uid", "nombreUsuario", "puntuacion", "texto", "fecha"])
+        && request.resource.data.cursoId is string
+        && valoracionId == request.resource.data.cursoId + "_" + request.auth.uid
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.nombreUsuario is string
+        && request.resource.data.nombreUsuario.size() > 0
+        && request.resource.data.nombreUsuario.size() <= 80
+        && request.resource.data.puntuacion is int
+        && request.resource.data.puntuacion >= 1
+        && request.resource.data.puntuacion <= 5
+        && request.resource.data.texto is string
+        && request.resource.data.texto.size() >= 3
+        && request.resource.data.texto.size() <= 500
+        && request.resource.data.fecha == request.time
+        && tieneCurso(request.resource.data.cursoId);
+
+      // Las opiniones no se editan ni se borran desde el cliente.
+      allow update, delete: if false;
+    }
   }
 }
 ```
@@ -126,8 +189,9 @@ service cloud.firestore {
 | `usuarios` | — | Lee y edita su documento (solo nombre, apellido, teléfono y foto de perfil); lo crea con rol "estudiante" | Lee todos |
 | `adquisiciones` | — | Crea y lee solo las propias | Lee todas y modifica el estado |
 | `cursos/{id}/contenido` | — | Lee solo la de los cursos que adquirió | Lee y escribe |
+| `valoraciones` | Lee todas | Lee todas y crea una opinión por curso adquirido (no la edita ni la borra) | Lee todas |
 
-Nadie puede eliminar usuarios ni adquisiciones desde el cliente.
+Nadie puede eliminar usuarios, adquisiciones ni opiniones desde el cliente, y las opiniones tampoco se editan.
 
 Un curso que se desactiva deja de verse en Inicio y en Catálogo, pero quienes ya lo adquirieron (con la adquisición confirmada) siguen pudiendo abrir su página de detalle.
 
@@ -207,7 +271,8 @@ Se puede probar desde Live Server (`localhost` o `127.0.0.1`): Mercado Pago no a
 - Mercado Pago Uruguay convierte el precio en dólares a pesos uruguayos con su propia cotización, así que el checkout muestra el total en pesos (por ejemplo, USD 29 → $ 1.169,28). En Firestore la adquisición queda con el precio del curso en dólares.
 - La adquisición la registra el navegador al volver de Mercado Pago. Si la persona cierra la página antes de volver, el pago queda hecho pero el curso no se habilita. La solución completa son las notificaciones (webhooks) de Mercado Pago, que necesitan que el servidor escriba en Firestore.
 - Los pagos pendientes no habilitan el curso. Por eso el checkout no ofrece pagos en efectivo (Abitab, Red Pagos).
-- Las reglas siguen aceptando `metodoPago: "simulado"` para no romper el sitio publicado mientras se integra esta rama; se puede quitar después.
+- Las reglas de Firestore no pueden comprobar con Mercado Pago que el pago exista: la adquisición la escribe el navegador después de verificar el pago, y quien sepa modificar el código del navegador podría registrar una adquisición sin haber pagado. Es aceptable en modo de prueba, donde no hay dinero real. La solución es que el Worker confirme el pago y lo guarde en Firestore con una cuenta de servicio, y que las reglas exijan ese registro.
+- Las reglas siguen aceptando `metodoPago: "simulado"` para no invalidar las adquisiciones anteriores a Mercado Pago; se puede quitar más adelante.
 
 ## Historial de cursos en el perfil
 
@@ -244,8 +309,9 @@ El acceso a las páginas y al contenido de los cursos depende de la sesión y de
 | Acción | Visitante | Estudiante | Administrador |
 |---|---|---|---|
 | Ver Inicio, Catálogo y el detalle de un curso (temario y vista previa) | Sí | Sí | Sí |
-| Adquirir un curso (pago simulado) | Debe iniciar sesión primero | Sí | No hace falta: ve todo sin adquirir |
+| Adquirir un curso (pago con Mercado Pago de prueba) | Debe iniciar sesión primero | Sí | No hace falta: ve todo sin adquirir |
 | Ver el contenido completo de un curso | No | Solo de los cursos que adquirió | De todos los cursos |
+| Opinar sobre un curso | No: ve las opiniones y un enlace para iniciar sesión | Solo si adquirió el curso, una vez por curso | No: ve las opiniones y un aviso |
 | Entrar a «Mi perfil» y «Mis cursos» | Se redirige al login | Sí | Sí |
 | Entrar al panel administrativo (`admin.html`) | Se redirige al login | Se redirige a Inicio con un aviso de falta de permisos | Sí |
 
@@ -254,7 +320,7 @@ El acceso a las páginas y al contenido de los cursos depende de la sesión y de
 | Situación | Contenido | Acción en la barra lateral |
 |---|---|---|
 | Visitante | Solo la vista previa, si el curso la tiene | «Suscribirme», que lleva al login |
-| Usuario sin el curso | Solo la vista previa, si el curso la tiene | «Suscribirme», que abre el modal de pago simulado |
+| Usuario sin el curso | Solo la vista previa, si el curso la tiene | «Suscribirme», que abre el modal de pago con Mercado Pago |
 | Usuario con el curso | Contenido completo | «Suscripción activa» y enlace a «Mis cursos» |
 | Administrador | Contenido completo | Aviso de acceso como administrador y enlace al panel |
 
@@ -359,13 +425,13 @@ No hizo falta cambiar las reglas de Firestore: el administrador ya puede leer la
 
 ### Cursos
 
-La sección lista todos los cursos de la colección `cursos`, activos e inactivos, ordenados por nombre. Arriba muestra cuatro indicadores (total, activos, inactivos y estudiantes totales) y debajo una tabla con la imagen, el nombre, la categoría, el precio y el estado de cada curso.
+La sección lista todos los cursos de la colección `cursos`, activos e inactivos, ordenados por nombre. Arriba muestra tres indicadores (total, activos e inactivos) y debajo una tabla con la imagen, el nombre, la categoría, el precio y el estado de cada curso.
 
 **Activar y desactivar.** Cada fila tiene el botón «Desactivar» o «Activar», que cambia el campo `activo` del curso. Un curso inactivo deja de aparecer en Inicio y en Catálogo, y su página de detalle solo se abre para el administrador y para quienes ya lo adquirieron; el administrador lo sigue viendo en esta tabla y puede volver a activarlo. Después de cada cambio la sección vuelve a pedir los datos a Firestore; si el cambio falla, se muestra un aviso arriba de la tabla y el estado del curso no se modifica.
 
-**Crear un curso.** El botón «Nuevo curso» abre un formulario en un modal con título, categoría, precio (mayor que cero), nivel, descripción y temario (un módulo por línea; el primero es la vista previa gratuita). El formulario valida los campos antes de guardar y los espacios sobrantes no cuentan como contenido. El curso nuevo nace activo, sin destacar, con rating 0, sin estudiantes y con la imagen que se haya subido (o, si no se subió ninguna, `assets/img/curso-nuevo.svg`), por lo que aparece enseguida en el catálogo. Su id empieza con «c» y usa solo minúsculas y números, porque viaja en la dirección `detalle-curso.html?id=…` y en el parámetro `volver` del login.
+**Crear un curso.** El botón «Nuevo curso» abre un formulario en un modal con título, categoría, precio (mayor que cero), nivel, descripción y temario (un módulo por línea; el primero es la vista previa gratuita). El formulario valida los campos antes de guardar y los espacios sobrantes no cuentan como contenido. El curso nuevo nace activo, sin destacar, con los campos heredados `rating` y `estudiantes` en 0 y con la imagen que se haya subido (o, si no se subió ninguna, `assets/img/curso-nuevo.svg`), por lo que aparece enseguida en el catálogo. Su id empieza con «c» y usa solo minúsculas y números, porque viaja en la dirección `detalle-curso.html?id=…` y en el parámetro `volver` del login.
 
-**Editar un curso.** El botón «Editar» de cada fila abre el mismo formulario con los datos del curso. Se pueden modificar el título, la categoría, el precio, el nivel, la descripción y el temario. La imagen solo cambia si se sube otra; no se tocan el rating, los estudiantes, el estado, el destacado ni la fecha de creación. Al guardar el temario, los módulos que conservan su título mantienen su duración y solo el primer módulo queda como vista previa gratuita.
+**Editar un curso.** El botón «Editar» de cada fila abre el mismo formulario con los datos del curso. Se pueden modificar el título, la categoría, el precio, el nivel, la descripción y el temario. La imagen solo cambia si se sube otra; no se tocan el estado, el destacado ni la fecha de creación. Al guardar el temario, los módulos que conservan su título mantienen su duración y solo el primer módulo queda como vista previa gratuita.
 
 **Enlaces del contenido.** El mismo formulario, al crear y al editar, tiene tres campos opcionales: el video de vista previa (público), la guía en PDF y el video del curso completo. Aceptan enlaces de Google Drive o de YouTube y se validan antes de guardar; al editar, un campo vacío borra el enlace anterior. El PDF y el video completo se guardan aparte, en `cursos/{id}/contenido/principal`, que solo pueden leer el administrador y quienes adquirieron el curso (ver «Contenido de los cursos (PDF y videos)»).
 
@@ -377,11 +443,8 @@ Código:
 |---|---|
 | `js/pages/admin-cursos.js` | Dibuja la sección, el formulario del modal (para crear y para editar, con la imagen y los tres enlaces) y atiende los botones |
 | `js/modules/contenido-servicio.js` | Valida los enlaces, los convierte a su dirección de incrustación y los guarda y lee (`guardarEnlacesCurso`, `obtenerContenido`, `urlParaIncrustar`) |
-| `js/modules/cursos-servicio.js` | `obtenerTodosLosCursos()` devuelve todos los cursos; 
-
+| `js/modules/cursos-servicio.js` | `obtenerTodosLosCursos()` devuelve todos los cursos; `cambiarEstadoCurso(id, activo)` actualiza el campo `activo`; `crearCurso(datos)` valida y guarda un curso nuevo; `actualizarCurso(id, datos)` valida y actualiza solo los campos editables |
 | `js/modules/imagenes-servicio.js` | Abre el widget de Cloudinary, comprueba que las direcciones sean de nuestra cuenta y arma la versión recortada y optimizada de una imagen |
-
-`cambiarEstadoCurso(id, activo)` actualiza el campo `activo`; `crearCurso(datos)` valida y guarda un curso nuevo; `actualizarCurso(id, datos)` valida y actualiza solo los campos editables |
 
 Las reglas de Firestore permiten escribir en `cursos` y en su subcolección `contenido` solo al administrador.
 
@@ -421,3 +484,68 @@ Código:
 | `js/modules/adquisiciones-servicio.js` | `obtenerTodasLasAdquisiciones()` devuelve todas las adquisiciones con el nombre y el correo de la persona; `cambiarEstadoAdquisicion(id, estado)` cambia el estado a `confirmada` o `cancelada` |
 
 No hizo falta cambiar las reglas de Firestore: el administrador ya puede leer todas las adquisiciones y modificar únicamente el campo `estado`.
+
+## Portada (Inicio)
+
+La portada no tiene datos fijos: lo que muestra sale de Firestore.
+
+- **Cifras del encabezado:** `js/pages/inicio.js` calcula la cantidad de cursos activos, la cantidad de opiniones publicadas y el promedio general de valoración. Si todavía no hay opiniones, o si no se pueden leer, las cifras quedan en un guion («–»): nunca se muestra un número inventado. No hay una cifra de estudiantes porque un visitante no puede leer las adquisiciones ni los usuarios, y es una restricción de seguridad deliberada. «1° módulo, siempre gratis» no es un dato, sino una regla de la plataforma.
+- **Cursos destacados:** hasta 3 cursos activos con `destacado: true`, en orden alfabético. Es una selección del equipo, hecha a mano en Firestore; no se calcula con las compras. Cada tarjeta muestra el promedio y la cantidad de opiniones del curso, o «Sin valoraciones».
+
+### Fondo animado del encabezado
+
+El encabezado tiene un fondo de cintas de luz dibujadas con WebGL2 que se retuercen alrededor del cursor, con los colores de la página. Está en `js/modules/hero-fondo.js`, con el `<canvas id="fondoHero">` de `index.html` y los estilos `.hero-canvas` y `.hero::before` de `css/styles.css`; una capa azul oscura asegura que el texto se lea.
+
+- Se pausa cuando el encabezado no está a la vista o la pestaña está en segundo plano.
+- Con «reducir movimiento» activado en el sistema, queda una imagen fija.
+- En celulares se dibuja con menos calidad para gastar menos batería.
+- Si el navegador no soporta WebGL2, el canvas se oculta y el encabezado se ve con su degradado de siempre.
+
+**Crédito:** el efecto (los shaders y la matemática) es el componente «Ribbon Glow 2» de Originkit (https://www.originkit.dev/components/ribbon-glow/02). El original es un componente de React y TypeScript; aquí se tradujo a JavaScript común y se adaptó a la paleta de la plataforma. Los shaders se conservan tal como vienen en el original.
+
+## Valoraciones y opiniones de los cursos
+
+Las estrellas y los promedios de la plataforma salen de opiniones reales. Antes eran datos de ejemplo (`rating` y `estudiantes` en cada curso), que se dejaron de mostrar.
+
+### Cómo funciona
+
+1. En `detalle-curso.html?id=…`, debajo del contenido, hay una sección «Opiniones» con la lista de opiniones del curso, de la más reciente a la más antigua. La puede leer cualquier persona.
+2. Según el nivel de acceso (ver «Cómo se decide el acceso»), la sección muestra:
+   - **Visitante:** un enlace para iniciar sesión, que vuelve al curso.
+   - **Administrador:** un aviso de que no puede opinar.
+   - **Usuario sin el curso:** el mensaje «Solo pueden opinar quienes adquirieron este curso».
+   - **Usuario con el curso:** el formulario para opinar, o el mensaje «Ya opinaste… ¡Gracias!» si ya lo hizo.
+3. El formulario pide de 1 a 5 estrellas y un comentario de 3 a 500 caracteres. Se valida antes de enviar y los textos se escapan al mostrarlos.
+4. Cada persona opina una sola vez por curso, y la opinión no se puede editar ni borrar. El id `<cursoId>_<uid>` lo garantiza, y la pantalla lo comprueba antes de guardar para dar un mensaje claro.
+5. El nombre que se muestra (nombre e inicial del apellido) se copia del perfil al publicar, porque las reglas de `usuarios` solo permiten leer el documento propio.
+6. El catálogo y los cursos destacados de Inicio muestran el promedio y la cantidad de opiniones de cada curso, o «Sin valoraciones»; si no se pueden leer las opiniones, los cursos se muestran igual, sin promedios.
+
+### Archivos involucrados
+
+| Archivo | Responsabilidad |
+|---|---|
+| `js/modules/valoraciones-servicio.js` | Lee las opiniones de un curso (`obtenerValoraciones`), calcula los promedios (`promedioDe`, `obtenerResumenValoraciones`), arma las estrellas con el promedio (`valoracionHTML`) y publica una opinión (`publicarValoracion`) |
+| `js/modules/opiniones.js` | Sección «Opiniones» del detalle: lista, formulario y mensajes según el nivel de acceso |
+| `js/pages/detalle-curso.js` | Carga la sección y le informa el nivel de acceso |
+| `js/pages/catalogo.js` y `js/pages/inicio.js` | Muestran el promedio en cada tarjeta; Inicio además calcula las cifras de la portada |
+| `css/styles.css` | Estilos del selector de estrellas (`.estrellas-fila`) |
+
+### Seguridad
+
+Las reglas de Firestore (ver «Reglas de seguridad de Firestore») permiten crear una opinión solo si la persona tiene sesión y una adquisición confirmada del curso, el id es `<cursoId>_<uid>`, el uid es el suyo, la puntuación es un entero de 1 a 5, el texto tiene de 3 a 500 caracteres, solo hay los campos esperados y la fecha es la del servidor. Nadie edita ni borra opiniones desde el cliente.
+
+### Limitaciones conocidas
+
+- Una opinión no se puede editar ni borrar; si hace falta moderar una, se hace desde la consola de Firebase.
+- Los promedios se calculan en el navegador leyendo todas las opiniones, lo que es adecuado para el volumen de esta plataforma. Con muchas opiniones habría que guardar el promedio de cada curso en su documento, actualizado por un servidor.
+
+## Limitaciones y mejoras futuras
+
+| Tema | Situación actual | Mejora posible |
+|---|---|---|
+| Contenido de los cursos | Enlaces de Google Drive «Cualquier persona con el enlace»: quien tiene acceso puede compartir el enlace | Servir los archivos con enlaces temporales desde Firebase Storage |
+| Pago | Mercado Pago en modo de prueba; el navegador registra la adquisición y las reglas no pueden comprobar el pago | Que el Worker confirme el pago y lo guarde en Firestore con una cuenta de servicio, con webhooks de Mercado Pago |
+| Subida de imágenes | Presets sin firma de Cloudinary | Firmar las subidas con una Cloud Function |
+| Cursos destacados | Se marcan a mano en Firestore | Un interruptor «Destacar» en el panel administrativo |
+| Valoraciones | Una por persona y curso, sin editar ni borrar; promedios calculados en el navegador | Edición y moderación; promedio guardado por curso |
+| Método de pago `simulado` | Las reglas todavía lo aceptan por las adquisiciones anteriores | Quitarlo de las reglas |
