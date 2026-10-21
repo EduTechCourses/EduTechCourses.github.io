@@ -273,7 +273,7 @@ async function guardarFoto(url) {
     // Si esto falla, la foto ya quedó guardada: solo la barra de otras páginas
     // seguiría mostrando las iniciales hasta el próximo cambio.
     try {
-        await updateProfile(auth.currentUser, { photoURL: url === "" ? null : url });
+        await updateProfile(auth.currentUser, { photoURL: url === "" ? "" : url });
     } catch (error) {
         console.error("No se pudo actualizar la foto de la cuenta:", error);
     }
