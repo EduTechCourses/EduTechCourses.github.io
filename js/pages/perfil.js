@@ -4,7 +4,7 @@
 import { auth, db } from "../firebase-config.js";
 import { onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
 import { doc, getDoc, updateDoc, deleteField, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
-import { escaparHTML } from "../modules/cursos-servicio.js";
+import { escaparHTML, obtenerCursoPorId } from "../modules/cursos-servicio.js";
 import { PRESET_USUARIOS, urlOptimizada, abrirSubidaImagen } from "../modules/imagenes-servicio.js";
 
 let uidActual = null;
@@ -88,10 +88,18 @@ function formatearFechaAdquisicion(fecha) {
     return fecha.toDate().toLocaleDateString("es-UY", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
-function crearItemAdquisicion(adquisicion, esUltima) {
+function crearItemAdquisicion(adquisicion, esUltima, imagen) {
     const confirmada = adquisicion.estado === "confirmada";
     const nombre = escaparHTML(adquisicion.cursoNombre);
     const bordeInferior = esUltima ? "" : " border-bottom";
+
+    // Miniatura del curso; si no se pudo obtener su imagen, queda el ícono genérico.
+    const miniatura = imagen
+        ? `<img src="${escaparHTML(urlOptimizada(imagen, 152, 120) || imagen)}" alt="" class="rounded-3 flex-shrink-0" style="width:76px; height:60px; object-fit:cover;">`
+        : `<div class="course-thumb rounded-3 flex-shrink-0"
+                style="width:76px; height:60px; font-size:1.2rem; background: linear-gradient(135deg,#12305c,#1aa98b);">
+                <i class="bi bi-collection"></i>
+            </div>`;
 
     const etiqueta = confirmada
         ? '<span class="badge bg-success-subtle text-success-emphasis">Confirmada</span>'
@@ -103,10 +111,7 @@ function crearItemAdquisicion(adquisicion, esUltima) {
 
     return `
         <div class="d-flex align-items-center gap-3 p-3${bordeInferior}">
-            <div class="course-thumb rounded-3 flex-shrink-0"
-                style="width:76px; height:60px; font-size:1.2rem; background: linear-gradient(135deg,#12305c,#1aa98b);">
-                <i class="bi bi-collection"></i>
-            </div>
+            ${miniatura}
             <div class="flex-grow-1">
                 <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
                     <div>
@@ -131,6 +136,22 @@ function actualizarContadoresCursos(cantidadActivos) {
     document.getElementById("perfilResumenCursos").textContent = cantidadActivos === 0
         ? "Todavía no tenés cursos activos"
         : textoCantidadCursos(cantidadActivos) + (cantidadActivos === 1 ? " activo" : " activos");
+}
+
+// Busca la imagen de cada curso adquirido (una lectura por curso distinto). Si alguna
+// no se puede leer, ese curso queda sin imagen y se muestra el ícono genérico.
+async function obtenerImagenesCursos(adquisiciones) {
+    const ids = [...new Set(adquisiciones.map((a) => a.cursoId))];
+    const imagenes = {};
+    await Promise.all(ids.map(async (id) => {
+        try {
+            const curso = await obtenerCursoPorId(id);
+            if (curso && curso.imagen) imagenes[id] = curso.imagen;
+        } catch (error) {
+            console.error("No se pudo leer la imagen del curso:", id, error);
+        }
+    }));
+    return imagenes;
 }
 
 // Lee las adquisiciones del usuario (las reglas solo permiten consultar las propias)
@@ -158,8 +179,9 @@ async function cargarHistorialCursos(uid) {
             return;
         }
 
+        const imagenes = await obtenerImagenesCursos(adquisiciones);
         document.getElementById("cursosLista").innerHTML = adquisiciones
-            .map((a, indice) => crearItemAdquisicion(a, indice === adquisiciones.length - 1))
+            .map((a, indice) => crearItemAdquisicion(a, indice === adquisiciones.length - 1, imagenes[a.cursoId]))
             .join("");
         mostrarEstadoCursos("lista");
     } catch (error) {
