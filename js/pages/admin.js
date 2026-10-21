@@ -9,6 +9,7 @@
 import { auth, db } from "../firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+import { urlOptimizada } from "../modules/imagenes-servicio.js";
 import { iniciarResumen } from "./admin-resumen.js";
 import { iniciarCursos } from "./admin-cursos.js";
 import { iniciarUsuarios } from "./admin-usuarios.js";
@@ -28,6 +29,21 @@ function obtenerIniciales(nombre, apellido) {
     const a = (apellido || "").trim();
     if (!n && !a) return "--";
     return ((n[0] || "") + (a[0] || "")).toUpperCase();
+}
+
+// Dibuja en un avatar la foto de perfil (solo si es una imagen de nuestro Cloudinary)
+// o, si no hay, las iniciales.
+function pintarAvatar(avatar, iniciales, fotoUrl) {
+    const foto = urlOptimizada(fotoUrl, 52, 52);
+    if (foto === "") {
+        avatar.textContent = iniciales;
+        return;
+    }
+    const imagen = document.createElement("img");
+    imagen.className = "avatar-img";
+    imagen.alt = "";
+    imagen.src = foto;
+    avatar.replaceChildren(imagen);
 }
 
 // Muestra una sección, marca su enlace como activo en los dos menús (lateral y
@@ -90,9 +106,9 @@ onAuthStateChanged(auth, async function (usuario) {
     const nombreCompleto = datos.nombre + " " + datos.apellido;
     const iniciales = obtenerIniciales(datos.nombre, datos.apellido);
 
-    document.getElementById("navAvatarSm").textContent = iniciales;
+    pintarAvatar(document.getElementById("navAvatarSm"), iniciales, datos.fotoUrl);
     document.getElementById("navNombreSm").textContent = nombreCompleto;
-    document.getElementById("sidebarAvatarSm").textContent = iniciales;
+    pintarAvatar(document.getElementById("sidebarAvatarSm"), iniciales, datos.fotoUrl);
     document.getElementById("sidebarNombreRol").textContent = nombreCompleto + " · Admin";
 
     mostrarSeccion("resumen");
