@@ -271,6 +271,11 @@ En `perfil.html`, el botón de la cámara sobre el avatar abre el widget. La dir
 
 Las reglas de Firestore permiten que cada persona edite su `fotoUrl` solo si es una imagen de nuestra cuenta de Cloudinary.
 
+### Imagen de los cursos
+
+En el panel administrativo, el formulario de «Nuevo curso» y «Editar» tiene el botón «Subir imagen», que usa el preset `cursos_web`. La dirección que devuelve Cloudinary se guarda en el campo `imagen` del curso ya recortada en formato 16:9 y optimizada, por lo que el catálogo, Inicio y el detalle la muestran sin cambios. Si no se sube ninguna imagen, el curso nuevo usa `assets/img/curso-nuevo.svg`.
+
+
 ### Limitación conocida
 
 Los presets sin firma no llevan clave secreta, por lo que cualquier persona que conozca su nombre podría subir imágenes a la cuenta. Por eso el tamaño y los formatos se limitan también en el propio preset. Como mejora, las subidas podrían firmarse con una Cloud Function.
@@ -317,19 +322,25 @@ La sección lista todos los cursos de la colección `cursos`, activos e inactivo
 
 **Activar y desactivar.** Cada fila tiene el botón «Desactivar» o «Activar», que cambia el campo `activo` del curso. Un curso inactivo deja de aparecer en Inicio y en Catálogo, y su página de detalle solo se abre para el administrador y para quienes ya lo adquirieron; el administrador lo sigue viendo en esta tabla y puede volver a activarlo. Después de cada cambio la sección vuelve a pedir los datos a Firestore; si el cambio falla, se muestra un aviso arriba de la tabla y el estado del curso no se modifica.
 
-**Crear un curso.** El botón «Nuevo curso» abre un formulario en un modal con título, categoría, precio (mayor que cero), nivel, descripción y temario (un módulo por línea; el primero es la vista previa gratuita). El formulario valida los campos antes de guardar y los espacios sobrantes no cuentan como contenido. El curso nuevo nace activo, sin destacar, con rating 0, sin estudiantes y con la imagen `assets/img/curso-nuevo.svg`, por lo que aparece enseguida en el catálogo. Su id empieza con «c» y usa solo minúsculas y números, porque viaja en la dirección `detalle-curso.html?id=…` y en el parámetro `volver` del login.
+**Crear un curso.** El botón «Nuevo curso» abre un formulario en un modal con título, categoría, precio (mayor que cero), nivel, descripción y temario (un módulo por línea; el primero es la vista previa gratuita). El formulario valida los campos antes de guardar y los espacios sobrantes no cuentan como contenido. El curso nuevo nace activo, sin destacar, con rating 0, sin estudiantes y con la imagen que se haya subido (o, si no se subió ninguna, `assets/img/curso-nuevo.svg`), por lo que aparece enseguida en el catálogo. Su id empieza con «c» y usa solo minúsculas y números, porque viaja en la dirección `detalle-curso.html?id=…` y en el parámetro `volver` del login.
 
-**Editar un curso.** El botón «Editar» de cada fila abre el mismo formulario con los datos del curso. Se pueden modificar el título, la categoría, el precio, el nivel, la descripción y el temario. No se tocan la imagen, el rating, los estudiantes, el estado, el destacado ni la fecha de creación. Al guardar el temario, los módulos que conservan su título mantienen su duración y solo el primer módulo queda como vista previa gratuita.
+**Editar un curso.** El botón «Editar» de cada fila abre el mismo formulario con los datos del curso. Se pueden modificar el título, la categoría, el precio, el nivel, la descripción y el temario. La imagen solo cambia si se sube otra; no se tocan el rating, los estudiantes, el estado, el destacado ni la fecha de creación. Al guardar el temario, los módulos que conservan su título mantienen su duración y solo el primer módulo queda como vista previa gratuita.
 
 **Enlaces del contenido.** El mismo formulario, al crear y al editar, tiene tres campos opcionales: el video de vista previa (público), la guía en PDF y el video del curso completo. Aceptan enlaces de Google Drive o de YouTube y se validan antes de guardar; al editar, un campo vacío borra el enlace anterior. El PDF y el video completo se guardan aparte, en `cursos/{id}/contenido/principal`, que solo pueden leer el administrador y quienes adquirieron el curso (ver «Contenido de los cursos (PDF y videos)»).
+
+**Imagen del curso.** El formulario, al crear y al editar, tiene el botón «Subir imagen», que abre el widget de Cloudinary y muestra una vista previa. La imagen se guarda en el campo `imagen` del curso, ya recortada en formato 16:9 (800 × 450) y optimizada. «Usar la imagen por defecto» vuelve a `assets/img/curso-nuevo.svg`. Ver «Imágenes (Cloudinary)».
 
 Código:
 
 | Archivo | Responsabilidad |
 |---|---|
-| `js/pages/admin-cursos.js` | Dibuja la sección, el formulario del modal (para crear y para editar, con los tres enlaces) y atiende los botones |
+| `js/pages/admin-cursos.js` | Dibuja la sección, el formulario del modal (para crear y para editar, con la imagen y los tres enlaces) y atiende los botones |
 | `js/modules/contenido-servicio.js` | Valida los enlaces, los convierte a su dirección de incrustación y los guarda y lee (`guardarEnlacesCurso`, `obtenerContenido`, `urlParaIncrustar`) |
-| `js/modules/cursos-servicio.js` | `obtenerTodosLosCursos()` devuelve todos los cursos; `cambiarEstadoCurso(id, activo)` actualiza el campo `activo`; `crearCurso(datos)` valida y guarda un curso nuevo; `actualizarCurso(id, datos)` valida y actualiza solo los campos editables |
+| `js/modules/cursos-servicio.js` | `obtenerTodosLosCursos()` devuelve todos los cursos; 
+
+| `js/modules/imagenes-servicio.js` | Abre el widget de Cloudinary, comprueba que las direcciones sean de nuestra cuenta y arma la versión recortada y optimizada de una imagen |
+
+`cambiarEstadoCurso(id, activo)` actualiza el campo `activo`; `crearCurso(datos)` valida y guarda un curso nuevo; `actualizarCurso(id, datos)` valida y actualiza solo los campos editables |
 
 Las reglas de Firestore permiten escribir en `cursos` y en su subcolección `contenido` solo al administrador.
 
