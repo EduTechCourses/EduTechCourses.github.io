@@ -34,6 +34,7 @@ import {
   limpiarVueltaDePago
 } from "../modules/mercadopago-servicio.js";
 import { urlParaIncrustar, obtenerContenido } from "../modules/contenido-servicio.js";
+import { iniciarOpiniones, actualizarOpiniones } from "../modules/opiniones.js";
 
 let cursoActual = null;
 let contenidoCargado = false;
@@ -248,6 +249,7 @@ function aplicarNivelAcceso(nivel) {
     : "Estás suscripto a este curso: tenés acceso a todo el contenido, la guía en PDF y el video del curso.";
 
   if (contenidoCompleto) cargarContenidoProtegido();
+  actualizarOpiniones(nivel);
 
   document.getElementById("accionNota").textContent = nivel === "visitante"
     ? "Se necesita una cuenta para suscribirte"
@@ -411,6 +413,7 @@ async function iniciarDetalle() {
     cursoActual = curso;
     renderizarCurso(curso);
     mostrarVistaPrevia(curso);
+    iniciarOpiniones(curso);
     prepararAdquisicion();
   } catch (error) {
     console.error("Error al cargar el curso:", error);
