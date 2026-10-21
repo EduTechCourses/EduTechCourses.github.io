@@ -30,6 +30,10 @@ function traducirErrorAuth(error) {
     "auth/too-many-requests": "Demasiados intentos. Esperá unos minutos y volvé a intentar.",
     "auth/missing-email": "Ingresá un correo electrónico.",
     "auth/popup-closed-by-user": "Se cerró la ventana de Google antes de completar el acceso.",
+    "auth/popup-blocked": "El navegador bloqueó la ventana de Google. Permití las ventanas emergentes e intentá de nuevo.",
+    "auth/cancelled-popup-request": "Se cerró la ventana de Google antes de completar el acceso.",
+    "auth/network-request-failed": "No hay conexión. Revisá tu internet e intentá de nuevo.",
+    "auth/account-exists-with-different-credential": "Ese correo ya está registrado con otro método. Ingresá con tu correo y contraseña.",
   };
   return mensajes[error.code] || "Ocurrió un error inesperado. Intentá nuevamente.";
 }
