@@ -16,6 +16,7 @@
 // del curso para modificarlos.
 // Issue #86: el formulario suma tres enlaces opcionales (vista previa pública,
 // guía en PDF y video completo) que se guardan con contenido-servicio.js.
+// Issue #92: el formulario permite subir la imagen del curso a Cloudinary.
 
 import {
   obtenerTodosLosCursos,
@@ -24,9 +25,11 @@ import {
   actualizarCurso,
   CATEGORIAS,
   NIVELES,
+  IMAGEN_CURSO_POR_DEFECTO,
   datosCategoria,
   escaparHTML
 } from "../modules/cursos-servicio.js";
+import { PRESET_CURSOS, urlOptimizada, abrirSubidaImagen } from "../modules/imagenes-servicio.js";
 import {
   urlParaIncrustar,
   obtenerContenido,
@@ -140,6 +143,23 @@ function insertarModal() {
           <form id="formularioCurso" novalidate class="d-flex flex-column overflow-hidden">
             <div class="modal-body">
               <div class="mb-3">
+                <label class="form-label d-block">Imagen del curso</label>
+                <div class="d-flex align-items-center gap-3 flex-wrap">
+                  <img id="cursoImagenVista" alt="Vista previa de la imagen del curso" width="128" height="72"
+                    class="rounded-3 border flex-shrink-0" style="object-fit:cover;">
+                  <div>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="cursoImagenSubir">
+                      <i class="bi bi-upload me-1"></i> Subir imagen
+                    </button>
+                    <button type="button" class="btn btn-link btn-sm text-decoration-none d-none" id="cursoImagenQuitar">
+                      Usar la imagen por defecto
+                    </button>
+                    <div class="form-text">JPG, PNG o WEBP de hasta 3 MB. Se recorta en formato 16:9.</div>
+                    <div class="small text-danger d-none" id="cursoImagenError"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="mb-3">
                 <label for="cursoNombre" class="form-label">Título del curso</label>
                 <input type="text" class="form-control" id="cursoNombre" maxlength="80" required>
                 <div class="invalid-feedback">Escribí el título del curso.</div>
@@ -219,7 +239,9 @@ export async function iniciarCursos(contenedor) {
   contenedor.innerHTML = '<p class="text-body-secondary">Cargando cursos…</p>';
 
   const elementoModal = insertarModal();
-  const modal = window.bootstrap.Modal.getOrCreateInstance(elementoModal);
+  // focus: false evita que el modal le quite el foco al widget de Cloudinary,
+  // que se abre por encima del formulario.
+  const modal = window.bootstrap.Modal.getOrCreateInstance(elementoModal, { focus: false });
   const formulario = document.getElementById("formularioCurso");
   const botonGuardar = document.getElementById(ID_MODAL + "Guardar");
   const avisoModal = document.getElementById(ID_MODAL + "Error");
@@ -228,6 +250,46 @@ export async function iniciarCursos(contenedor) {
   // formulario está creando uno nuevo).
   let cursosActuales = [];
   let cursoEditando = null;
+
+  // Imagen del formulario: "imagenElegida" es la que se guardaría y solo se envía
+  // si "imagenCambiada" es true (así editar un curso sin tocar la imagen no la modifica).
+  let imagenElegida = "";
+  let imagenCambiada = false;
+
+  const imagenVista = document.getElementById("cursoImagenVista");
+  const botonImagenSubir = document.getElementById("cursoImagenSubir");
+  const botonImagenQuitar = document.getElementById("cursoImagenQuitar");
+  const avisoImagen = document.getElementById("cursoImagenError");
+
+  // Muestra la imagen indicada y el botón para volver a la imagen por defecto
+  // (solo si la imagen actual no es ya la de por defecto).
+  function mostrarImagen(ruta) {
+    imagenVista.src = ruta;
+    botonImagenQuitar.classList.toggle("d-none", ruta === IMAGEN_CURSO_POR_DEFECTO);
+  }
+
+  botonImagenSubir.addEventListener("click", function () {
+    avisoImagen.classList.add("d-none");
+    abrirSubidaImagen(
+      PRESET_CURSOS,
+      function (url) {
+        // Se guarda ya recortada y optimizada, para que el catálogo no cargue la original.
+        imagenElegida = urlOptimizada(url, 800, 450);
+        imagenCambiada = true;
+        mostrarImagen(imagenElegida);
+      },
+      function (mensaje) {
+        avisoImagen.textContent = mensaje;
+        avisoImagen.classList.remove("d-none");
+      }
+    );
+  });
+
+  botonImagenQuitar.addEventListener("click", function () {
+    imagenElegida = IMAGEN_CURSO_POR_DEFECTO;
+    imagenCambiada = true;
+    mostrarImagen(IMAGEN_CURSO_POR_DEFECTO);
+  });
 
   // Campos de enlaces y el tipo de enlace que acepta cada uno.
   const CAMPOS_ENLACE = [
@@ -324,6 +386,10 @@ export async function iniciarCursos(contenedor) {
   // "contenido" trae { pdfUrl, videoUrl } del curso que se edita.
   function abrirModal(curso, contenido) {
     cursoEditando = curso;
+    imagenElegida = "";
+    imagenCambiada = false;
+    avisoImagen.classList.add("d-none");
+    mostrarImagen((curso && curso.imagen) || IMAGEN_CURSO_POR_DEFECTO);
     formulario.reset();
     formulario.classList.remove("was-validated");
     avisoModal.classList.add("d-none");
@@ -367,6 +433,7 @@ export async function iniciarCursos(contenedor) {
       descripcion: document.getElementById("cursoDescripcion").value,
       temario: document.getElementById("cursoTemario").value.split("\n")
     };
+    if (imagenCambiada) datos.imagen = imagenElegida;
     const enlaces = {
       vistaPreviaUrl: document.getElementById("cursoVistaPrevia").value,
       pdfUrl: document.getElementById("cursoPdf").value,

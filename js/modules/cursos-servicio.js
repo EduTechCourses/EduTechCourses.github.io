@@ -22,6 +22,8 @@ import {
   query,
   where
 } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+import { esUrlDeImagen } from "./imagenes-servicio.js";
+
  
 // Datos de presentación de cada categoría. Se guardan acá y no en
 // Firestore para que el admin solo tenga que elegir la categoría.
@@ -40,7 +42,7 @@ function datosCategoria(clave) {
 // Niveles que se pueden elegir al crear o editar un curso desde el panel.
 const NIVELES = ["Inicial", "Intermedio", "Avanzado", "Todos los niveles"];
 
-// Imagen que se asigna a los cursos nuevos creados desde el panel.
+// Imagen que se asigna a los cursos nuevos creados desde el panel cuando no se sube una.
 const IMAGEN_CURSO_POR_DEFECTO = "assets/img/curso-nuevo.svg";
  
 // Devuelve los cursos activos, ordenados por nombre. El filtro
@@ -96,13 +98,18 @@ function validarDatosCurso(datos) {
   if (!(Number(datos.precio) > 0)) throw new Error("El precio tiene que ser mayor que cero.");
   if (!NIVELES.includes(datos.nivel)) throw new Error("El nivel no es válido.");
   if (String(datos.descripcion || "").trim() === "") throw new Error("La descripción es obligatoria.");
-  if (temarioDesdeLineas(datos.temario || []).length === 0) throw new Error("El temario necesita al menos un módulo.");
+    if (temarioDesdeLineas(datos.temario || []).length === 0) throw new Error("El temario necesita al menos un módulo.");
+  // La imagen es opcional: una imagen subida a Cloudinary o una de la carpeta assets/img.
+  if (datos.imagen !== undefined && !esUrlDeImagen(datos.imagen) && !String(datos.imagen).startsWith("assets/img/")) {
+    throw new Error("La imagen no es válida.");
+  }
 }
 
 // Crea un curso nuevo y devuelve su id. "datos" trae nombre, categoria, precio,
-// nivel, descripcion y temario (lista de líneas, una por módulo). El resto de
-// los campos arrancan con valores por defecto: el curso nace activo, sin
-// destacar, con rating 0, sin estudiantes y con la imagen por defecto.
+// nivel, descripcion y temario (lista de líneas, una por módulo) y, de forma
+// opcional, imagen (dirección de Cloudinary). El resto de los campos arrancan
+// con valores por defecto: el curso nace activo, sin destacar, con rating 0,
+// sin estudiantes y, si no se subió una imagen, con la imagen por defecto.
 // El id empieza con "c" y usa solo minúsculas y números, porque viaja en la
 // dirección detalle-curso.html?id=... y en el parámetro "volver" del login.
 // Solo el administrador puede escribir en "cursos". Si falla, lanza el error.
@@ -116,7 +123,7 @@ async function crearCurso(datos) {
     precio: Number(datos.precio),
     nivel: datos.nivel,
     descripcion: String(datos.descripcion).trim(),
-    imagen: IMAGEN_CURSO_POR_DEFECTO,
+    imagen: datos.imagen || IMAGEN_CURSO_POR_DEFECTO,
     rating: 0,
     estudiantes: 0,
     temario: temarioDesdeLineas(datos.temario),
@@ -128,9 +135,10 @@ async function crearCurso(datos) {
 }
 
 // Actualiza los datos editables de un curso: nombre, categoría, precio, nivel,
-// descripción y temario. "datos" trae los mismos campos que crearCurso. No se
-// tocan la imagen, el rating, los estudiantes, el estado, el destacado ni la
-// fecha de creación. Solo el administrador puede escribir en "cursos".
+// descripción y temario. "datos" trae los mismos campos que crearCurso; la imagen
+// se cambia solo si "datos.imagen" viene informada. No se tocan el rating, los
+// estudiantes, el estado, el destacado ni la fecha de creación. Solo el
+// administrador puede escribir en "cursos".
 // Si falla, lanza el error para que lo trate la pantalla.
 async function actualizarCurso(id, datos) {
   validarDatosCurso(datos);
@@ -145,8 +153,10 @@ async function actualizarCurso(id, datos) {
     precio: Number(datos.precio),
     nivel: datos.nivel,
     descripcion: String(datos.descripcion).trim(),
-    temario: temarioDesdeLineas(datos.temario, actual.data().temario)
+    temario: temarioDesdeLineas(datos.temario, actual.data().temario),
+    ...(datos.imagen ? { imagen: datos.imagen } : {})
   });
+
 }
 
 // Devuelve un curso por id, o null si no existe o no se puede leer
@@ -185,8 +195,9 @@ function escaparHTML(texto) {
 export {
   CATEGORIAS,
   NIVELES,
+  IMAGEN_CURSO_POR_DEFECTO,
   datosCategoria,
-  obtenerCursosActivos,
+obtenerCursosActivos,
   obtenerTodosLosCursos,
   cambiarEstadoCurso,
   crearCurso,
