@@ -773,3 +773,43 @@ button.camera-badge {
   color: #fff;
   cursor: pointer;
 }
+
+
+/* Issue #105: valoraciones de los cursos. Selector de estrellas con botones de opción,
+   que se usa con teclado y lector de pantalla. Los botones se ocultan sin display:none
+   (así siguen siendo enfocables) y las etiquetas hacen de estrellas. En el HTML van en
+   orden 5-4-3-2-1 y row-reverse las muestra de 1 a 5: así el selector "~" pinta las
+   estrellas de menor valor que la elegida. */
+.estrellas-fila {
+  position: relative;
+  display: inline-flex;
+  flex-direction: row-reverse;
+  gap: 0.15rem;
+}
+
+.estrellas-fila input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.estrellas-fila label {
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--border);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.estrellas-fila label:hover,
+.estrellas-fila label:hover ~ label,
+.estrellas-fila input:checked ~ label {
+  color: var(--warn);
+}
+
+.estrellas-fila input:focus-visible + label {
+  outline: 3px solid var(--teal);
+  outline-offset: 2px;
+  border-radius: 4px;
+}

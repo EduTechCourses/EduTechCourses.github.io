@@ -8,8 +8,11 @@ import {
   datosCategoria,
   escaparHTML
 } from "../modules/cursos-servicio.js";
+import { obtenerResumenValoraciones, valoracionHTML } from "../modules/valoraciones-servicio.js";
 
 let cursos = [];
+// Promedio y cantidad de opiniones de cada curso: { cursoId: { promedio, cantidad } }.
+let resumenValoraciones = {};
 let categoriaActiva = "todas";
 
 // Genera las tarjetas del catálogo a partir de un array de cursos
@@ -26,8 +29,8 @@ function mostrarCursos(lista) {
           <img src="${escaparHTML(curso.imagen)}" alt="Curso de ${nombre}" class="course-thumb">
           <div class="card-body">
             <span class="badge-category ${cat.clase}">${cat.label}</span>
-            <h3 class="h6 mt-3 mb-2">${nombre}</h3>${(curso.temario || []).length} módulos
-            <p class="course-meta mb-3">${curso.estudiantes || 0} estudiantes · ${(curso.temario || []).length} módulos</p>
+            <h3 class="h6 mt-3 mb-2">${nombre}</h3>${valoracionHTML(resumenValoraciones[curso.id])}
+            <p class="course-meta mb-3">${(curso.temario || []).length} módulos</p>
             <a href="detalle-curso.html?id=${encodeURIComponent(curso.id)}" class="fw-semibold text-navy small text-decoration-none">Ver curso <i class="bi bi-arrow-right"></i></a>
           </div>
         </div>
@@ -81,6 +84,13 @@ async function iniciarCatalogo() {
       </div>
     `;
     return;
+  }
+
+  // Si no se pueden leer las opiniones, el catálogo se muestra igual, sin promedios.
+  try {
+    resumenValoraciones = await obtenerResumenValoraciones();
+  } catch (error) {
+    console.error("No se pudieron cargar las valoraciones:", error);
   }
 
   mostrarCursos(cursos);
