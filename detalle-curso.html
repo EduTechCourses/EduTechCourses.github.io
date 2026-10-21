@@ -196,8 +196,9 @@
     </div>
   </footer>
 
-  <!-- Modal de pago simulado: se abre desde «Suscribirme» (js/pages/detalle-curso.js).
-       No pide ni guarda datos de tarjeta: la adquisición se registra en Firestore. -->
+  <!-- Modal de pago: se abre desde «Suscribirme» (js/pages/detalle-curso.js) y lleva
+       al checkout de Mercado Pago en modo de prueba. Al volver de Mercado Pago se
+       reabre para verificar el pago. La plataforma no pide ni guarda datos de tarjeta. -->
   <div class="modal fade" id="modalPago" tabindex="-1" aria-labelledby="modalPagoTitulo" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
@@ -212,12 +213,19 @@
             <p class="fw-semibold mb-1" id="pagoCursoNombre"></p>
             <p class="course-price mb-3" id="pagoCursoPrecio"></p>
             <div class="alert alert-info small mb-0" role="note">
-              <i class="bi bi-shield-check me-1"></i> <strong>Pago simulado.</strong> No se cobra nada ni se solicitan
-              datos de tarjeta: al confirmar, la adquisición queda registrada en tu cuenta.
+              <i class="bi bi-shield-check me-1"></i> <strong>Pago con Mercado Pago (modo de prueba).</strong> Al confirmar
+              vas a pasar al checkout de Mercado Pago. No se cobra dinero real: se paga con una tarjeta de prueba.
             </div>
           </div>
 
-          <!-- Mensaje de error (oculto hasta que falle el registro) -->
+          <!-- Verificación del pago al volver de Mercado Pago -->
+          <div id="pagoVerificando" class="text-center py-4 d-none" role="status">
+            <div class="spinner-border text-secondary mb-3" aria-hidden="true"></div>
+            <p class="fw-semibold mb-1">Verificando tu pago con Mercado Pago...</p>
+            <p class="small text-body-secondary mb-0">No cierres esta página.</p>
+          </div>
+
+          <!-- Mensaje de error (oculto hasta que falle el pago o el registro) -->
           <div id="pagoError" class="alert alert-danger small mt-3 mb-0 d-none" role="alert"></div>
 
           <!-- Mensaje de éxito (oculto hasta que se confirme) -->
