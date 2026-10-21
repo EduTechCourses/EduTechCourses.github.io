@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Preguntas frecuentes — EduTechCourses</title>
+  <meta name="description"
+    content="Respuestas a las preguntas frecuentes sobre EduTechCourses: cuenta, cursos, pagos con Mercado Pago y cómo contactarnos." />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="assets/logo/logo.svg" type="image/svg+xml">
+  <!-- Estilos propios de esta página. Usan los tokens de :root de css/styles.css;
+       se pueden pasar a esa hoja en el PR que la toque. -->
+  <style>
+    .faq-grupo {
+      scroll-margin-top: 90px;
+    }
+
+    .faq-grupo-titulo {
+      font-size: 1.2rem;
+    }
+
+    .faq-grupo-titulo .feature-icon {
+      width: 36px;
+      height: 36px;
+      font-size: 1.05rem;
+      margin-bottom: 0;
+    }
+
+    .faq-accordion {
+      --bs-accordion-bg: var(--surface);
+      --bs-accordion-border-color: var(--border);
+      --bs-accordion-border-radius: var(--radius-md);
+      --bs-accordion-inner-border-radius: calc(var(--radius-md) - 1px);
+      --bs-accordion-btn-color: var(--ink);
+      --bs-accordion-btn-padding-y: 1.05rem;
+      --bs-accordion-active-bg: #eaf3f0;
+      --bs-accordion-active-color: var(--navy);
+      --bs-accordion-btn-focus-box-shadow: 0 0 0 0.2rem rgba(26, 169, 139, 0.25);
+      --bs-accordion-body-padding-y: 1.1rem;
+      box-shadow: var(--shadow-card);
+      border-radius: var(--radius-md);
+    }
+
+    .faq-accordion .accordion-button {
+      font-weight: 600;
+    }
+
+    .faq-accordion .accordion-body {
+      color: var(--ink-soft);
+    }
+
+    .faq-accordion .accordion-body a {
+      color: var(--teal-dark);
+      font-weight: 500;
+    }
+
+    .faq-contacto {
+      scroll-margin-top: 90px;
+    }
+
+    .faq-contacto .feature-card {
+      color: inherit;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .faq-contacto .feature-card:hover {
+      border-color: var(--teal);
+      box-shadow: var(--shadow-card);
+    }
+
+    .faq-contacto .dato-contacto {
+      font-family: "Space Grotesk", "Inter", sans-serif;
+      font-weight: 600;
+      color: var(--navy);
+      font-size: 1.1rem;
+      word-break: break-word;
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav class="navbar navbar-expand-lg navbar-etc-light sticky-top" aria-label="Navegación principal">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
+        <img src="assets/logo/logo.svg" alt="Logo de EduTechCourses" class="brand-logo">
+        <span class="brand-name">EduTechCourses</span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu"
+        aria-controls="navMenu" aria-expanded="false" aria-label="Abrir menú">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="index.html">Inicio</a></li>
+          <li class="nav-item"><a class="nav-link" href="catalogo.html">Catálogo</a></li>
+        </ul>
+        <div class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center gap-2 gap-lg-3 d-none"
+          id="navAuthGuest">
+          <a href="login.html" class="login-link">Iniciar sesión</a>
+          <a href="registro.html" class="btn btn-brand btn-sm">Comenzar gratis</a>
+        </div>
+        <div class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center gap-2 gap-lg-3 d-none"
+          id="navAuthUser">
+          <a href="perfil.html" class="user-chip text-decoration-none">
+            <span class="avatar-sm" id="navAvatarIniciales">--</span>
+            <span id="navNombreUsuario">Mi perfil</span>
+          </a>
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-logout title="Cerrar sesión">
+            <i class="bi bi-box-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <section class="section pb-0">
+      <div class="container" style="max-width: 860px;">
+        <h1 class="section-title mb-1">Preguntas frecuentes</h1>
+        <p class="section-subtitle mb-4">Todo lo que necesitás saber sobre tu cuenta, los cursos y los pagos.</p>
+
+        <!-- Accesos rápidos a cada grupo de preguntas -->
+        <nav class="d-flex flex-wrap gap-2 mb-5" aria-label="Temas de las preguntas frecuentes">
+          <a href="#cuenta" class="category-chip text-decoration-none"><i class="bi bi-person me-1"></i> Cuenta</a>
+          <a href="#cursos" class="category-chip text-decoration-none"><i class="bi bi-journal-text me-1"></i> Cursos</a>
+          <a href="#pagos" class="category-chip text-decoration-none"><i class="bi bi-credit-card me-1"></i> Pagos</a>
+          <a href="#contacto" class="category-chip text-decoration-none"><i class="bi bi-chat-dots me-1"></i> Contacto</a>
+        </nav>
+
+        <!-- ---------- Cuenta ---------- -->
+        <section class="faq-grupo mb-5" id="cuenta" aria-labelledby="tituloCuenta">
+          <h2 class="faq-grupo-titulo d-flex align-items-center gap-2 mb-3" id="tituloCuenta">
+            <span class="feature-icon"><i class="bi bi-person"></i></span> Cuenta
+          </h2>
+          <div class="accordion faq-accordion" id="faqCuenta">
+            <div class="accordion-item">
+              <h3 class="accordion-header">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#cuenta1"
+                  aria-expanded="true" aria-controls="cuenta1">
+                  ¿Necesito una cuenta para ver los cursos?
+                </button>
+              </h3>
+              <div id="cuenta1" class="accordion-collapse collapse show">
+                <div class="accordion-body">
+                  No para explorar: el <a href="catalogo.html">catálogo</a>, el temario, la descripción y la vista previa
+                  de cada curso están abiertos a todos. Para comprar un curso y ver su contenido completo sí necesitás una
+                  cuenta.
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h3 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#cuenta2" aria-expanded="false" aria-controls="cuenta2">
+                  ¿Cómo creo mi cuenta?
+                </button>
+              </h3>
+              <div id="cuenta2" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                  Desde <a href="registro.html">«Comenzar gratis»</a>, con tu nombre, apellido, correo y una contraseña
+                  de al menos 6 caracteres. También podés entrar directamente con tu cuenta de Google. Crear la cuenta
+                  es gratis.
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h3 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#cuenta3" aria-expanded="false" aria-controls="cuenta3">
+                  Olvidé mi contraseña, ¿qué hago?
+                </button>
+              </h3>
+              <div id="cuenta3" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                  En <a href="login.html">«Iniciar sesión»</a> tocá «¿Olvidaste tu contraseña?», ingresá tu correo y te
+                  enviamos un enlace para crear una nueva. Si entrás con Google, la contraseña se gestiona desde tu
+                  cuenta de Google.
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h3 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#cuenta4" aria-expanded="false" aria-controls="cuenta4">
+                  ¿Puedo modificar mis datos?
+                </button>
+              </h3>
+              <div id="cuenta4" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                  Sí, en <a href="perfil.html">«Mi perfil»</a> podés cambiar tu nombre, apellido, teléfono y foto. El
+                  correo electrónico no se puede modificar.
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ---------- Cursos ---------- -->
+        <section class="faq-grupo mb-5" id="cursos" aria-labelledby="tituloCursos">
+          <h2 class="faq-grupo-titulo d-flex align-items-center gap-2 mb-3" id="tituloCursos">
+            <span class="feature-icon"><i class="bi bi-journal-text"></i></span> Cursos
+          </h2>
+          <div class="accordion faq-accordion" id="faqCursos">
+            <div class="accordion-item">
+              <h3 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#cursos1" aria-expanded="false" aria-controls="cursos1">
+                  ¿Qué incluye cada curso?
+                </button>
+              </h3>
+              <div id="cursos1" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                  Cada curso incluye una guía en PDF y el video del curso completo, organizados según su temario por
+                  módulos.
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h3 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#cursos2" aria-expanded="false" aria-controls="cursos2">
+                  ¿Puedo ver algo antes de comprar un curso?
+                </button>
+              </h3>
+              <div id="cursos2" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                  Sí. En la página de cada curso tenés el temario, la descripción y un video de vista previa gratuito.
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h3 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#cursos3" aria-expanded="false" aria-controls="cursos3">
+                  ¿Por cuánto tiempo tengo acceso?
+                </button>
+              </h3>
+              <div id="cursos3" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                  Para siempre. Cuando comprás un curso tenés acceso de por vida a su contenido: no es una suscripción,
+                  así que no hay pagos mensuales ni fecha de vencimiento.
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h3 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#cursos4" aria-expanded="false" aria-controls="cursos4">
+                  ¿Dónde encuentro los cursos que adquirí?
+                </button>
+              </h3>
+              <div id="cursos4" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                  En <a href="perfil.html?seccion=cursos">«Mi perfil» → «Mis cursos»</a>. Ahí ves el historial con la
+                  fecha, el importe y el estado de cada uno, y un botón para entrar al curso.
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ---------- Pagos ---------- -->
+        <section class="faq-grupo mb-5" id="pagos" aria-labelledby="tituloPagos">
+          <h2 class="faq-grupo-titulo d-flex align-items-center gap-2 mb-3" id="tituloPagos">
+            <span class="feature-icon"><i class="bi bi-credit-card"></i></span> Pagos
+          </h2>
+          <div class="accordion faq-accordion" id="faqPagos">
+            <div class="accordion-item">
+              <h3 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#pagos1" aria-expanded="false" aria-controls="pagos1">
+                  ¿Cómo se paga un curso?
+                </button>
+              </h3>
+              <div id="pagos1" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                  Con Mercado Pago. Cada curso se adquiere por separado: al confirmar, pasás al checkout de Mercado Pago
+                  y, al terminar, volvés a la plataforma con el curso habilitado. La plataforma está en modo de prueba,
+                  así que no se cobra dinero real.
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h3 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#pagos2" aria-expanded="false" aria-controls="pagos2">
+                  ¿Por qué el total aparece en pesos si el curso está en dólares?
+                </button>
+              </h3>
+              <div id="pagos2" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                  Mercado Pago convierte el precio a pesos uruguayos con su propia cotización. El curso queda registrado
+                  con su precio en dólares.
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h3 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#pagos3" aria-expanded="false" aria-controls="pagos3">
+                  Pagué pero no veo el curso, ¿qué pasó?
+                </button>
+              </h3>
+              <div id="pagos3" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                  Después de pagar, esperá a que Mercado Pago te devuelva a la plataforma y no cierres la página mientras
+                  dice «Verificando tu pago». Si el pago quedó pendiente o fue rechazado, el curso no se habilita. Si el
+                  problema sigue, <a href="#contacto">escribinos</a> y lo revisamos.
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h3 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#pagos4" aria-expanded="false" aria-controls="pagos4">
+                  Mi curso aparece como «Cancelada», ¿por qué?
+                </button>
+              </h3>
+              <div id="pagos4" class="accordion-collapse collapse">
+                <div class="accordion-body">
+                  La administración canceló esa adquisición y por eso ya no tenés acceso al contenido.
+                  <a href="#contacto">Escribinos</a> para más información.
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <!-- ---------- Contacto ---------- -->
+    <section class="cta-section faq-contacto pt-2" id="contacto" aria-labelledby="tituloContacto">
+      <div class="container" style="max-width: 860px;">
+        <h2 class="section-title mb-2" id="tituloContacto">¿No encontraste tu respuesta?</h2>
+        <p class="section-subtitle mb-4">Escribinos y te ayudamos.</p>
+        <div class="row g-3 text-start">
+          <div class="col-md-6">
+            <a href="mailto:contacto@edutechcourses.uy" class="feature-card d-block text-decoration-none">
+              <span class="feature-icon"><i class="bi bi-envelope"></i></span>
+              <p class="small text-body-secondary mb-1">Correo electrónico</p>
+              <p class="dato-contacto mb-0">contacto@edutechcourses.uy</p>
+            </a>
+          </div>
+          <div class="col-md-6">
+            <a href="https://wa.me/59891731011" target="_blank" rel="noopener"
+              class="feature-card d-block text-decoration-none">
+              <span class="feature-icon"><i class="bi bi-whatsapp"></i></span>
+              <p class="small text-body-secondary mb-1">WhatsApp</p>
+              <p class="dato-contacto mb-0">091 731 011</p>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <img src="assets/logo/logo.svg" alt="Logo de EduTechCourses" class="brand-logo">
+            <span class="brand-name">EduTechCourses</span>
+          </div>
+          <p class="small mb-0">Plataforma de cursos digitales desarrollada como proyecto del Taller Integrador.</p>
+        </div>
+        <div class="col-md-4">
+          <p class="fw-semibold text-white mb-2">Plataforma</p>
+          <ul class="list-unstyled small">
+            <li class="mb-1"><a href="index.html">Inicio</a></li>
+            <li class="mb-1"><a href="catalogo.html">Catálogo</a></li>
+            <li class="mb-1"><a href="perfil.html">Mi perfil</a></li>
+          </ul>
+        </div>
+        <div class="col-md-4">
+          <p class="fw-semibold text-white mb-2">Cuenta</p>
+          <ul class="list-unstyled small">
+            <li class="mb-1"><a href="registro.html">Crear cuenta</a></li>
+            <li class="mb-1"><a href="login.html">Iniciar sesión</a></li>
+          </ul>
+        </div>
+      </div>
+      <hr class="border-secondary my-4">
+      <p class="small mb-0 text-center">© 2026 EduTechCourses. Proyecto educativo sin fines comerciales.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module" src="js/base.js"></script>
+</body>
+
+</html>
