@@ -59,7 +59,7 @@ function renderizarCurso(curso) {
   const cat = datosCategoria(curso.categoria);
   const temario = curso.temario || [];
 
-  document.title = curso.nombre + " — EduTechCourses";
+  document.title = curso.nombre + " | EduTechCourses";
   document.getElementById("breadcrumbCurso").textContent = curso.nombre;
 
   const badge = document.getElementById("cursoBadge");
