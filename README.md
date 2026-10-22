@@ -1,5 +1,5 @@
 # EduTechCourses.github.io
-Plataforma web de cursos digitales con suscripción - Taller Integrador, CERP del Litoral
+Plataforma web de cursos digitales de compra individual - Taller Integrador, CERP del Litoral
 
 ## Sitio publicado
 
@@ -201,7 +201,7 @@ La adquisición de un curso se paga con **Mercado Pago en modo de prueba** (Chec
 
 ### Cómo funciona
 
-1. En `detalle-curso.html?id=…`, el botón «Suscribirme a este curso» comprueba si hay una sesión iniciada.
+1. En `detalle-curso.html?id=…`, el botón «Comprar este curso» comprueba si hay una sesión iniciada.
 2. Sin sesión, lleva a `login.html?volver=…`. Después de iniciar sesión, la persona regresa al mismo curso. Solo se aceptan páginas internas del sitio como destino: cualquier otro valor se ignora y se redirige a `perfil.html`.
 3. Con sesión, se abre un modal con el nombre y el precio del curso y el aviso de que el pago es con Mercado Pago en modo de prueba.
 4. Al confirmar, se comprueba que la persona no tenga ya el curso y se la lleva al checkout de Mercado Pago, que muestra el nombre del curso y el total.
@@ -216,7 +216,7 @@ Si la persona ya adquirió el curso, la pantalla de detalle lo refleja desde que
 |---|---|
 | `js/modules/adquisiciones-servicio.js` | Comprueba si se puede adquirir (`comprobarAdquisicionPosible`), registra la adquisición (`adquirirCurso`) y la consulta (`obtenerAdquisicion`); traduce los errores de Firestore a mensajes comprensibles |
 | `js/modules/mercadopago-servicio.js` | Pide el checkout al servidor de pagos (`crearCheckout`), lee la vuelta de Mercado Pago y verifica el pago (`verificarPago`) |
-| `js/pages/detalle-curso.js` | Botón «Suscribirme», modal de pago, redirección a Mercado Pago, verificación al volver y mensajes de resultado |
+| `js/pages/detalle-curso.js` | Botón «Comprar este curso», modal de pago, redirección a Mercado Pago, verificación al volver y mensajes de resultado |
 | `detalle-curso.html` | Estructura del modal de pago |
 | `servidor/mercadopago-worker.js` | Servidor de pagos (Cloudflare Worker): crea el checkout y consulta los pagos con el Access Token |
 | `login.html` | Regreso al curso de origen mediante el parámetro `volver` |
@@ -319,9 +319,9 @@ El acceso a las páginas y al contenido de los cursos depende de la sesión y de
 
 | Situación | Contenido | Acción en la barra lateral |
 |---|---|---|
-| Visitante | Solo la vista previa, si el curso la tiene | «Suscribirme», que lleva al login |
-| Usuario sin el curso | Solo la vista previa, si el curso la tiene | «Suscribirme», que abre el modal de pago con Mercado Pago |
-| Usuario con el curso | Contenido completo | «Suscripción activa» y enlace a «Mis cursos» |
+| Visitante | Solo la vista previa, si el curso la tiene | «Comprar este curso», que lleva al login |
+| Usuario sin el curso | Solo la vista previa, si el curso la tiene | «Comprar este curso», que abre el modal de pago con Mercado Pago |
+| Usuario con el curso | Contenido completo | «Curso comprado» y enlace a «Mis cursos» |
 | Administrador | Contenido completo | Aviso de acceso como administrador y enlace al panel |
 
 ### Cómo se decide el acceso

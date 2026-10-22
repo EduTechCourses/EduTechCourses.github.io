@@ -59,7 +59,7 @@ function renderizarCurso(curso) {
   const cat = datosCategoria(curso.categoria);
   const temario = curso.temario || [];
 
-  document.title = curso.nombre + " — EduTechCourses";
+  document.title = curso.nombre + " | EduTechCourses";
   document.getElementById("breadcrumbCurso").textContent = curso.nombre;
 
   const badge = document.getElementById("cursoBadge");
@@ -246,13 +246,13 @@ function aplicarNivelAcceso(nivel) {
 
   document.getElementById("contenidoCompletoTexto").textContent = nivel === "admin"
     ? "Estás viendo este curso como administrador: tenés acceso a todo el contenido, la guía en PDF y el video del curso."
-    : "Estás suscripto a este curso: tenés acceso a todo el contenido, la guía en PDF y el video del curso.";
+    : "Compraste este curso: tenés acceso a todo el contenido, la guía en PDF y el video del curso.";
 
   if (contenidoCompleto) cargarContenidoProtegido();
   actualizarOpiniones(nivel);
 
   document.getElementById("accionNota").textContent = nivel === "visitante"
-    ? "Se necesita una cuenta para suscribirte"
+    ? "Se necesita una cuenta para comprar este curso"
     : "Pago con Mercado Pago en modo de prueba: no se cobra dinero real";
 }
 
@@ -273,7 +273,7 @@ async function resolverAcceso() {
   }
 }
 
-// Clic en «Suscribirme»: sin sesión lleva al login (y vuelve a este curso);
+// Clic en «Comprar este curso»: sin sesión lleva al login (y vuelve a este curso);
 // con sesión abre el modal con el resumen de la adquisición.
 async function iniciarAdquisicion() {
   await auth.authStateReady();
