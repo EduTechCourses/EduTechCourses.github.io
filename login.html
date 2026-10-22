@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Iniciar sesión — EduTechCourses</title>
+  <title>Iniciar sesión | EduTechCourses</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
   <link
@@ -16,7 +16,7 @@
 
 <body>
 
-  <nav class="navbar navbar-expand-lg navbar-etc-light" aria-label="Navegación principal">
+  <nav class="navbar navbar-expand-lg navbar-etc-light sticky-top" aria-label="Navegación principal">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
         <img src="assets/logo/logo.svg" alt="Logo de EduTechCourses" class="brand-logo">
@@ -75,16 +75,23 @@
               <a href="#" class="small text-navy" data-bs-toggle="modal" data-bs-target="#modalRecuperar">¿Olvidaste tu
                 contraseña?</a>
             </div>
-            <input type="password" class="form-control" id="loginPassword" placeholder="Tu contraseña" minlength="6"
-              required>
-            <div class="invalid-feedback">La contraseña debe tener al menos 6 caracteres.</div>
+            <div class="input-group">
+              <input type="password" class="form-control" id="loginPassword" placeholder="Tu contraseña" minlength="6"
+                required>
+              <button class="btn btn-outline-secondary" type="button" data-toggle-password="loginPassword"
+                aria-label="Mostrar contraseña">
+                <i class="bi bi-eye"></i>
+              </button>
+              <div class="invalid-feedback">La contraseña debe tener al menos 6 caracteres.</div>
+            </div>
           </div>
           <button type="submit" class="btn btn-brand w-100 mt-3">Iniciar sesión</button>
         </form>
 
         <div class="auth-divider">o continuá con</div>
-        <button type="button" class="btn btn-google w-100 d-flex align-items-center justify-content-center gap-2"
-          onclick="return false;">
+        <!-- AGREGADO: id="btnGoogle" y removido el onclick falso -->
+        <button type="button" id="btnGoogle"
+          class="btn btn-google w-100 d-flex align-items-center justify-content-center gap-2">
           <i class="bi bi-google"></i> Continuar con Google
         </button>
       </div>
@@ -106,7 +113,7 @@
           <ul class="list-unstyled small">
             <li class="mb-1"><a href="index.html">Inicio</a></li>
             <li class="mb-1"><a href="catalogo.html">Catálogo</a></li>
-            <li class="mb-1"><a href="perfil.html">Mi perfil</a></li>
+            <li class="mb-1"><a href="faq.html">Preguntas frecuentes</a></li>
           </ul>
         </div>
         <div class="col-md-4">
@@ -114,6 +121,7 @@
           <ul class="list-unstyled small">
             <li class="mb-1"><a href="registro.html">Crear cuenta</a></li>
             <li class="mb-1"><a href="login.html">Iniciar sesión</a></li>
+            <li class="mb-1"><a href="perfil.html">Mi perfil</a></li>
           </ul>
         </div>
       </div>
@@ -149,10 +157,30 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module" src="js/base.js"></script>
   <script type="module">
-    import { iniciarSesion, recuperarContrasena } from "./js/auth.js";
+    // IMPORTANTE: Importamos también iniciarSesionConGoogle desde auth.js
+    import { iniciarSesion, recuperarContrasena, iniciarSesionConGoogle } from "./js/auth.js";
+
+    function destinoDespuesDelLogin() {
+      const volver = new URLSearchParams(window.location.search).get("volver");
+      const esInterna = volver && /^[a-z0-9_-]+\.html(\?[a-z0-9_=&%.-]*)?$/i.test(volver);
+      const esAuth = volver && /^(login|registro)\.html/i.test(volver);
+      return esInterna && !esAuth ? volver : "perfil.html";
+    }
 
     const form = document.getElementById("formLogin");
     const mensaje = document.getElementById("loginMensaje");
+
+    // Mostrar/ocultar contraseña: alterna type="password" / "text" y el
+    // ícono de ojo en cualquier botón con data-toggle-password="<id-input>".
+    document.querySelectorAll("[data-toggle-password]").forEach(function (boton) {
+      boton.addEventListener("click", function () {
+        const input = document.getElementById(boton.dataset.togglePassword);
+        const icono = boton.querySelector("i");
+        const oculto = input.type === "password";
+        input.type = oculto ? "text" : "password";
+        icono.className = oculto ? "bi bi-eye-slash" : "bi bi-eye";
+      });
+    });
 
     form.addEventListener("submit", async function (event) {
       event.preventDefault();
@@ -178,12 +206,36 @@
       if (resultado.exito) {
         mensaje.className = "alert alert-success";
         mensaje.textContent = "¡Bienvenido! Iniciando sesión...";
-        setTimeout(() => { window.location.href = "perfil.html"; }, 800);
+        setTimeout(() => { window.location.href = destinoDespuesDelLogin(); }, 800);
       } else {
         mensaje.className = "alert alert-danger";
         mensaje.textContent = resultado.mensaje;
       }
     });
+
+    // NUEVO: Lógica para manejar el clic en el botón de Google
+    const btnGoogle = document.getElementById("btnGoogle");
+    if (btnGoogle) {
+      btnGoogle.addEventListener("click", async () => {
+        btnGoogle.disabled = true;
+        const textoOriginal = btnGoogle.innerHTML;
+        btnGoogle.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Conectando con Google...`;
+
+        const resultado = await iniciarSesionConGoogle();
+
+        btnGoogle.disabled = false;
+        btnGoogle.innerHTML = textoOriginal;
+
+        if (resultado.exito) {
+          mensaje.className = "alert alert-success";
+          mensaje.textContent = "¡Acceso exitoso con Google! Redirigiendo...";
+          setTimeout(() => { window.location.href = destinoDespuesDelLogin(); }, 800);
+        } else {
+          mensaje.className = "alert alert-danger";
+          mensaje.textContent = resultado.mensaje;
+        }
+      });
+    }
 
     const formRecuperar = document.getElementById("formRecuperar");
     const mensajeRecuperar = document.getElementById("recuperarMensaje");

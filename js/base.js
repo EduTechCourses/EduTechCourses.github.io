@@ -11,12 +11,13 @@
 // IMPORTANTE (issue #32): este archivo se carga como
 // <script type="module"> en todas las páginas, porque necesita
 // importar auth de Firebase para detectar la sesión activa. Como los
-// módulos no crean funciones globales automáticamente, las funciones
-// llamadas desde atributos onclick="" del HTML (como
-// mostrarEstadoCurso) se asignan explícitamente a `window` al final.
+// módulos no crean funciones globales automáticamente, una función
+// llamada desde un atributo onclick="" del HTML tiene que asignarse
+// explícitamente a `window`.
  
 import { auth } from "./firebase-config.js";
 import { cerrarSesion } from "./auth.js";
+import { urlOptimizada } from "./modules/imagenes-servicio.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
  
 document.addEventListener("DOMContentLoaded", function () {
@@ -40,36 +41,62 @@ document.addEventListener("DOMContentLoaded", function () {
       window.location.href = "index.html";
     });
   });
+
+  mostrarAvisoDeUrl();
 });
  
-// Alterna entre vista de visitante/no suscripto y usuario suscripto,
-// usado en detalle-curso.html. Cuando exista Firestore, este estado
-// deberá reemplazarse por la consulta real de la suscripción.
-function mostrarEstadoCurso(estado) {
-  const previa = document.getElementById('estado-no-suscripto');
-  const completo = document.getElementById('estado-suscripto');
-  const btnPrevia = document.getElementById('btn-estado-previa');
-  const btnCompleto = document.getElementById('btn-estado-suscripto');
-  if (!previa || !completo) return;
- 
-  if (estado === 'suscripto') {
-    previa.classList.add('d-none');
-    completo.classList.remove('d-none');
-    btnCompleto.classList.add('active');
-    btnPrevia.classList.remove('active');
-  } else {
-    completo.classList.add('d-none');
-    previa.classList.remove('d-none');
-    btnPrevia.classList.add('active');
-    btnCompleto.classList.remove('active');
+// Avisos que otras páginas piden mostrar mediante ?aviso=<código> en la URL
+// (por ejemplo, al redirigir a alguien que no tiene permisos para una página).
+// El texto sale de esta tabla y no de la URL, así que un valor desconocido
+// o manipulado simplemente se ignora.
+const AVISOS = {
+  "sin-permisos": {
+    tipo: "warning",
+    icono: "bi-shield-exclamation",
+    texto: "No tenés permisos para acceder a esa página."
+  },
+  "sesion-requerida": {
+    tipo: "info",
+    icono: "bi-info-circle",
+    texto: "Iniciá sesión para acceder a esa página."
   }
- 
-  const accionNoSuscripto = document.getElementById('accion-no-suscripto');
-  const accionSuscripto = document.getElementById('accion-suscripto');
-  if (accionNoSuscripto && accionSuscripto) {
-    accionNoSuscripto.classList.toggle('d-none', estado === 'suscripto');
-    accionSuscripto.classList.toggle('d-none', estado !== 'suscripto');
-  }
+};
+
+// Muestra el aviso indicado en la URL justo debajo de la barra de navegación
+// y lo quita de la dirección, para que no reaparezca al recargar. Los demás
+// parámetros (como ?volver= en el login) se conservan.
+function mostrarAvisoDeUrl() {
+  const parametros = new URLSearchParams(window.location.search);
+  const codigo = parametros.get("aviso");
+  if (!codigo || !Object.prototype.hasOwnProperty.call(AVISOS, codigo)) return;
+
+  const barra = document.querySelector("nav.navbar");
+  if (!barra) return;
+
+  const aviso = AVISOS[codigo];
+  const contenedor = document.createElement("div");
+  contenedor.className = "container py-3";
+
+  const alerta = document.createElement("div");
+  alerta.className = "alert alert-" + aviso.tipo + " alert-dismissible fade show mb-0";
+  alerta.setAttribute("role", "alert");
+
+  const icono = document.createElement("i");
+  icono.className = "bi " + aviso.icono + " me-1";
+
+  const cerrar = document.createElement("button");
+  cerrar.type = "button";
+  cerrar.className = "btn-close";
+  cerrar.setAttribute("data-bs-dismiss", "alert");
+  cerrar.setAttribute("aria-label", "Cerrar");
+
+  alerta.append(icono, aviso.texto, cerrar);
+  contenedor.append(alerta);
+  barra.after(contenedor);
+
+  parametros.delete("aviso");
+  const resto = parametros.toString();
+  history.replaceState(null, "", window.location.pathname + (resto ? "?" + resto : "") + window.location.hash);
 }
  
 // Adapta la navbar según haya o no una sesión de Firebase activa.
@@ -89,7 +116,20 @@ function actualizarNavbarSegunSesion(usuario) {
     const nombreSpan = document.getElementById('navNombreUsuario');
     const avatarSpan = document.getElementById('navAvatarIniciales');
     if (nombreSpan) nombreSpan.textContent = nombre;
-    if (avatarSpan) avatarSpan.textContent = obtenerIniciales(nombre);
+    if (avatarSpan) {
+      // La foto de perfil se guarda en la cuenta de Firebase (photoURL). Solo se
+      // muestra si es una imagen de nuestra cuenta de Cloudinary; si no, iniciales.
+      const foto = urlOptimizada(usuario.photoURL, 52, 52);
+      if (foto) {
+        const imagen = document.createElement('img');
+        imagen.className = 'avatar-img';
+        imagen.alt = '';
+        imagen.src = foto;
+        avatarSpan.replaceChildren(imagen);
+      } else {
+        avatarSpan.textContent = obtenerIniciales(nombre);
+      }
+    }
   } else {
     navUser.classList.add('d-none');
     navGuest.classList.remove('d-none');
@@ -106,8 +146,3 @@ function obtenerIniciales(texto) {
 onAuthStateChanged(auth, function (usuario) {
   actualizarNavbarSegunSesion(usuario);
 });
- 
-// Exponemos al alcance global las funciones llamadas desde onclick=""
-// en el HTML, ya que un <script type="module"> no las declara como
-// globales automáticamente.
-window.mostrarEstadoCurso = mostrarEstadoCurso;

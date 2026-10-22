@@ -717,6 +717,13 @@ footer.site-footer .brand-name {
   color: #fff;
 }
 
+/* Menú de secciones del panel admin para pantallas chicas */
+.admin-nav-mobile {
+  --bs-nav-link-color: var(--navy);
+  --bs-nav-pills-link-active-bg: var(--navy-dark);
+}
+
+
 .table-admin thead {
   background: #f2f4f8;
 }
@@ -743,4 +750,90 @@ footer.site-footer .brand-name {
 
 .status-dot.inactive {
   background: var(--ink-faint);
+}
+
+/* Issue #91: foto de perfil. Cada avatar tiene sus iniciales (.avatar-texto) y una
+   imagen (.avatar-img) que ocupa todo el círculo cuando hay foto. */
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.avatar-lg .avatar-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+button.camera-badge {
+  padding: 0;
+  color: #fff;
+  cursor: pointer;
+}
+
+
+/* Issue #105: valoraciones de los cursos. Selector de estrellas con botones de opción,
+   que se usa con teclado y lector de pantalla. Los botones se ocultan sin display:none
+   (así siguen siendo enfocables) y las etiquetas hacen de estrellas. En el HTML van en
+   orden 5-4-3-2-1 y row-reverse las muestra de 1 a 5: así el selector "~" pinta las
+   estrellas de menor valor que la elegida. */
+.estrellas-fila {
+  position: relative;
+  display: inline-flex;
+  flex-direction: row-reverse;
+  gap: 0.15rem;
+}
+
+.estrellas-fila input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.estrellas-fila label {
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--border);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.estrellas-fila label:hover,
+.estrellas-fila label:hover ~ label,
+.estrellas-fila input:checked ~ label {
+  color: var(--warn);
+}
+
+.estrellas-fila input:focus-visible + label {
+  outline: 3px solid var(--teal);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Fondo animado del hero (js/modules/hero-fondo.js). El canvas queda detrás del
+   contenido y una capa azul oscura asegura que el texto blanco se lea bien. */
+.hero {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.hero-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: -2;
+}
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 30, 60, 0.45);
+  z-index: -1;
+  pointer-events: none;
 }
